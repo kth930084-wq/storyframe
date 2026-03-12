@@ -1152,38 +1152,38 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
+  const isDashboard = !activeProject;
+
   return (
-    <div className={`h-screen flex overflow-hidden ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
-      {/* Sidebar */}
-      <aside className={`border-r flex flex-col transition-all duration-300 w-64 hidden md:flex ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
-        <div className={`p-4 border-b ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Film className="w-5 h-5 text-white" />
+    <div className={`h-screen flex overflow-hidden ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+      {/* Sidebar - 프로젝트 편집 중일 때만 표시 */}
+      {activeProject && (
+        <aside className={`border-r flex flex-col transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden"} hidden md:flex ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
+          <div className={`p-4 border-b ${darkMode ? "border-neutral-700" : "border-gray-100"}`}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Film className="w-5 h-5 text-white" />
+              </div>
+              <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
             </div>
-            <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
           </div>
-        </div>
-        {activeProject && (
-          <div className={`flex-1 overflow-y-auto p-4 space-y-2`}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {activeProject.scenes.map((scene, index) => (
               <button
                 key={scene.id}
-                onClick={() => setActiveSceneId(scene.id)}
+                onClick={() => { setActiveSceneId(scene.id); setViewMode('editor'); }}
                 className={`w-full text-left p-3 rounded-lg transition ${
                   activeSceneId === scene.id
-                    ? 'bg-neutral-200 dark:bg-neutral-800 border-2 border-neutral-500'
-                    : 'bg-gray-100 dark:bg-gray-700 border-2 border-transparent hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? `${darkMode ? "bg-neutral-700 border-neutral-500" : "bg-neutral-200 border-neutral-500"} border-2`
+                    : `${darkMode ? "bg-neutral-800 hover:bg-neutral-700" : "bg-gray-100 hover:bg-gray-200"} border-2 border-transparent`
                 }`}
               >
-                <div className="font-semibold text-sm text-gray-900 dark:text-white">{index + 1}. {scene.title}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{scene.duration}초</div>
+                <div className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>{index + 1}. {scene.title}</div>
+                <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>{scene.duration}초</div>
               </button>
             ))}
           </div>
-        )}
-        <div className={`p-4 border-t ${darkMode ? "border-gray-700" : "border-gray-100"} space-y-2`}>
-          {activeProject && (
+          <div className={`p-4 border-t ${darkMode ? "border-neutral-700" : "border-gray-100"} space-y-2`}>
             <button
               onClick={handleAddScene}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
@@ -1191,80 +1191,85 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               <Plus size={18} />
               씬 추가
             </button>
-          )}
-          <button
-            onClick={() => setCurrentPage('dashboard')}
-            className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-          >
-            대시보드
-          </button>
-        </div>
-      </aside>
+            <button
+              onClick={() => { setActiveProjectId(null); setActiveSceneId(null); setCurrentPage('dashboard'); }}
+              className={`w-full px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
+            >
+              프로젝트 목록
+            </button>
+          </div>
+        </aside>
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className={`border-b px-6 py-4 flex items-center justify-between ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
+        <div className={`border-b px-6 py-4 flex items-center justify-between ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
-            >
-              {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
-            </button>
-            <div className="flex gap-2">
+            {/* 사이드바 토글 - 프로젝트 편집 중일 때만 */}
+            {activeProject && (
               <button
-                onClick={() => setViewMode('editor')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'editor' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
               >
-                편집기
+                {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
               </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'grid' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-              >
-                그리드
-              </button>
-              <button
-                onClick={() => setViewMode('timeline')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'timeline' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-              >
-                타임라인
-              </button>
-              <button
-                onClick={() => setViewMode('presentation')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'presentation' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-              >
-                프레젠테이션
-              </button>
-              <button
-                onClick={() => setViewMode('checklist')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'checklist' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-              >
-                체크리스트
-              </button>
-            </div>
+            )}
+
+            {/* 뷰모드 버튼 - 프로젝트 편집 중일 때만 */}
+            {activeProject && (
+              <div className="flex gap-1.5">
+                {[
+                  { id: 'editor', label: '편집기' },
+                  { id: 'grid', label: '그리드' },
+                  { id: 'timeline', label: '타임라인' },
+                  { id: 'presentation', label: '프레젠테이션' },
+                  { id: 'checklist', label: '체크리스트' },
+                ].map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setViewMode(id)}
+                    className={`px-3 py-2 rounded-lg transition text-sm ${viewMode === id ? 'bg-neutral-800 text-white' : `${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 대시보드일 때 로고 표시 */}
+            {isDashboard && (
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
+                  <Film className="w-4 h-4 text-white" />
+                </div>
+                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-3">
-            {lastSaved && <span className="text-xs text-neutral-600">저장됨</span>}
-            {isSaving && <span className="text-xs text-gray-500">저장 중...</span>}
+            {lastSaved && <span className="text-xs text-neutral-500">저장됨</span>}
+            {isSaving && <span className="text-xs text-gray-400">저장 중...</span>}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
+              title={darkMode ? "라이트 모드" : "다크 모드"}
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {user?.email && isAdmin(user.email) && (
               <Link
                 href="/admin"
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 관리자
               </Link>
             )}
             <button
               onClick={onLogout}
-              className={`p-2 rounded-lg transition text-red-600 ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-400 hover:text-red-400" : "hover:bg-gray-100 text-gray-400 hover:text-red-500"}`}
+              title="로그아웃"
             >
               <LogOut size={20} />
             </button>
@@ -1273,64 +1278,67 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
-          {currentPage === 'dashboard' && !activeProjectId ? (
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
-              <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-12">
-                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white">스토리프레임</h1>
+          {isDashboard ? (
+            <div className={`min-h-full p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+              <div className="max-w-5xl mx-auto">
+                <div className="flex justify-between items-center mb-10">
+                  <div>
+                    <h1 className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>내 프로젝트</h1>
+                    <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>{projects.length}개의 프로젝트</p>
+                  </div>
                   <button
                     onClick={() => setShowNewProject(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-900 rounded-lg hover:bg-neutral-100 transition font-medium text-sm shadow-sm"
                   >
-                    <Plus size={20} />
+                    <Plus size={18} />
                     새 프로젝트
                   </button>
                 </div>
 
                 {projects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Film size={48} className="mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-500 dark:text-gray-400 mb-6">프로젝트가 없습니다</p>
+                  <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
+                    <Film size={48} className={`mx-auto mb-4 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
+                    <p className={`mb-2 font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>아직 프로젝트가 없어요</p>
+                    <p className={`text-sm mb-6 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>새 프로젝트를 만들어 스토리보드를 시작하세요</p>
                     <button
                       onClick={() => setShowNewProject(true)}
-                      className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900"
+                      className="px-6 py-2.5 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-sm font-medium"
                     >
                       첫 프로젝트 만들기
                     </button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {projects.map(project => (
                       <div
                         key={project.id}
-                        className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer"
+                        className={`rounded-xl overflow-hidden transition cursor-pointer group ${darkMode ? "bg-neutral-800 hover:bg-neutral-750 border border-neutral-700" : "bg-white border border-gray-100 hover:shadow-lg"}`}
                         onClick={() => {
                           setActiveProjectId(project.id);
                           if (project.scenes.length > 0) {
                             setActiveSceneId(project.scenes[0].id);
                           }
                           setCurrentPage('editor');
+                          setViewMode('editor');
                         }}
                       >
                         <div className="h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-4xl">
                           {project.video_type ? '🎬' : '📽️'}
                         </div>
                         <div className="p-4">
-                          <h3 className="font-bold text-gray-900 dark:text-white mb-2">{project.title}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            {project.scenes.length} 씬 • {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
+                          <h3 className={`font-bold mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
+                          <p className={`text-sm mb-4 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+                            {project.scenes.length} 씬 · {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
                           </p>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteProject(project.id);
-                              }}
-                              className="flex-1 px-3 py-2 text-sm bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-800 transition"
-                            >
-                              삭제
-                            </button>
-                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProject(project.id);
+                            }}
+                            className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}
+                          >
+                            삭제
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -1352,16 +1360,16 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
       {/* New Project Modal */}
       {showNewProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">새 프로젝트</h2>
-            <div className="space-y-3 mb-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowNewProject(false)}>
+          <div className={`rounded-xl max-w-md w-full p-6 ${darkMode ? "bg-neutral-800" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
+            <h2 className={`text-xl font-bold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>새 프로젝트</h2>
+            <div className="space-y-2.5 mb-5">
               <button
                 onClick={() => {
                   const name = prompt('프로젝트 이름을 입력하세요');
                   if (name) handleCreateProject(name);
                 }}
-                className="w-full px-4 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-left"
+                className="w-full px-4 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-left text-sm font-medium"
               >
                 빈 프로젝트로 시작
               </button>
@@ -1369,16 +1377,16 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                 <button
                   key={template.id}
                   onClick={() => handleCreateProject(template.name, template.id)}
-                  className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-left"
+                  className={`w-full px-4 py-3 rounded-lg transition text-left ${darkMode ? "bg-neutral-700 text-white hover:bg-neutral-600" : "bg-gray-50 text-gray-900 hover:bg-gray-100"}`}
                 >
-                  <div className="font-semibold">{template.icon} {template.name}</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{template.description}</div>
+                  <div className="font-medium text-sm">{template.icon} {template.name}</div>
+                  <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{template.description}</div>
                 </button>
               ))}
             </div>
             <button
               onClick={() => setShowNewProject(false)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              className={`w-full px-4 py-2.5 rounded-lg transition text-sm ${darkMode ? "border border-neutral-600 text-neutral-300 hover:bg-neutral-700" : "border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
             >
               취소
             </button>
