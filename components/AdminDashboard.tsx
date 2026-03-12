@@ -154,7 +154,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
               <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
                 <h3 className="text-sm font-semibold text-white mb-4">시스템 정보</h3>
                 <div className="space-y-2 text-xs text-neutral-500">
-                  <p>스토리프레임 v1.0.0</p>
+                  <p>PEWPEW 스토리보드 v1.0.0</p>
                   <p>Node.js 기반</p>
                   <p>로컬 저장소 사용</p>
                 </div>

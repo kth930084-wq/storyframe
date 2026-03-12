@@ -94,7 +94,7 @@ export default function Home() {
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
             <Film size={16} className="text-neutral-900" />
           </div>
-          <span className="text-sm font-semibold tracking-wider uppercase text-neutral-200">StoryFrame</span>
+          <span className="text-sm font-semibold tracking-wider uppercase text-neutral-200">PEWPEW 스토리보드</span>
         </div>
         <div className="hidden md:flex items-center gap-6 text-xs text-neutral-500">
           <span>by PEWPEW Studio</span>
@@ -261,7 +261,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="relative z-10 px-8 py-6 border-t border-neutral-900/50">
         <div className="flex items-center justify-between text-[11px] text-neutral-700">
-          <p>&copy; 2024 StoryFrame by PEWPEW Studio</p>
+          <p>&copy; 2024 PEWPEW 스토리보드 by PEWPEW Studio</p>
           <div className="flex items-center gap-1.5">
             <div className="w-1 h-1 rounded-full bg-neutral-700" />
             <p>Built for creators</p>

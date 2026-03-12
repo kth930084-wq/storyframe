@@ -85,6 +85,27 @@ export const FRAMERATE_OPTIONS = [
   { value: "타임랩스", desc: "시간 압축 촬영" },
 ];
 
+// 영상 비율
+export const ASPECT_RATIOS = [
+  { value: "16:9", label: "16:9 (가로 와이드)", desc: "유튜브, TV 표준", icon: "🖥️" },
+  { value: "9:16", label: "9:16 (세로)", desc: "릴스, 틱톡, 숏츠", icon: "📱" },
+  { value: "4:3", label: "4:3 (클래식)", desc: "클래식 TV 비율", icon: "📺" },
+  { value: "1:1", label: "1:1 (정사각형)", desc: "인스타그램 피드", icon: "⬜" },
+  { value: "2.35:1", label: "2.35:1 (시네마스코프)", desc: "영화 와이드스크린", icon: "🎬" },
+  { value: "4:5", label: "4:5 (세로 직사각형)", desc: "인스타그램 세로", icon: "📋" },
+  { value: "21:9", label: "21:9 (울트라와이드)", desc: "울트라와이드 모니터", icon: "🖥️" },
+];
+
+// 영상 해상도
+export const VIDEO_RESOLUTIONS = [
+  { value: "1920x1080", label: "Full HD (1920x1080)" },
+  { value: "3840x2160", label: "4K UHD (3840x2160)" },
+  { value: "1080x1920", label: "세로 Full HD (1080x1920)" },
+  { value: "1080x1080", label: "정사각형 (1080x1080)" },
+  { value: "1280x720", label: "HD (1280x720)" },
+  { value: "직접입력", label: "직접 입력" },
+];
+
 export const VIDEO_TYPES = ["광고", "제품 커머셜", "브랜드 필름", "소셜미디어 숏폼", "인터뷰 영상", "뮤직비디오", "다큐멘터리", "튜토리얼"];
 export const PLATFORMS = ["유튜브", "인스타그램", "틱톡", "페이스북", "TV", "극장", "웹"];
 export const TONES = ["프로페셔널", "캐주얼", "드라마틱", "유쾌한", "럭셔리", "미니멀", "에너지틱", "감성적"];

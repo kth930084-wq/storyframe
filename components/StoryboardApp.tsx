@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import {
   CAMERA_ANGLES, SHOT_SIZES, CAMERA_MOVEMENTS, LIGHTING_OPTIONS, TRANSITIONS,
-  VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS, isAdmin
+  VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS, ASPECT_RATIOS, VIDEO_RESOLUTIONS, isAdmin
 } from '@/lib/constants';
 import Link from 'next/link';
 
@@ -30,6 +30,8 @@ interface Scene {
   camera_movement?: string;
   lighting?: string;
   description?: string;
+  dialogue?: string;
+  sound?: string;
   notes?: string;
   image?: string;
   transition?: string;
@@ -46,6 +48,8 @@ interface Project {
   platform?: string;
   duration?: string;
   tone?: string;
+  aspect_ratio?: string;
+  resolution?: string;
   description?: string;
   scenes: Scene[];
   created_at?: string;
@@ -788,6 +792,14 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
             <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-gray-900 bg-white" />
           </div>
           <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">대사 / 나레이션</label>
+            <textarea value={scene.dialogue || ""} onChange={(e: any) => onUpdate({ ...scene, dialogue: e.target.value })} rows={2} placeholder="이 씬의 대사나 나레이션을 입력하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-gray-900 bg-white" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">사운드 / BGM</label>
+            <input type="text" value={scene.sound || ""} onChange={(e: any) => onUpdate({ ...scene, sound: e.target.value })} placeholder="배경음악, 효과음 등..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent text-sm text-gray-900 bg-white" />
+          </div>
+          <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">감독 메모</label>
               <div className="flex gap-1.5 flex-wrap justify-end">
@@ -1027,6 +1039,144 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
   );
 };
 
+const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; onClose: () => void; onCreate: (title: string, templateId?: string, aspectRatio?: string, resolution?: string) => void }) => {
+  const [step, setStep] = useState(1);
+  const [projectName, setProjectName] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedRatio, setSelectedRatio] = useState('16:9');
+  const [selectedResolution, setSelectedResolution] = useState('1920x1080');
+  const [customResolution, setCustomResolution] = useState('');
+
+  const handleCreate = () => {
+    const name = projectName.trim() || (selectedTemplate ? TEMPLATES.find(t => t.id === selectedTemplate)?.name || '새 프로젝트' : '새 프로젝트');
+    const res = selectedResolution === '직접입력' ? customResolution : selectedResolution;
+    onCreate(name, selectedTemplate || undefined, selectedRatio, res);
+  };
+
+  const ratioToAspect = (ratio: string) => {
+    const [w, h] = ratio.split(':').map(Number);
+    return `${w}/${h}`;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className={`rounded-2xl max-w-lg w-full p-6 max-h-[85vh] overflow-y-auto ${darkMode ? "bg-neutral-800" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className={`text-xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>새 프로젝트</h2>
+          <button onClick={onClose} className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-400" : "hover:bg-gray-100 text-gray-400"}`}><X size={18} /></button>
+        </div>
+
+        {/* Step 1: 프로젝트 이름 */}
+        <div className="mb-5">
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-neutral-300" : "text-gray-600"}`}>프로젝트 이름</label>
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="예: 신제품 홍보 영상"
+            className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-neutral-700 text-white placeholder-neutral-500 border border-neutral-600" : "bg-gray-50 text-gray-900 placeholder-gray-400 border border-gray-200"}`}
+          />
+        </div>
+
+        {/* Step 2: 영상 비율 선택 */}
+        <div className="mb-5">
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-neutral-300" : "text-gray-600"}`}>영상 비율</label>
+          <div className="grid grid-cols-3 gap-2">
+            {ASPECT_RATIOS.map((ratio) => (
+              <button
+                key={ratio.value}
+                onClick={() => setSelectedRatio(ratio.value)}
+                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
+                  selectedRatio === ratio.value
+                    ? darkMode ? "border-white bg-neutral-700" : "border-neutral-800 bg-neutral-50"
+                    : darkMode ? "border-neutral-600 hover:border-neutral-500 bg-neutral-750" : "border-gray-100 hover:border-gray-300 bg-white"
+                }`}
+              >
+                <div className={`border-2 flex items-center justify-center ${selectedRatio === ratio.value ? (darkMode ? "border-white" : "border-neutral-800") : (darkMode ? "border-neutral-500" : "border-gray-300")}`}
+                  style={{ width: '36px', aspectRatio: ratioToAspect(ratio.value) }}>
+                  <span className="text-[8px]">{ratio.icon}</span>
+                </div>
+                <span className={`text-[10px] font-bold ${selectedRatio === ratio.value ? (darkMode ? "text-white" : "text-gray-900") : (darkMode ? "text-neutral-400" : "text-gray-600")}`}>{ratio.value}</span>
+                <span className={`text-[8px] ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{ratio.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Step 3: 해상도 */}
+        <div className="mb-5">
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-neutral-300" : "text-gray-600"}`}>영상 해상도</label>
+          <select
+            value={selectedResolution}
+            onChange={(e) => setSelectedResolution(e.target.value)}
+            className={`w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-neutral-700 text-white border border-neutral-600" : "bg-gray-50 text-gray-900 border border-gray-200"}`}
+          >
+            {VIDEO_RESOLUTIONS.map((res) => (
+              <option key={res.value} value={res.value}>{res.label}</option>
+            ))}
+          </select>
+          {selectedResolution === '직접입력' && (
+            <input
+              type="text"
+              value={customResolution}
+              onChange={(e) => setCustomResolution(e.target.value)}
+              placeholder="예: 2560x1440"
+              className={`w-full mt-2 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-neutral-700 text-white placeholder-neutral-500 border border-neutral-600" : "bg-gray-50 text-gray-900 placeholder-gray-400 border border-gray-200"}`}
+            />
+          )}
+        </div>
+
+        {/* Step 4: 템플릿 선택 */}
+        <div className="mb-5">
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-neutral-300" : "text-gray-600"}`}>템플릿 (선택사항)</label>
+          <div className="space-y-2">
+            <button
+              onClick={() => setSelectedTemplate(null)}
+              className={`w-full px-4 py-3 rounded-xl transition text-left text-sm font-medium border-2 ${
+                selectedTemplate === null
+                  ? darkMode ? "border-white bg-neutral-700 text-white" : "border-neutral-800 bg-neutral-50 text-gray-900"
+                  : darkMode ? "border-neutral-600 bg-neutral-750 text-neutral-300 hover:border-neutral-500" : "border-gray-100 bg-white text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              빈 프로젝트로 시작
+            </button>
+            {TEMPLATES.map((template: any) => (
+              <button
+                key={template.id}
+                onClick={() => setSelectedTemplate(template.id)}
+                className={`w-full px-4 py-3 rounded-xl transition text-left border-2 ${
+                  selectedTemplate === template.id
+                    ? darkMode ? "border-white bg-neutral-700" : "border-neutral-800 bg-neutral-50"
+                    : darkMode ? "border-neutral-600 bg-neutral-750 hover:border-neutral-500" : "border-gray-100 bg-white hover:border-gray-300"
+                }`}
+              >
+                <div className={`font-medium text-sm ${selectedTemplate === template.id ? (darkMode ? "text-white" : "text-gray-900") : (darkMode ? "text-neutral-300" : "text-gray-700")}`}>{template.icon} {template.name}</div>
+                <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{template.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 만들기 버튼 */}
+        <div className="flex gap-2">
+          <button
+            onClick={handleCreate}
+            className="flex-1 px-4 py-3 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition text-sm font-semibold"
+          >
+            프로젝트 만들기
+          </button>
+          <button
+            onClick={onClose}
+            className={`px-4 py-3 rounded-xl transition text-sm ${darkMode ? "border border-neutral-600 text-neutral-300 hover:bg-neutral-700" : "border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+          >
+            취소
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
@@ -1084,8 +1234,12 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
 
-  const handleCreateProject = (title: string, templateId?: string) => {
+  const handleCreateProject = (title: string, templateId?: string, aspectRatio?: string, resolution?: string) => {
     let newProject: Project;
+    const baseFields = {
+      aspect_ratio: aspectRatio || '16:9',
+      resolution: resolution || '1920x1080',
+    };
 
     if (templateId) {
       const template = TEMPLATES.find((t: any) => t.id === templateId);
@@ -1094,6 +1248,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           id: generateId(),
           title: template.name,
           video_type: template.videoType,
+          ...baseFields,
           scenes: template.scenes.map((s: any, i: number) => ({
             id: generateId(),
             scene_number: i + 1,
@@ -1107,6 +1262,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         newProject = {
           id: generateId(),
           title,
+          ...baseFields,
           scenes: [{
             id: generateId(),
             scene_number: 1,
@@ -1127,6 +1283,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       newProject = {
         id: generateId(),
         title,
+        ...baseFields,
         scenes: [{
           id: generateId(),
           scene_number: 1,
@@ -1238,6 +1395,47 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
+  const handleExportTimetable = useCallback(() => {
+    if (!activeProject) return;
+    let currentTime = 0;
+    const lines = [
+      `# ${activeProject.title} - 타임테이블`,
+      `비율: ${activeProject.aspect_ratio || '16:9'} | 해상도: ${activeProject.resolution || '1920x1080'}`,
+      `총 길이: ${formatDuration(totalDuration)}`,
+      '',
+      '| 순서 | 씬 제목 | 시작 | 종료 | 길이 | 앵글 | 샷 | 무브 | 조명 | 대사 | 사운드 | 설명 |',
+      '|------|---------|------|------|------|------|-----|------|------|------|--------|------|',
+    ];
+    activeProject.scenes.forEach((scene, i) => {
+      const start = formatDuration(currentTime);
+      currentTime += scene.duration || 0;
+      const end = formatDuration(currentTime);
+      lines.push(`| ${i + 1} | ${scene.title || '-'} | ${start} | ${end} | ${scene.duration}초 | ${scene.camera_angle || '-'} | ${scene.shot_size || '-'} | ${scene.camera_movement || '-'} | ${scene.lighting || '-'} | ${(scene.dialogue || '-').replace(/\n/g, ' ')} | ${scene.sound || '-'} | ${(scene.description || '-').replace(/\n/g, ' ')} |`);
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeProject.title}_타임테이블.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeProject, totalDuration]);
+
+  const handleExportJSON = useCallback(() => {
+    if (!activeProject) return;
+    const exportData = {
+      ...activeProject,
+      exported_at: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeProject.title}_스토리보드.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeProject]);
+
   const isDashboard = !activeProject;
 
   return (
@@ -1250,7 +1448,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               <div className="w-9 h-9 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Film className="w-5 h-5 text-white" />
               </div>
-              <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
+              <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>PEWPEW 스토리보드</span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
@@ -1329,7 +1527,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                 <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
                   <Film className="w-4 h-4 text-white" />
                 </div>
-                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
+                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>PEWPEW 스토리보드</span>
               </div>
             )}
           </div>
@@ -1337,6 +1535,24 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           <div className="flex items-center gap-3">
             {lastSaved && <span className="text-xs text-neutral-500">저장됨</span>}
             {isSaving && <span className="text-xs text-gray-400">저장 중...</span>}
+            {activeProject && (
+              <div className="flex gap-1">
+                <button
+                  onClick={() => handleExportTimetable()}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  title="타임테이블 내보내기"
+                >
+                  <Clock size={14} /> 타임테이블
+                </button>
+                <button
+                  onClick={() => handleExportJSON()}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  title="JSON 내보내기"
+                >
+                  <Download size={14} /> 내보내기
+                </button>
+              </div>
+            )}
             <button
               onClick={() => setDarkMode(!darkMode)}
               className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
@@ -1413,9 +1629,14 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                         </div>
                         <div className="p-4">
                           <h3 className={`font-bold mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
-                          <p className={`text-sm mb-4 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+                          <p className={`text-sm mb-2 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
                             {project.scenes.length} 씬 · {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
                           </p>
+                          {project.aspect_ratio && (
+                            <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded mb-3 ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-600"}`}>
+                              {project.aspect_ratio} {project.resolution && `· ${project.resolution}`}
+                            </span>
+                          )}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -1446,38 +1667,11 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
       {/* New Project Modal */}
       {showNewProject && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowNewProject(false)}>
-          <div className={`rounded-xl max-w-md w-full p-6 ${darkMode ? "bg-neutral-800" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
-            <h2 className={`text-xl font-bold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>새 프로젝트</h2>
-            <div className="space-y-2.5 mb-5">
-              <button
-                onClick={() => {
-                  const name = prompt('프로젝트 이름을 입력하세요');
-                  if (name) handleCreateProject(name);
-                }}
-                className="w-full px-4 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-left text-sm font-medium"
-              >
-                빈 프로젝트로 시작
-              </button>
-              {TEMPLATES.map((template: any) => (
-                <button
-                  key={template.id}
-                  onClick={() => handleCreateProject(template.name, template.id)}
-                  className={`w-full px-4 py-3 rounded-lg transition text-left ${darkMode ? "bg-neutral-700 text-white hover:bg-neutral-600" : "bg-gray-50 text-gray-900 hover:bg-gray-100"}`}
-                >
-                  <div className="font-medium text-sm">{template.icon} {template.name}</div>
-                  <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{template.description}</div>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setShowNewProject(false)}
-              className={`w-full px-4 py-2.5 rounded-lg transition text-sm ${darkMode ? "border border-neutral-600 text-neutral-300 hover:bg-neutral-700" : "border border-gray-200 text-gray-600 hover:bg-gray-50"}`}
-            >
-              취소
-            </button>
-          </div>
-        </div>
+        <NewProjectModal
+          darkMode={darkMode}
+          onClose={() => setShowNewProject(false)}
+          onCreate={handleCreateProject}
+        />
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: '스토리프레임 - 동영상 스토리보드 작성 도구',
+  title: 'PEWPEW 스토리보드 - 동영상 스토리보드 작성 도구',
   description: '전문적인 동영상 스토리보드를 쉽게 만들어보세요',
   icons: {
     icon: '🎬',
