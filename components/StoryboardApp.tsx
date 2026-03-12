@@ -20,6 +20,7 @@ import {
 import Link from 'next/link';
 import { SceneCommentPanel, AssetLibraryPanel, AnimaticPreview, ShotListView, VersionManager } from './Features1';
 import { BudgetEstimator, CalendarView, SceneSearchFilter, MobileResponsiveWrapper, useMobileDetect, AISceneRecommender } from './Features2';
+import { PortfolioProposalBuilder } from './PortfolioProposal';
 
 interface StoryboardAppProps {
   user: any;
@@ -2106,12 +2107,52 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     URL.revokeObjectURL(url);
   }, [activeProject]);
 
-  const isDashboard = !activeProject;
+  const isDashboard = !activeProject && currentPage !== 'proposal';
+  const isProposalPage = currentPage === 'proposal';
+
+  // 포트폴리오 기획안에서 스토리보드 프로젝트 생성
+  const handleCreateFromProposal = useCallback((projectData: any) => {
+    const newProject: Project = {
+      id: generateId(),
+      title: projectData.title || '새 프로젝트',
+      brand_name: projectData.brand_name,
+      video_type: projectData.video_type,
+      platform: projectData.platform,
+      tone: projectData.tone,
+      description: projectData.description,
+      project_info: projectData.client_info ? {
+        client_name: projectData.client_info.name,
+        manager_name: projectData.client_info.name,
+        manager_phone: projectData.client_info.phone,
+        manager_email: projectData.client_info.email,
+        brand_name: projectData.client_info.company,
+      } : undefined,
+      scenes: (projectData.scenes || []).map((s: any, i: number) => ({
+        id: generateId(),
+        scene_number: i + 1,
+        title: s.title || `씬 ${i + 1}`,
+        duration: s.duration || 5,
+        description: s.description || '',
+        camera_angle: s.camera_angle,
+        shot_size: s.shot_size,
+        camera_movement: s.camera_movement,
+        lighting: s.lighting,
+        transition: '컷',
+        shooting_completed: false,
+      })),
+      created_at: new Date().toISOString(),
+    };
+    setProjects(prev => [...prev, newProject]);
+    setActiveProjectId(newProject.id);
+    if (newProject.scenes.length > 0) setActiveSceneId(newProject.scenes[0].id);
+    setCurrentPage('editor');
+    setViewMode('editor');
+  }, []);
 
   return (
     <div className={`h-screen flex overflow-hidden ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
       {/* Sidebar - 프로젝트 편집 중일 때만 표시 */}
-      {activeProject && (
+      {activeProject && !isProposalPage && (
         <aside className={`border-r flex flex-col transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden"} hidden md:flex ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
           <div className={`p-4 border-b ${darkMode ? "border-neutral-700" : "border-gray-100"}`}>
             <div className="flex items-center gap-2.5">
@@ -2234,13 +2275,21 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               </div>
             )}
 
-            {/* 대시보드일 때 로고 표시 */}
-            {isDashboard && (
+            {/* 대시보드/기획안 페이지일 때 로고 표시 */}
+            {(isDashboard || isProposalPage) && (
               <div className="flex items-center gap-2.5">
+                {isProposalPage && (
+                  <button onClick={() => setCurrentPage('dashboard')}
+                    className={`p-1.5 rounded-lg transition mr-1 ${darkMode ? "hover:bg-neutral-700 text-neutral-400" : "hover:bg-gray-100 text-gray-500"}`}>
+                    <ChevronLeft size={20} />
+                  </button>
+                )}
                 <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
                   <Film className="w-4 h-4 text-white" />
                 </div>
-                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>PEWPEW 스토리보드</span>
+                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>
+                  {isProposalPage ? '포트폴리오 기획안' : 'PEWPEW 스토리보드'}
+                </span>
               </div>
             )}
           </div>
@@ -2293,7 +2342,13 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
-          {isDashboard ? (
+          {isProposalPage ? (
+            <PortfolioProposalBuilder
+              darkMode={darkMode}
+              userEmail={user?.email}
+              onCreateProject={handleCreateFromProposal}
+            />
+          ) : isDashboard ? (
             <div className={`min-h-full p-6 md:p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
               <div className="max-w-6xl mx-auto space-y-8">
 
@@ -2305,10 +2360,16 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                     </h1>
                     <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
                   </div>
-                  <button onClick={() => setShowNewProject(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
-                    <Plus size={18} /> 새 프로젝트
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setCurrentPage('proposal')}
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition font-medium text-sm shadow-sm border ${darkMode ? "bg-neutral-700 text-white border-neutral-600 hover:bg-neutral-600" : "bg-white text-neutral-800 border-neutral-300 hover:bg-neutral-50"}`}>
+                      <Star size={18} /> 영상 기획안 작성
+                    </button>
+                    <button onClick={() => setShowNewProject(true)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
+                      <Plus size={18} /> 새 프로젝트
+                    </button>
+                  </div>
                 </div>
 
                 {/* 공지사항 배너 */}
