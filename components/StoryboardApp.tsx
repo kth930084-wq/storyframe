@@ -1694,6 +1694,32 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
 
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      setHistoryIndex(historyIndex - 1);
+      setProjects(history[historyIndex - 1]);
+    }
+  }, [history, historyIndex]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      setHistoryIndex(historyIndex + 1);
+      setProjects(history[historyIndex + 1]);
+    }
+  }, [history, historyIndex]);
+
+  // 키보드 단축키
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) { handleRedo(); } else { handleUndo(); }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo]);
+
   const handleCreateProject = (title: string, templateId?: string, aspectRatio?: string, resolution?: string) => {
     let newProject: Project;
     const baseFields = {
@@ -1806,6 +1832,27 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       }
       return p;
     });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setActiveSceneId(newScene.id);
+  }, [projects, activeProjectId, activeProject, addToHistory]);
+
+  const handleDuplicateScene = useCallback((sceneId: string) => {
+    if (!activeProjectId || !activeProject) return;
+    const source = activeProject.scenes.find(s => s.id === sceneId);
+    if (!source) return;
+    const sourceIndex = activeProject.scenes.findIndex(s => s.id === sceneId);
+    const newScene: Scene = {
+      ...JSON.parse(JSON.stringify(source)),
+      id: generateId(),
+      scene_number: sourceIndex + 2,
+      title: `${source.title} (복사)`,
+      shooting_completed: false,
+    };
+    const scenes = [...activeProject.scenes];
+    scenes.splice(sourceIndex + 1, 0, newScene);
+    const reNumbered = scenes.map((s, i) => ({ ...s, scene_number: i + 1 }));
+    const newProjects = projects.map(p => p.id === activeProjectId ? { ...p, scenes: reNumbered } : p);
     setProjects(newProjects);
     addToHistory(newProjects);
     setActiveSceneId(newScene.id);
@@ -2081,11 +2128,22 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                 </div>
                 <button
                   onClick={() => { setActiveSceneId(scene.id); setViewMode('editor'); }}
-                  className="flex-1 text-left p-3"
+                  className="flex-1 text-left p-3 min-w-0"
                 >
-                  <div className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>{index + 1}. {scene.title}</div>
+                  <div className={`font-semibold text-sm truncate ${darkMode ? "text-white" : "text-gray-900"}`}>{index + 1}. {scene.title}</div>
                   <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>{scene.duration}초</div>
                 </button>
+                {/* 복제/삭제 */}
+                <div className="flex flex-col pr-1.5 gap-0.5">
+                  <button onClick={(e) => { e.stopPropagation(); handleDuplicateScene(scene.id); }}
+                    className={`p-1 rounded transition ${darkMode ? "hover:bg-neutral-600 text-neutral-500" : "hover:bg-gray-300 text-gray-400"}`} title="씬 복제">
+                    <Copy size={10} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); if (confirm('이 씬을 삭제할까요?')) handleDeleteScene(scene.id); }}
+                    className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/40 text-neutral-500 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`} title="씬 삭제">
+                    <Trash2 size={10} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
