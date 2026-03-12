@@ -342,7 +342,7 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
             <span className="text-[10px] font-bold leading-tight">{a.value}</span>
             <span className="text-[8px] opacity-60 leading-tight">{a.desc}</span>
             {value === a.value && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-1000 rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-800 rounded-full flex items-center justify-center">
                 <Check className="w-2.5 h-2.5 text-white" />
               </div>
             )}
@@ -447,7 +447,7 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
             <span className="text-[9px] font-bold leading-tight">{m.value}</span>
             <span className="text-[8px] opacity-50 leading-tight">{m.desc}</span>
             {value === m.value && (
-              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-neutral-1000 rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-neutral-800 rounded-full flex items-center justify-center">
                 <Check className="w-2 h-2 text-white" />
               </div>
             )}
@@ -527,26 +527,107 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
 
 const ImageUploadArea = ({ image, onImageChange }: any) => {
   const fileRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isEditing, setIsEditing] = useState(false);
+
   const handleFile = (file: any) => {
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
-      reader.onload = (e: any) => onImageChange(e.target.result);
+      reader.onload = (e: any) => {
+        onImageChange(e.target.result);
+        setZoom(1);
+        setPosition({ x: 0, y: 0 });
+      };
       reader.readAsDataURL(file);
     }
   };
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (!isEditing) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom(prev => Math.min(Math.max(prev + delta, 0.5), 3));
+  }, [isEditing]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!isEditing) return;
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  }, [isEditing, position]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !isEditing) return;
+    setPosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  }, [isDragging, isEditing, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleReset = () => {
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
   return (
     <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-neutral-400" : ""}`}
       onDragOver={(e: any) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={(e: any) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
       {image ? (
-        <div className="relative group">
-          <img src={image} alt="씬" className="w-full h-full object-cover rounded-2xl" style={{ aspectRatio: "16/9" }} />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
-            <button onClick={() => (fileRef.current as any)?.click()} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
-            <button onClick={() => onImageChange(null)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
+        <div className="relative group" ref={containerRef}>
+          <div
+            className="w-full overflow-hidden rounded-2xl"
+            style={{ aspectRatio: "16/9", cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <img
+              src={image}
+              alt="씬"
+              className="w-full h-full object-cover select-none"
+              draggable={false}
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transition: isDragging ? 'none' : 'transform 0.2s ease',
+              }}
+            />
           </div>
+
+          {/* 편집 모드 컨트롤 */}
+          {isEditing && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/70 backdrop-blur-sm rounded-xl px-4 py-2.5">
+              <button onClick={() => setZoom(prev => Math.max(prev - 0.2, 0.5))} className="w-7 h-7 flex items-center justify-center text-white hover:bg-white/20 rounded-lg transition text-lg font-bold">−</button>
+              <span className="text-white text-xs font-medium min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
+              <button onClick={() => setZoom(prev => Math.min(prev + 0.2, 3))} className="w-7 h-7 flex items-center justify-center text-white hover:bg-white/20 rounded-lg transition text-lg font-bold">+</button>
+              <div className="w-px h-5 bg-white/30 mx-1" />
+              <button onClick={handleReset} className="px-2 py-1 text-white hover:bg-white/20 rounded-lg transition text-xs" title="초기화"><RotateCcw className="w-3.5 h-3.5" /></button>
+              <div className="w-px h-5 bg-white/30 mx-1" />
+              <button onClick={() => setIsEditing(false)} className="px-3 py-1 bg-white text-neutral-900 rounded-lg text-xs font-semibold hover:bg-neutral-200 transition">완료</button>
+            </div>
+          )}
+
+          {/* 기본 호버 컨트롤 */}
+          {!isEditing && (
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
+              <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Move className="w-4 h-4 inline mr-1" /> 위치/크기</button>
+              <button onClick={() => (fileRef.current as any)?.click()} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
+              <button onClick={() => { onImageChange(null); handleReset(); }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
+            </div>
+          )}
         </div>
       ) : (
         <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center hover:border-neutral-400 hover:bg-neutral-100/30 transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
@@ -650,7 +731,7 @@ const SceneProgressRing = ({ completion }: any) => {
         cy="22"
         r={radius}
         fill="none"
-        stroke="#3b82f6"
+        stroke="#737373"
         strokeWidth="2"
         strokeDasharray={circumference}
         strokeDashoffset={offset}
@@ -697,9 +778,14 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">씬 설명</label>
-              <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
+              <div className="flex gap-1.5">
+                {scene.description && (
+                  <button onClick={() => onUpdate({ ...scene, description: '' })} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"><X className="w-3 h-3" />지우기</button>
+                )}
+                <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
+              </div>
             </div>
-            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed" />
+            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-gray-900 bg-white" />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -716,7 +802,7 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
                 ))}
               </div>
             </div>
-            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm bg-neutral-50 border-neutral-200" />
+            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm bg-white text-gray-900 border-neutral-200" />
           </div>
         </div>
 
@@ -725,7 +811,7 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
             <label className="text-xs font-semibold text-gray-700 mb-2 block flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 씬 길이</label>
             <div className="flex items-center gap-3">
               <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-neutral-600 h-2" />
-              <div className="bg-neutral-1000 text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
+              <div className="bg-neutral-800 text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
             </div>
           </div>
 
@@ -890,7 +976,7 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
             <span className="text-sm font-bold text-neutral-700">{completed}/{total} 촬영 완료</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-neutral-1000 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
+            <div className="bg-neutral-800 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
           </div>
           <p className="text-xs text-gray-500 mt-2">{percentage}% 완료</p>
         </div>
