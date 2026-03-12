@@ -1183,13 +1183,15 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           </div>
         )}
         <div className={`p-4 border-t ${darkMode ? "border-gray-700" : "border-gray-100"} space-y-2`}>
-          <button
-            onClick={handleAddScene}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
-          >
-            <Plus size={18} />
-            씬 추가
-          </button>
+          {activeProject && (
+            <button
+              onClick={handleAddScene}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
+            >
+              <Plus size={18} />
+              씬 추가
+            </button>
+          )}
           <button
             onClick={() => setCurrentPage('dashboard')}
             className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
