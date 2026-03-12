@@ -1853,6 +1853,37 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     addToHistory(newProjects);
   }, [projects, activeProjectId, addToHistory]);
 
+  const handleMoveScene = useCallback((sceneId: string, direction: number) => {
+    if (!activeProjectId || !activeProject) return;
+    const scenes = [...activeProject.scenes];
+    const index = scenes.findIndex(s => s.id === sceneId);
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= scenes.length) return;
+    [scenes[index], scenes[targetIndex]] = [scenes[targetIndex], scenes[index]];
+    const reNumbered = scenes.map((s, i) => ({ ...s, scene_number: i + 1 }));
+    const newProjects = projects.map(p => p.id === activeProjectId ? { ...p, scenes: reNumbered } : p);
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  }, [projects, activeProjectId, activeProject, addToHistory]);
+
+  const handleDuplicateProject = useCallback((projectId: string) => {
+    const source = projects.find(p => p.id === projectId);
+    if (!source) return;
+    const newProject: Project = {
+      ...JSON.parse(JSON.stringify(source)),
+      id: generateId(),
+      title: `${source.title} (복사본)`,
+      created_at: new Date().toISOString(),
+      scenes: source.scenes.map(s => ({ ...s, id: generateId() })),
+    };
+    const newProjects = [...projects, newProject];
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setActiveProjectId(newProject.id);
+    if (newProject.scenes.length > 0) setActiveSceneId(newProject.scenes[0].id);
+    setCurrentPage('editor');
+  }, [projects, addToHistory]);
+
   const handleUpdateProjectMeta = useCallback((updates: Partial<Project>) => {
     if (!activeProjectId) return;
     const newProjects = projects.map(p => {
@@ -1867,30 +1898,137 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
-  const handleExportTimetable = useCallback(() => {
+  const handleExportPDF = useCallback(async () => {
     if (!activeProject) return;
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const pw = doc.internal.pageSize.getWidth();
+    const ph = doc.internal.pageSize.getHeight();
+    const margin = 15;
+
+    // 한글 폰트 대신 기본 폰트 사용 (한글은 unicode 처리)
+    doc.setFont('helvetica');
+
+    // ===== 1페이지: 표지 =====
+    doc.setFillColor(20, 20, 20);
+    doc.rect(0, 0, pw, ph, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(32);
+    doc.text(activeProject.title || 'Untitled', pw / 2, 50, { align: 'center' });
+    doc.setFontSize(14);
+    doc.setTextColor(180, 180, 180);
+    const pInfo = activeProject.project_info || {};
+    if (pInfo.brand_name) doc.text(pInfo.brand_name, pw / 2, 65, { align: 'center' });
+    doc.text(`${activeProject.aspect_ratio || '16:9'} | ${activeProject.resolution || '1920x1080'} | ${activeProject.scenes.length} Scenes | ${formatDuration(totalDuration)}`, pw / 2, 78, { align: 'center' });
+
+    let coverY = 100;
+    doc.setFontSize(10);
+    doc.setTextColor(200, 200, 200);
+    const coverLines = [
+      pInfo.manager_name ? `PM: ${pInfo.manager_name} ${pInfo.manager_phone || ''}` : null,
+      pInfo.director_name ? `Director: ${pInfo.director_name} ${pInfo.director_phone || ''}` : null,
+      pInfo.dp_name ? `DP: ${pInfo.dp_name} ${pInfo.dp_phone || ''}` : null,
+      pInfo.pd_name ? `PD: ${pInfo.pd_name} ${pInfo.pd_phone || ''}` : null,
+      pInfo.manager_email ? `Email: ${pInfo.manager_email}` : null,
+    ].filter(Boolean);
+    coverLines.forEach((line) => {
+      if (line) { doc.text(line, pw / 2, coverY, { align: 'center' }); coverY += 7; }
+    });
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`PEWPEW Storyboard | ${new Date().toLocaleDateString('ko-KR')}`, pw / 2, ph - 10, { align: 'center' });
+
+    // ===== 2페이지: 촬영 정보 =====
+    const sInfo = activeProject.shooting_info || {};
+    const hasShootInfo = Object.values(sInfo).some(v => v);
+    if (hasShootInfo) {
+      doc.addPage();
+      doc.setFillColor(250, 250, 250);
+      doc.rect(0, 0, pw, ph, 'F');
+      doc.setTextColor(30, 30, 30);
+      doc.setFontSize(18);
+      doc.text('Shooting Info', margin, 25);
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      let sy = 38;
+      const shootFields = [
+        ['Date', sInfo.shoot_date], ['Days', sInfo.shoot_days], ['Call Time', sInfo.call_time],
+        ['Wrap Time', sInfo.wrap_time], ['Lunch', sInfo.lunch_time],
+        ['Location', sInfo.location_name], ['Address', sInfo.location_address],
+        ['Studio', sInfo.studio_name], ['Studio Address', sInfo.studio_address],
+        ['Studio Tel', sInfo.studio_phone], ['Parking', sInfo.parking_info],
+        ['Hospital', sInfo.nearest_hospital], ['Weather', sInfo.weather_note],
+        ['Notes', sInfo.special_notes],
+      ];
+      shootFields.forEach(([label, val]) => {
+        if (val) { doc.text(`${label}: ${val}`, margin, sy); sy += 6; }
+      });
+    }
+
+    // ===== 3페이지~: 씬 테이블 =====
+    doc.addPage();
+    doc.setFillColor(255, 255, 255);
+    doc.rect(0, 0, pw, ph, 'F');
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(14);
+    doc.text('Scene Breakdown', margin, 20);
+
     let currentTime = 0;
-    const lines = [
-      `# ${activeProject.title} - 타임테이블`,
-      `비율: ${activeProject.aspect_ratio || '16:9'} | 해상도: ${activeProject.resolution || '1920x1080'}`,
-      `총 길이: ${formatDuration(totalDuration)}`,
-      '',
-      '| 순서 | 씬 제목 | 시작 | 종료 | 길이 | 앵글 | 샷 | 무브 | 조명 | 대사 | 사운드 | 설명 |',
-      '|------|---------|------|------|------|------|-----|------|------|------|--------|------|',
-    ];
-    activeProject.scenes.forEach((scene, i) => {
+    const tableData = activeProject.scenes.map((scene, i) => {
       const start = formatDuration(currentTime);
       currentTime += scene.duration || 0;
       const end = formatDuration(currentTime);
-      lines.push(`| ${i + 1} | ${scene.title || '-'} | ${start} | ${end} | ${scene.duration}초 | ${scene.camera_angle || '-'} | ${scene.shot_size || '-'} | ${scene.camera_movement || '-'} | ${scene.lighting || '-'} | ${(scene.dialogue || '-').replace(/\n/g, ' ')} | ${scene.sound || '-'} | ${(scene.description || '-').replace(/\n/g, ' ')} |`);
+      return [
+        String(i + 1),
+        scene.title || '-',
+        `${start}-${end}`,
+        `${scene.duration}s`,
+        scene.camera_angle || '-',
+        scene.shot_size || '-',
+        scene.camera_movement || '-',
+        scene.lighting || '-',
+        (scene.description || '-').substring(0, 40),
+      ];
     });
-    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${activeProject.title}_타임테이블.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    (doc as any).autoTable({
+      startY: 27,
+      head: [['#', 'Title', 'Time', 'Dur', 'Angle', 'Shot', 'Move', 'Light', 'Description']],
+      body: tableData,
+      styles: { fontSize: 7, cellPadding: 2 },
+      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 248, 248] },
+      margin: { left: margin, right: margin },
+    });
+
+    // ===== 타임테이블 페이지 (있으면) =====
+    if (activeProject.timetable && activeProject.timetable.length > 0) {
+      doc.addPage();
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, pw, ph, 'F');
+      doc.setTextColor(30, 30, 30);
+      doc.setFontSize(14);
+      doc.text('Timetable', margin, 20);
+
+      const ttData = activeProject.timetable.map((e, i) => [
+        String(i + 1), e.time_start || '-', e.time_end || '-', e.activity || '-',
+        e.location || '-', e.int_ext || '-', e.day_night || '-', e.cast || '-', e.notes || '-',
+      ]);
+
+      (doc as any).autoTable({
+        startY: 27,
+        head: [['#', 'Start', 'End', 'Activity', 'Location', 'INT/EXT', 'D/N', 'Cast', 'Notes']],
+        body: ttData,
+        styles: { fontSize: 7, cellPadding: 2 },
+        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [248, 248, 248] },
+        margin: { left: margin, right: margin },
+      });
+    }
+
+    doc.save(`${activeProject.title}_스토리보드.pdf`);
   }, [activeProject, totalDuration]);
 
   const handleExportJSON = useCallback(() => {
@@ -1925,18 +2063,30 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-2">
             {activeProject.scenes.map((scene, index) => (
-              <button
-                key={scene.id}
-                onClick={() => { setActiveSceneId(scene.id); setViewMode('editor'); }}
-                className={`w-full text-left p-3 rounded-lg transition ${
-                  activeSceneId === scene.id
-                    ? `${darkMode ? "bg-neutral-700 border-neutral-500" : "bg-neutral-200 border-neutral-500"} border-2`
-                    : `${darkMode ? "bg-neutral-800 hover:bg-neutral-700" : "bg-gray-100 hover:bg-gray-200"} border-2 border-transparent`
-                }`}
-              >
-                <div className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>{index + 1}. {scene.title}</div>
-                <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>{scene.duration}초</div>
-              </button>
+              <div key={scene.id} className={`flex items-center gap-1 rounded-lg transition ${
+                activeSceneId === scene.id
+                  ? `${darkMode ? "bg-neutral-700 border-neutral-500" : "bg-neutral-200 border-neutral-500"} border-2`
+                  : `${darkMode ? "bg-neutral-800 hover:bg-neutral-700" : "bg-gray-100 hover:bg-gray-200"} border-2 border-transparent`
+              }`}>
+                {/* 순서 변경 버튼 */}
+                <div className="flex flex-col pl-1">
+                  <button onClick={(e) => { e.stopPropagation(); handleMoveScene(scene.id, -1); }} disabled={index === 0}
+                    className={`p-0.5 rounded transition ${darkMode ? "hover:bg-neutral-600 text-neutral-500 disabled:text-neutral-700" : "hover:bg-gray-300 text-gray-400 disabled:text-gray-200"}`}>
+                    <ArrowUp size={10} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); handleMoveScene(scene.id, 1); }} disabled={index === activeProject.scenes.length - 1}
+                    className={`p-0.5 rounded transition ${darkMode ? "hover:bg-neutral-600 text-neutral-500 disabled:text-neutral-700" : "hover:bg-gray-300 text-gray-400 disabled:text-gray-200"}`}>
+                    <ArrowDown size={10} />
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setActiveSceneId(scene.id); setViewMode('editor'); }}
+                  className="flex-1 text-left p-3"
+                >
+                  <div className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>{index + 1}. {scene.title}</div>
+                  <div className={`text-xs mt-1 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>{scene.duration}초</div>
+                </button>
+              </div>
             ))}
           </div>
           <div className={`p-4 border-t ${darkMode ? "border-neutral-700" : "border-gray-100"} space-y-2`}>
@@ -2012,18 +2162,18 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             {activeProject && (
               <div className="flex gap-1">
                 <button
-                  onClick={() => handleExportTimetable()}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                  title="타임테이블 내보내기"
+                  onClick={() => handleExportPDF()}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-neutral-800 text-white hover:bg-neutral-900"
+                  title="PDF 내보내기"
                 >
-                  <Clock size={14} /> 타임테이블
+                  <Download size={14} /> PDF
                 </button>
                 <button
                   onClick={() => handleExportJSON()}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                   title="JSON 내보내기"
                 >
-                  <Download size={14} /> 내보내기
+                  <FileJson size={14} /> JSON
                 </button>
               </div>
             )}
@@ -2111,15 +2261,26 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                               {project.aspect_ratio} {project.resolution && `· ${project.resolution}`}
                             </span>
                           )}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProject(project.id);
-                            }}
-                            className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}
-                          >
-                            삭제
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDuplicateProject(project.id);
+                              }}
+                              className={`px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                            >
+                              <Copy size={12} /> 복제
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject(project.id);
+                              }}
+                              className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}
+                            >
+                              삭제
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
