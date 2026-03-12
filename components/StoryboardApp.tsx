@@ -39,6 +39,50 @@ interface Scene {
   [key: string]: any;
 }
 
+interface ProjectInfo {
+  brand_name?: string;
+  client_name?: string;
+  manager_name?: string;
+  manager_phone?: string;
+  manager_email?: string;
+  director_name?: string;
+  director_phone?: string;
+  dp_name?: string;
+  dp_phone?: string;
+  pd_name?: string;
+  pd_phone?: string;
+}
+
+interface ShootingInfo {
+  shoot_date?: string;
+  shoot_days?: string;
+  location_name?: string;
+  location_address?: string;
+  studio_name?: string;
+  studio_address?: string;
+  studio_phone?: string;
+  parking_info?: string;
+  nearest_hospital?: string;
+  weather_note?: string;
+  call_time?: string;
+  wrap_time?: string;
+  lunch_time?: string;
+  special_notes?: string;
+}
+
+interface TimetableEntry {
+  id: string;
+  time_start: string;
+  time_end: string;
+  scene_id?: string;
+  activity: string;
+  location: string;
+  int_ext: string;
+  day_night: string;
+  cast: string;
+  notes: string;
+}
+
 interface Project {
   id: string;
   title: string;
@@ -51,6 +95,9 @@ interface Project {
   aspect_ratio?: string;
   resolution?: string;
   description?: string;
+  project_info?: ProjectInfo;
+  shooting_info?: ShootingInfo;
+  timetable?: TimetableEntry[];
   scenes: Scene[];
   created_at?: string;
   [key: string]: any;
@@ -1039,6 +1086,419 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
   );
 };
 
+// ========== 프로젝트 정보 뷰 (1번째 페이지) ==========
+const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; onUpdate: (u: Partial<Project>) => void; darkMode: boolean }) => {
+  const info = project.project_info || {};
+  const updateInfo = (field: string, value: string) => {
+    onUpdate({ project_info: { ...info, [field]: value } });
+  };
+  const cardCls = darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100";
+  const inputCls = darkMode
+    ? "bg-neutral-700 text-white border-neutral-600 placeholder-neutral-500 focus:ring-neutral-400"
+    : "bg-gray-50 text-gray-900 border-gray-200 placeholder-gray-400 focus:ring-neutral-500";
+  const labelCls = darkMode ? "text-neutral-300" : "text-gray-600";
+
+  const Field = ({ label, field, placeholder, value }: { label: string; field: string; placeholder: string; value?: string }) => (
+    <div>
+      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
+      <input type="text" value={value || ''} onChange={(e) => updateInfo(field, e.target.value)} placeholder={placeholder}
+        className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
+    </div>
+  );
+
+  return (
+    <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>프로젝트 정보</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>스토리보드 표지에 들어갈 기본 정보</p>
+          </div>
+          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-500"}`}>1페이지</div>
+        </div>
+
+        {/* 프로젝트 기본 정보 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Film className="w-4 h-4" /> 프로젝트 기본</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>프로젝트명</label>
+              <input type="text" value={project.title || ''} onChange={(e) => onUpdate({ title: e.target.value })} placeholder="프로젝트 이름"
+                className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
+            </div>
+            <Field label="브랜드 / 클라이언트명" field="brand_name" placeholder="예: 삼성전자" value={info.brand_name} />
+            <Field label="광고주 / 클라이언트 담당자" field="client_name" placeholder="예: 홍길동 과장" value={info.client_name} />
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>영상 유형</label>
+              <select value={project.video_type || ''} onChange={(e) => onUpdate({ video_type: e.target.value })}
+                className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`}>
+                <option value="">선택하세요</option>
+                {VIDEO_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>비율 / 해상도</label>
+              <div className={`px-4 py-2.5 rounded-xl text-sm border ${darkMode ? "bg-neutral-700 border-neutral-600 text-neutral-300" : "bg-gray-50 border-gray-200 text-gray-700"}`}>
+                {project.aspect_ratio || '16:9'} · {project.resolution || '1920x1080'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 제작사 / 감독 정보 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Users className="w-4 h-4" /> 제작진 정보</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="담당자 (PM)" field="manager_name" placeholder="이름" value={info.manager_name} />
+            <Field label="담당자 연락처" field="manager_phone" placeholder="010-0000-0000" value={info.manager_phone} />
+            <Field label="담당자 이메일" field="manager_email" placeholder="email@example.com" value={info.manager_email} />
+            <Field label="감독" field="director_name" placeholder="감독 이름" value={info.director_name} />
+            <Field label="감독 연락처" field="director_phone" placeholder="010-0000-0000" value={info.director_phone} />
+            <Field label="촬영감독 (DP)" field="dp_name" placeholder="촬영감독 이름" value={info.dp_name} />
+            <Field label="촬영감독 연락처" field="dp_phone" placeholder="010-0000-0000" value={info.dp_phone} />
+            <Field label="PD / 프로듀서" field="pd_name" placeholder="PD 이름" value={info.pd_name} />
+            <Field label="PD 연락처" field="pd_phone" placeholder="010-0000-0000" value={info.pd_phone} />
+          </div>
+        </div>
+
+        {/* 프로젝트 설명 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Edit3 className="w-4 h-4" /> 프로젝트 설명</h3>
+          <textarea value={project.description || ''} onChange={(e) => onUpdate({ description: e.target.value })} rows={4}
+            placeholder="이 프로젝트에 대한 간단한 설명, 컨셉, 목표 등을 적어주세요..."
+            className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ========== 촬영 정보 뷰 (2번째 페이지) ==========
+const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; onUpdate: (u: Partial<Project>) => void; darkMode: boolean }) => {
+  const info = project.shooting_info || {};
+  const updateInfo = (field: string, value: string) => {
+    onUpdate({ shooting_info: { ...info, [field]: value } });
+  };
+  const cardCls = darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100";
+  const inputCls = darkMode
+    ? "bg-neutral-700 text-white border-neutral-600 placeholder-neutral-500 focus:ring-neutral-400"
+    : "bg-gray-50 text-gray-900 border-gray-200 placeholder-gray-400 focus:ring-neutral-500";
+  const labelCls = darkMode ? "text-neutral-300" : "text-gray-600";
+
+  const Field = ({ label, field, placeholder, value, type }: { label: string; field: string; placeholder: string; value?: string; type?: string }) => (
+    <div>
+      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
+      <input type={type || "text"} value={value || ''} onChange={(e) => updateInfo(field, e.target.value)} placeholder={placeholder}
+        className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
+    </div>
+  );
+
+  return (
+    <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>촬영 정보</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>촬영 장소, 스튜디오, 주차 등 현장 정보</p>
+          </div>
+          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-500"}`}>2페이지</div>
+        </div>
+
+        {/* 촬영 일정 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Clock className="w-4 h-4" /> 촬영 일정</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="촬영일" field="shoot_date" placeholder="2026-03-15" value={info.shoot_date} type="date" />
+            <Field label="촬영 일수" field="shoot_days" placeholder="예: 2일" value={info.shoot_days} />
+            <Field label="콜타임 (출근 시간)" field="call_time" placeholder="예: 07:00" value={info.call_time} type="time" />
+            <Field label="예상 종료 시간" field="wrap_time" placeholder="예: 19:00" value={info.wrap_time} type="time" />
+            <Field label="점심시간" field="lunch_time" placeholder="예: 12:00~13:00" value={info.lunch_time} />
+          </div>
+        </div>
+
+        {/* 촬영 장소 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Target className="w-4 h-4" /> 촬영 장소</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="촬영 장소명" field="location_name" placeholder="예: 한남동 루프탑" value={info.location_name} />
+            <Field label="촬영 장소 주소" field="location_address" placeholder="서울시 용산구 한남동 123-45" value={info.location_address} />
+          </div>
+        </div>
+
+        {/* 스튜디오 정보 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Camera className="w-4 h-4" /> 스튜디오 정보</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="스튜디오 이름" field="studio_name" placeholder="예: PEWPEW Studio A" value={info.studio_name} />
+            <Field label="스튜디오 주소" field="studio_address" placeholder="서울시 강남구..." value={info.studio_address} />
+            <Field label="스튜디오 연락처" field="studio_phone" placeholder="02-0000-0000" value={info.studio_phone} />
+            <div className="md:col-span-2">
+              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>주차 안내</label>
+              <textarea value={info.parking_info || ''} onChange={(e) => updateInfo('parking_info', e.target.value)} rows={3}
+                placeholder="주차 가능 대수, 위치, 유/무료 여부 등..."
+                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
+            </div>
+          </div>
+        </div>
+
+        {/* 안전/기타 정보 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><HelpCircle className="w-4 h-4" /> 안전 / 기타</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="가까운 병원" field="nearest_hospital" placeholder="병원명 및 주소" value={info.nearest_hospital} />
+            <Field label="날씨 메모" field="weather_note" placeholder="예: 맑음, 30°C 예상" value={info.weather_note} />
+            <div className="md:col-span-2">
+              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>특이사항 / 주의사항</label>
+              <textarea value={info.special_notes || ''} onChange={(e) => updateInfo('special_notes', e.target.value)} rows={3}
+                placeholder="현장 주의사항, 반입 금지 물품, 드레스코드 등..."
+                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ========== 편집 가능한 타임테이블 뷰 ==========
+const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUpdate: (u: Partial<Project>) => void; darkMode: boolean }) => {
+  const timetable = project.timetable || [];
+
+  const addEntry = () => {
+    const newEntry: TimetableEntry = {
+      id: generateId(),
+      time_start: '',
+      time_end: '',
+      activity: '',
+      location: '',
+      int_ext: '실내',
+      day_night: '낮',
+      cast: '',
+      notes: '',
+    };
+    onUpdate({ timetable: [...timetable, newEntry] });
+  };
+
+  const updateEntry = (id: string, field: string, value: string) => {
+    onUpdate({
+      timetable: timetable.map(e => e.id === id ? { ...e, [field]: value } : e)
+    });
+  };
+
+  const deleteEntry = (id: string) => {
+    onUpdate({ timetable: timetable.filter(e => e.id !== id) });
+  };
+
+  const moveEntry = (index: number, direction: number) => {
+    const newTable = [...timetable];
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= newTable.length) return;
+    [newTable[index], newTable[targetIndex]] = [newTable[targetIndex], newTable[index]];
+    onUpdate({ timetable: newTable });
+  };
+
+  // 씬에서 자동으로 타임테이블 생성
+  const generateFromScenes = () => {
+    const shootInfo = project.shooting_info || {};
+    let currentMinutes = shootInfo.call_time ? parseInt(shootInfo.call_time.split(':')[0]) * 60 + parseInt(shootInfo.call_time.split(':')[1] || '0') : 8 * 60;
+
+    const entries: TimetableEntry[] = [];
+
+    // 준비 시간
+    entries.push({
+      id: generateId(), time_start: formatTime(currentMinutes), time_end: formatTime(currentMinutes + 30),
+      activity: '현장 세팅 & 장비 준비', location: shootInfo.studio_name || shootInfo.location_name || '', int_ext: '실내', day_night: '낮', cast: '스태프 전원', notes: '',
+    });
+    currentMinutes += 30;
+
+    project.scenes.forEach((scene, i) => {
+      const setupTime = 15;
+      const shootTime = Math.max((scene.duration || 3) * 8, 20); // 최소 20분
+
+      // 세팅
+      entries.push({
+        id: generateId(), time_start: formatTime(currentMinutes), time_end: formatTime(currentMinutes + setupTime),
+        scene_id: scene.id, activity: `씬 ${scene.scene_number || i + 1} 세팅 - ${scene.title}`, location: '', int_ext: '실내', day_night: '낮', cast: '', notes: `${scene.camera_angle || ''} / ${scene.shot_size || ''}`,
+      });
+      currentMinutes += setupTime;
+
+      // 촬영
+      entries.push({
+        id: generateId(), time_start: formatTime(currentMinutes), time_end: formatTime(currentMinutes + shootTime),
+        scene_id: scene.id, activity: `씬 ${scene.scene_number || i + 1} 촬영 - ${scene.title}`, location: '', int_ext: '실내', day_night: '낮', cast: '', notes: scene.description || '',
+      });
+      currentMinutes += shootTime;
+
+      // 점심 시간 (약 4시간 후)
+      if (i === Math.floor(project.scenes.length / 2) - 1) {
+        entries.push({
+          id: generateId(), time_start: formatTime(currentMinutes), time_end: formatTime(currentMinutes + 60),
+          activity: '점심 식사', location: '', int_ext: '', day_night: '', cast: '전원', notes: '',
+        });
+        currentMinutes += 60;
+      }
+    });
+
+    // 정리
+    entries.push({
+      id: generateId(), time_start: formatTime(currentMinutes), time_end: formatTime(currentMinutes + 30),
+      activity: '촬영 마무리 & 장비 정리', location: '', int_ext: '', day_night: '', cast: '스태프 전원', notes: '',
+    });
+
+    onUpdate({ timetable: entries });
+  };
+
+  const formatTime = (totalMinutes: number) => {
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  const thCls = darkMode ? "bg-neutral-700 text-neutral-200" : "bg-gray-100 text-gray-700";
+  const tdCls = darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100";
+  const inputCls = darkMode
+    ? "bg-transparent text-white placeholder-neutral-500 focus:bg-neutral-700"
+    : "bg-transparent text-gray-900 placeholder-gray-400 focus:bg-gray-50";
+  const selectCls = darkMode
+    ? "bg-neutral-700 text-white border-neutral-600"
+    : "bg-gray-50 text-gray-900 border-gray-200";
+
+  return (
+    <div className={`flex-1 overflow-auto p-6 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>촬영 타임테이블</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+              촬영 일정을 표 형식으로 직접 편집하세요 · {timetable.length}개 항목
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={generateFromScenes}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-200 hover:bg-neutral-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+              <Sparkles size={14} /> 씬에서 자동 생성
+            </button>
+            <button onClick={addEntry}
+              className="px-4 py-2 bg-neutral-800 text-white rounded-xl text-sm font-medium hover:bg-neutral-900 transition flex items-center gap-1.5">
+              <Plus size={14} /> 항목 추가
+            </button>
+          </div>
+        </div>
+
+        {timetable.length === 0 ? (
+          <div className={`text-center py-16 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
+            <Clock size={40} className={`mx-auto mb-3 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
+            <p className={`font-medium mb-2 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>아직 타임테이블이 없어요</p>
+            <p className={`text-sm mb-5 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>씬에서 자동으로 생성하거나 직접 추가하세요</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={generateFromScenes} className="px-5 py-2.5 bg-neutral-800 text-white rounded-xl text-sm font-medium hover:bg-neutral-900 transition">
+                씬에서 자동 생성
+              </button>
+              <button onClick={addEntry} className={`px-5 py-2.5 rounded-xl text-sm font-medium transition ${darkMode ? "bg-neutral-700 text-neutral-200 hover:bg-neutral-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}>
+                빈 항목 추가
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border shadow-sm" style={{ borderColor: darkMode ? '#404040' : '#e5e7eb' }}>
+            <table className="w-full text-sm">
+              <thead>
+                <tr>
+                  <th className={`px-2 py-3 text-center text-xs font-semibold w-10 ${thCls}`}>#</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold w-20 ${thCls}`}>시작</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold w-20 ${thCls}`}>종료</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold min-w-[180px] ${thCls}`}>활동 내용</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold w-28 ${thCls}`}>장소</th>
+                  <th className={`px-2 py-3 text-center text-xs font-semibold w-16 ${thCls}`}>실내/외</th>
+                  <th className={`px-2 py-3 text-center text-xs font-semibold w-16 ${thCls}`}>낮/밤</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold w-28 ${thCls}`}>출연진</th>
+                  <th className={`px-3 py-3 text-left text-xs font-semibold min-w-[120px] ${thCls}`}>비고</th>
+                  <th className={`px-2 py-3 text-center text-xs font-semibold w-24 ${thCls}`}>관리</th>
+                </tr>
+              </thead>
+              <tbody>
+                {timetable.map((entry, index) => (
+                  <tr key={entry.id} className={`border-t transition hover:${darkMode ? "bg-neutral-750" : "bg-blue-50/30"}`} style={{ borderColor: darkMode ? '#404040' : '#f3f4f6' }}>
+                    <td className={`px-2 py-2 text-center font-bold text-xs ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{index + 1}</td>
+                    <td className="px-1 py-1">
+                      <input type="time" value={entry.time_start} onChange={(e) => updateEntry(entry.id, 'time_start', e.target.value)}
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input type="time" value={entry.time_end} onChange={(e) => updateEntry(entry.id, 'time_end', e.target.value)}
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input type="text" value={entry.activity} onChange={(e) => updateEntry(entry.id, 'activity', e.target.value)} placeholder="활동 내용"
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition font-medium ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input type="text" value={entry.location} onChange={(e) => updateEntry(entry.id, 'location', e.target.value)} placeholder="장소"
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <select value={entry.int_ext} onChange={(e) => updateEntry(entry.id, 'int_ext', e.target.value)}
+                        className={`w-full px-1 py-1.5 rounded-lg text-xs focus:outline-none transition border ${selectCls}`}>
+                        <option value="">-</option>
+                        <option value="실내">실내</option>
+                        <option value="실외">실외</option>
+                        <option value="실내/외">둘다</option>
+                      </select>
+                    </td>
+                    <td className="px-1 py-1">
+                      <select value={entry.day_night} onChange={(e) => updateEntry(entry.id, 'day_night', e.target.value)}
+                        className={`w-full px-1 py-1.5 rounded-lg text-xs focus:outline-none transition border ${selectCls}`}>
+                        <option value="">-</option>
+                        <option value="낮">낮</option>
+                        <option value="밤">밤</option>
+                        <option value="새벽">새벽</option>
+                        <option value="황혼">황혼</option>
+                      </select>
+                    </td>
+                    <td className="px-1 py-1">
+                      <input type="text" value={entry.cast} onChange={(e) => updateEntry(entry.id, 'cast', e.target.value)} placeholder="출연진"
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <input type="text" value={entry.notes} onChange={(e) => updateEntry(entry.id, 'notes', e.target.value)} placeholder="비고"
+                        className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
+                    </td>
+                    <td className="px-1 py-1">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <button onClick={() => moveEntry(index, -1)} disabled={index === 0}
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-neutral-600 text-neutral-400 disabled:text-neutral-700" : "hover:bg-gray-200 text-gray-400 disabled:text-gray-200"}`}>
+                          <ArrowUp size={12} />
+                        </button>
+                        <button onClick={() => moveEntry(index, 1)} disabled={index === timetable.length - 1}
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-neutral-600 text-neutral-400 disabled:text-neutral-700" : "hover:bg-gray-200 text-gray-400 disabled:text-gray-200"}`}>
+                          <ArrowDown size={12} />
+                        </button>
+                        <button onClick={() => deleteEntry(entry.id)}
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/30 text-neutral-400 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`}>
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {timetable.length > 0 && (
+          <div className="flex justify-center mt-4">
+            <button onClick={addEntry}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+              <Plus size={14} /> 항목 추가
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; onClose: () => void; onCreate: (title: string, templateId?: string, aspectRatio?: string, resolution?: string) => void }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState('');
@@ -1393,6 +1853,18 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     addToHistory(newProjects);
   }, [projects, activeProjectId, addToHistory]);
 
+  const handleUpdateProjectMeta = useCallback((updates: Partial<Project>) => {
+    if (!activeProjectId) return;
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, ...updates };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  }, [projects, activeProjectId, addToHistory]);
+
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
   const handleExportTimetable = useCallback(() => {
@@ -1504,9 +1976,12 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             {activeProject && (
               <div className="flex gap-1.5">
                 {[
+                  { id: 'project-info', label: '프로젝트 정보' },
+                  { id: 'shooting-info', label: '촬영 정보' },
                   { id: 'editor', label: '편집기' },
                   { id: 'grid', label: '그리드' },
                   { id: 'timeline', label: '타임라인' },
+                  { id: 'timetable', label: '타임테이블' },
                   { id: 'presentation', label: '프레젠테이션' },
                   { id: 'checklist', label: '체크리스트' },
                 ].map(({ id, label }) => (
@@ -1655,9 +2130,12 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             </div>
           ) : activeProject ? (
             <>
+              {viewMode === 'project-info' && <ProjectInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
+              {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />}
               {viewMode === 'grid' && <StoryboardGrid scenes={activeProject.scenes} onSelectScene={setActiveSceneId} />}
               {viewMode === 'timeline' && <TimelineView scenes={activeProject.scenes} activeSceneId={activeSceneId} onSelectScene={setActiveSceneId} />}
+              {viewMode === 'timetable' && <TimetableView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'presentation' && <PresentationView scenes={activeProject.scenes} projectTitle={activeProject.title} />}
               {viewMode === 'checklist' && <ChecklistView scenes={activeProject.scenes} onUpdateScene={(scene: Scene) => handleUpdateScene(scene.id, scene)} />}
             </>
