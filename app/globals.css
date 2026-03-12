@@ -18,12 +18,14 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #0a0a0a;
+  color: #fafafa;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - monochrome */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -31,41 +33,66 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #404040;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #525252;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+/* Selection */
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+/* Input range styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: #404040;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d4d4d4;
+  cursor: pointer;
+  border: 2px solid #737373;
+  transition: all 0.15s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  accent-color: #737373;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .animate-fade-in {
@@ -74,4 +101,16 @@ body {
 
 .animate-slide-in-up {
   animation: slideInUp 0.3s ease-in-out;
+}
+
+/* Focus styling */
+*:focus-visible {
+  outline: 1px solid #737373;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 1px solid #737373;
+  outline-offset: 2px;
 }

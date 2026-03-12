@@ -137,10 +137,10 @@ const createSampleProject = () => ({
 const Badge = ({ children, variant = "default", className = "" }: any) => {
   const variants: any = {
     default: "bg-gray-100 text-gray-700",
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-emerald-50 text-emerald-700",
-    purple: "bg-purple-50 text-purple-700",
-    orange: "bg-orange-50 text-orange-700",
+    blue: "bg-neutral-100 text-neutral-800",
+    green: "bg-neutral-100 text-neutral-700",
+    purple: "bg-neutral-100 text-neutral-700",
+    orange: "bg-neutral-100 text-neutral-700",
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
@@ -333,16 +333,16 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
           <button key={a.value} onClick={() => onChange(a.value)}
             className={`relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center group hover:shadow-md ${
               value === a.value
-                ? "border-blue-400 bg-blue-50 text-blue-700 shadow-sm shadow-blue-100"
+                ? "border-neutral-400 bg-neutral-100 text-neutral-800 shadow-sm"
                 : "border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50"
             }`}>
-            <div className={`transition-transform group-hover:scale-110 ${value === a.value ? "text-blue-600" : "text-gray-400"}`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === a.value ? "text-neutral-700" : "text-gray-400"}`}>
               <AngleIcon type={a.value} size={36} />
             </div>
             <span className="text-[10px] font-bold leading-tight">{a.value}</span>
             <span className="text-[8px] opacity-60 leading-tight">{a.desc}</span>
             {value === a.value && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-1000 rounded-full flex items-center justify-center">
                 <Check className="w-2.5 h-2.5 text-white" />
               </div>
             )}
@@ -362,7 +362,7 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
           />
         </div>
       )}
@@ -384,20 +384,20 @@ const VisualShotSelector = ({ value, onChange }: any) => {
           <button key={s.value} onClick={() => onChange(s.value)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
               value === s.value
-                ? "border-blue-400 bg-blue-50 shadow-sm"
+                ? "border-neutral-400 bg-neutral-100 shadow-sm"
                 : "border-gray-100 bg-white hover:border-gray-200"
             }`}>
-            <div className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${value === s.value ? "text-blue-600" : "text-gray-400"}`}>
+            <div className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${value === s.value ? "text-neutral-700" : "text-gray-400"}`}>
               <ShotSizePreview type={s.value} />
             </div>
             <div className="flex-1 text-left">
               <div className="flex items-center gap-2">
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r ${s.color} text-white`}>{s.short}</span>
-                <span className={`text-xs font-semibold ${value === s.value ? "text-blue-700" : "text-gray-700"}`}>{s.value}</span>
+                <span className={`text-xs font-semibold ${value === s.value ? "text-neutral-800" : "text-gray-700"}`}>{s.value}</span>
               </div>
               <span className="text-[10px] text-gray-400 leading-tight">{s.desc}</span>
             </div>
-            {value === s.value && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+            {value === s.value && <Check className="w-4 h-4 text-neutral-600 flex-shrink-0" />}
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
@@ -415,7 +415,7 @@ const VisualShotSelector = ({ value, onChange }: any) => {
               value={customValue}
               onChange={(e) => setCustomValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
             />
           </div>
         )}
@@ -438,16 +438,16 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
           <button key={m.value} onClick={() => onChange(m.value)}
             className={`relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 transition-all group hover:shadow-md ${
               value === m.value
-                ? "border-blue-400 bg-blue-50 text-blue-700 shadow-sm"
+                ? "border-neutral-400 bg-neutral-100 text-neutral-800 shadow-sm"
                 : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
             }`}>
-            <div className={`transition-transform group-hover:scale-110 ${value === m.value ? "text-blue-600" : "text-gray-400"}`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === m.value ? "text-neutral-700" : "text-gray-400"}`}>
               <MovementIcon type={m.value} size={28} />
             </div>
             <span className="text-[9px] font-bold leading-tight">{m.value}</span>
             <span className="text-[8px] opacity-50 leading-tight">{m.desc}</span>
             {value === m.value && (
-              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-neutral-1000 rounded-full flex items-center justify-center">
                 <Check className="w-2 h-2 text-white" />
               </div>
             )}
@@ -468,7 +468,7 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
           />
         </div>
       )}
@@ -490,15 +490,15 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
           <button key={l.value} onClick={() => onChange(l.value)}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
               value === l.value
-                ? "border-blue-400 bg-blue-50 shadow-sm"
+                ? "border-neutral-400 bg-neutral-100 shadow-sm"
                 : "border-gray-100 bg-white hover:border-gray-200"
             }`}>
             <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">{l.icon}</span>
             <div className="text-left flex-1 min-w-0">
-              <span className={`text-[10px] font-bold block leading-tight ${value === l.value ? "text-blue-700" : "text-gray-700"}`}>{l.value}</span>
+              <span className={`text-[10px] font-bold block leading-tight ${value === l.value ? "text-neutral-800" : "text-gray-700"}`}>{l.value}</span>
               <span className="text-[8px] text-gray-400 block leading-tight truncate">{l.desc}</span>
             </div>
-            {value === l.value && <Check className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />}
+            {value === l.value && <Check className="w-3.5 h-3.5 text-neutral-600 flex-shrink-0" />}
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
@@ -517,7 +517,7 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
           />
         </div>
       )}
@@ -536,7 +536,7 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
     }
   };
   return (
-    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-blue-400" : ""}`}
+    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-neutral-400" : ""}`}
       onDragOver={(e: any) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}
       onDrop={(e: any) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
@@ -549,7 +549,7 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
           </div>
         </div>
       ) : (
-        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
+        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center hover:border-neutral-400 hover:bg-neutral-100/30 transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
           <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center mb-3"><Image className="w-7 h-7 text-gray-400" /></div>
           <p className="text-sm font-medium text-gray-500">이미지를 드래그하거나 클릭하여 업로드</p>
           <p className="text-xs text-gray-400 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
@@ -572,7 +572,7 @@ const VisualLensSelector = ({ value, onChange }: any) => {
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-200 transition-all">
+        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent hover:border-gray-200 transition-all">
         <option value="">렌즈를 선택하세요</option>
         {LENS_OPTIONS.map((l: any) => (
           <option key={l.value} value={l.value}>{l.value} ({l.focal})</option>
@@ -591,7 +591,7 @@ const VisualLensSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
           />
         </div>
       )}
@@ -611,7 +611,7 @@ const VisualFramerateSelector = ({ value, onChange }: any) => {
       <select
         value={value || '24fps'}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-200 transition-all">
+        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent hover:border-gray-200 transition-all">
         {FRAMERATE_OPTIONS.map((f: any) => (
           <option key={f.value} value={f.value}>{f.value}</option>
         ))}
@@ -629,7 +629,7 @@ const VisualFramerateSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
           />
         </div>
       )}
@@ -693,13 +693,13 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
           <div className="relative">
             <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
           </div>
-          <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-blue-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
+          <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">씬 설명</label>
-              <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
+              <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
             </div>
-            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm leading-relaxed" />
+            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed" />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -709,14 +709,14 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
                   <button
                     key={template}
                     onClick={() => handleApplyMemoTemplate(template)}
-                    className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors"
+                    className="px-2 py-1 text-xs bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition-colors"
                   >
                     + {template}
                   </button>
                 ))}
               </div>
             </div>
-            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm bg-amber-50/50 border-amber-200/50" />
+            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm bg-neutral-50 border-neutral-200" />
           </div>
         </div>
 
@@ -724,8 +724,8 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
           <div className="bg-gray-50 rounded-xl p-4">
             <label className="text-xs font-semibold text-gray-700 mb-2 block flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 씬 길이</label>
             <div className="flex items-center gap-3">
-              <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-blue-500 h-2" />
-              <div className="bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
+              <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-neutral-600 h-2" />
+              <div className="bg-neutral-1000 text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
             </div>
           </div>
 
@@ -745,12 +745,12 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
                 <button key={t.value} onClick={() => onUpdate({ ...scene, transition: t.value })}
                   className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 transition-all text-center group ${
                     (scene.transition || "컷") === t.value
-                      ? "border-blue-400 bg-blue-50 shadow-sm"
+                      ? "border-neutral-400 bg-neutral-100 shadow-sm"
                       : "border-gray-100 bg-white hover:border-gray-200"
                   }`}>
                   <span className="text-lg flex-shrink-0">{t.icon}</span>
                   <div className="text-left flex-1 min-w-0">
-                    <span className={`text-[9px] font-bold block leading-tight ${(scene.transition || "컷") === t.value ? "text-blue-700" : "text-gray-700"}`}>{t.value}</span>
+                    <span className={`text-[9px] font-bold block leading-tight ${(scene.transition || "컷") === t.value ? "text-neutral-800" : "text-gray-700"}`}>{t.value}</span>
                     <span className="text-[7px] text-gray-400 block leading-tight">{t.desc}</span>
                   </div>
                 </button>
@@ -758,14 +758,14 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+          <div className="bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl p-4 border border-neutral-300">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm text-blue-900 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> 완성도</h3>
+              <h3 className="font-semibold text-sm text-neutral-900 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> 완성도</h3>
               <div className="w-11 h-11">
                 <SceneProgressRing completion={completion} />
               </div>
             </div>
-            <p className="text-xs text-blue-700">
+            <p className="text-xs text-neutral-800">
               {completion < 50 && "더 많은 정보를 추가해주세요"}
               {completion >= 50 && completion < 100 && "거의 완성되었습니다"}
               {completion === 100 && "모든 필드가 작성되었습니다"}
@@ -792,14 +792,14 @@ const StoryboardGrid = ({ scenes, onSelectScene }: any) => (
   <div className="p-6">
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {scenes.map((scene: Scene) => (
-        <button key={scene.id} onClick={() => onSelectScene(scene.id)} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-blue-200 transition-all group text-left">
+        <button key={scene.id} onClick={() => onSelectScene(scene.id)} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-neutral-300 transition-all group text-left">
           <div className="relative" style={{ aspectRatio: "16/9" }}>
             {scene.image ? <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center"><Film className="w-8 h-8 text-gray-300" /></div>}
             <div className="absolute top-2 left-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md">#{scene.scene_number}</span></div>
             <div className="absolute bottom-2 right-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md">{scene.duration}초</span></div>
           </div>
           <div className="p-4">
-            <h4 className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{scene.title || `씬 ${scene.scene_number}`}</h4>
+            <h4 className="font-semibold text-sm text-gray-900 group-hover:text-neutral-700 transition-colors">{scene.title || `씬 ${scene.scene_number}`}</h4>
             <p className="text-xs text-gray-500 mt-1 line-clamp-2">{scene.description || "설명 없음"}</p>
             <div className="flex items-center gap-2 mt-3 flex-wrap"><Badge>{scene.shot_size}</Badge><Badge>{scene.camera_angle}</Badge></div>
           </div>
@@ -818,8 +818,8 @@ const TimelineView = ({ scenes, activeSceneId, onSelectScene }: any) => {
         <div className="flex gap-1 mb-6 rounded-lg overflow-hidden">
           {scenes.map((scene: Scene, i: number) => {
             const width = totalDuration > 0 ? (scene.duration / totalDuration) * 100 : 100 / scenes.length;
-            const colors = ["bg-blue-400", "bg-purple-400", "bg-emerald-400", "bg-orange-400", "bg-pink-400", "bg-cyan-400", "bg-yellow-400"];
-            return <button key={scene.id} onClick={() => onSelectScene(scene.id)} className={`${colors[i % colors.length]} h-10 rounded transition-all hover:opacity-80 ${activeSceneId === scene.id ? "ring-2 ring-offset-1 ring-blue-600" : ""}`} style={{ width: `${width}%`, minWidth: "2rem" }} title={`${scene.title} (${scene.duration}초)`}><span className="text-white text-xs font-bold">{scene.scene_number}</span></button>;
+            const colors = ["bg-neutral-500", "bg-neutral-600", "bg-neutral-700", "bg-neutral-400", "bg-neutral-500", "bg-neutral-600", "bg-neutral-700"];
+            return <button key={scene.id} onClick={() => onSelectScene(scene.id)} className={`${colors[i % colors.length]} h-10 rounded transition-all hover:opacity-80 ${activeSceneId === scene.id ? "ring-2 ring-offset-1 ring-neutral-700" : ""}`} style={{ width: `${width}%`, minWidth: "2rem" }} title={`${scene.title} (${scene.duration}초)`}><span className="text-white text-xs font-bold">{scene.scene_number}</span></button>;
           })}
         </div>
         <div className="space-y-2">
@@ -828,7 +828,7 @@ const TimelineView = ({ scenes, activeSceneId, onSelectScene }: any) => {
             const transition = TRANSITIONS.find((t: any) => t.value === (scene.transition || "컷"));
             return (
               <div key={scene.id}>
-                <button onClick={() => onSelectScene(scene.id)} className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-all ${activeSceneId === scene.id ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-50"}`}>
+                <button onClick={() => onSelectScene(scene.id)} className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-all ${activeSceneId === scene.id ? "bg-neutral-100 border border-neutral-300" : "hover:bg-gray-50"}`}>
                   <span className="text-xs font-mono text-gray-400 w-16">{formatDuration(accum)}</span>
                   <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">{scene.scene_number}</div>
                   <div className="flex-1"><h4 className="text-sm font-medium text-gray-900">{scene.title || `씬 ${scene.scene_number}`}</h4><p className="text-xs text-gray-400">{scene.shot_size} · {scene.camera_movement}</p></div>
@@ -887,10 +887,10 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-gray-900">촬영 진행도</h3>
-            <span className="text-sm font-bold text-blue-600">{completed}/{total} 촬영 완료</span>
+            <span className="text-sm font-bold text-neutral-700">{completed}/{total} 촬영 완료</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
+            <div className="bg-neutral-1000 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
           </div>
           <p className="text-xs text-gray-500 mt-2">{percentage}% 완료</p>
         </div>
@@ -903,7 +903,7 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
                 className="flex-shrink-0 mt-1"
               >
                 {scene.shooting_completed ? (
-                  <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                  <CheckCircle2 className="w-6 h-6 text-neutral-500" />
                 ) : (
                   <Circle className="w-6 h-6 text-gray-300 hover:text-gray-400 transition-colors" />
                 )}
@@ -927,7 +927,7 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
                 onClick={() => onUpdateScene({ ...scene, shooting_completed: !scene.shooting_completed })}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   scene.shooting_completed
-                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                    ? "bg-neutral-200 text-neutral-700 hover:bg-neutral-300"
                     : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                 }`}
               >
@@ -1158,7 +1158,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       <aside className={`border-r flex flex-col transition-all duration-300 w-64 hidden md:flex ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
         <div className={`p-4 border-b ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-xl flex items-center justify-center flex-shrink-0">
               <Film className="w-5 h-5 text-white" />
             </div>
             <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
@@ -1172,7 +1172,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                 onClick={() => setActiveSceneId(scene.id)}
                 className={`w-full text-left p-3 rounded-lg transition ${
                   activeSceneId === scene.id
-                    ? 'bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-500'
+                    ? 'bg-neutral-200 dark:bg-neutral-800 border-2 border-neutral-500'
                     : 'bg-gray-100 dark:bg-gray-700 border-2 border-transparent hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -1185,7 +1185,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         <div className={`p-4 border-t ${darkMode ? "border-gray-700" : "border-gray-100"} space-y-2`}>
           <button
             onClick={handleAddScene}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
           >
             <Plus size={18} />
             씬 추가
@@ -1213,38 +1213,38 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             <div className="flex gap-2">
               <button
                 onClick={() => setViewMode('editor')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'editor' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'editor' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 편집기
               </button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'grid' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 그리드
               </button>
               <button
                 onClick={() => setViewMode('timeline')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'timeline' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'timeline' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 타임라인
               </button>
               <button
                 onClick={() => setViewMode('presentation')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'presentation' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'presentation' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 프레젠테이션
               </button>
               <button
                 onClick={() => setViewMode('checklist')}
-                className={`px-3 py-2 rounded-lg transition ${viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'checklist' ? 'bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
                 체크리스트
               </button>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {lastSaved && <span className="text-xs text-green-600">저장됨</span>}
+            {lastSaved && <span className="text-xs text-neutral-600">저장됨</span>}
             {isSaving && <span className="text-xs text-gray-500">저장 중...</span>}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -1278,7 +1278,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                   <h1 className="text-4xl font-bold text-gray-900 dark:text-white">스토리프레임</h1>
                   <button
                     onClick={() => setShowNewProject(true)}
-                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    className="flex items-center gap-2 px-6 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition"
                   >
                     <Plus size={20} />
                     새 프로젝트
@@ -1291,7 +1291,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                     <p className="text-gray-500 dark:text-gray-400 mb-6">프로젝트가 없습니다</p>
                     <button
                       onClick={() => setShowNewProject(true)}
-                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                      className="px-6 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900"
                     >
                       첫 프로젝트 만들기
                     </button>
@@ -1310,7 +1310,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                           setCurrentPage('editor');
                         }}
                       >
-                        <div className="h-32 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl">
+                        <div className="h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-4xl">
                           {project.video_type ? '🎬' : '📽️'}
                         </div>
                         <div className="p-4">
@@ -1359,7 +1359,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                   const name = prompt('프로젝트 이름을 입력하세요');
                   if (name) handleCreateProject(name);
                 }}
-                className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-left"
+                className="w-full px-4 py-3 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-left"
               >
                 빈 프로젝트로 시작
               </button>

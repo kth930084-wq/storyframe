@@ -13,13 +13,13 @@ export const CAMERA_ANGLES = [
 
 // 샷 크기
 export const SHOT_SIZES = [
-  { value: "익스트림 클로즈업", short: "ECU", desc: "눈, 입 등 극도로 가까운 샷", color: "from-red-500 to-rose-500" },
-  { value: "클로즈업", short: "CU", desc: "얼굴 또는 제품 전체", color: "from-orange-500 to-amber-500" },
-  { value: "미디엄 샷", short: "MS", desc: "허리 위부터 촬영", color: "from-yellow-500 to-amber-400" },
-  { value: "와이드 샷", short: "WS", desc: "전신 + 배경 포함", color: "from-emerald-500 to-green-500" },
-  { value: "이스태블리싱 샷", short: "ES", desc: "장소 전체를 보여줌", color: "from-blue-500 to-cyan-500" },
-  { value: "버스트 샷", short: "BS", desc: "가슴 위부터 촬영", color: "from-teal-500 to-cyan-500" },
-  { value: "풀 샷", short: "FS", desc: "머리부터 발끝까지 전신", color: "from-indigo-500 to-blue-500" },
+  { value: "익스트림 클로즈업", short: "ECU", desc: "눈, 입 등 극도로 가까운 샷", color: "from-neutral-900 to-neutral-800" },
+  { value: "클로즈업", short: "CU", desc: "얼굴 또는 제품 전체", color: "from-neutral-800 to-neutral-700" },
+  { value: "미디엄 샷", short: "MS", desc: "허리 위부터 촬영", color: "from-neutral-700 to-neutral-600" },
+  { value: "와이드 샷", short: "WS", desc: "전신 + 배경 포함", color: "from-neutral-600 to-neutral-500" },
+  { value: "이스태블리싱 샷", short: "ES", desc: "장소 전체를 보여줌", color: "from-neutral-500 to-neutral-400" },
+  { value: "버스트 샷", short: "BS", desc: "가슴 위부터 촬영", color: "from-neutral-700 to-neutral-500" },
+  { value: "풀 샷", short: "FS", desc: "머리부터 발끝까지 전신", color: "from-neutral-800 to-neutral-600" },
 ];
 
 // 카메라 움직임
