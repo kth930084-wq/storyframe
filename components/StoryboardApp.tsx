@@ -1,0 +1,1379 @@
+'use client';
+
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+  Camera, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Grid, Monitor,
+  Download, Copy, Eye, Clock, Film, Upload, Sparkles, Users, Share2, Palette, LayoutTemplate,
+  Settings, LogOut, Menu, X, Play, Pause, RotateCcw, Check, Edit3, Image, Sun, Moon, Zap,
+  Target, Move, Maximize, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Search, Bell, FolderOpen,
+  Star, MoreHorizontal, ChevronLeft, Keyboard, ListChecks, HelpCircle, CheckCircle2, Circle,
+  RotateCw, Crop, Command, Undo2, Redo2, FileJson, Save
+} from 'lucide-react';
+import {
+  CAMERA_ANGLES, SHOT_SIZES, CAMERA_MOVEMENTS, LIGHTING_OPTIONS, TRANSITIONS,
+  VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS
+} from '@/lib/constants';
+
+interface StoryboardAppProps {
+  user: any;
+  onLogout: () => void;
+}
+
+interface Scene {
+  id: string;
+  scene_number?: number;
+  title: string;
+  duration: number;
+  camera_angle?: string;
+  shot_size?: string;
+  camera_movement?: string;
+  lighting?: string;
+  description?: string;
+  notes?: string;
+  image?: string;
+  transition?: string;
+  shooting_completed?: boolean;
+  [key: string]: any;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  brand_name?: string;
+  production_company?: string;
+  video_type?: string;
+  platform?: string;
+  duration?: string;
+  tone?: string;
+  description?: string;
+  scenes: Scene[];
+  created_at?: string;
+  [key: string]: any;
+}
+
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+const generateDescription = (scene: Scene) => {
+  const angle = scene.camera_angle || "정면";
+  const shot = scene.shot_size || "미디엄 샷";
+  const movement = scene.camera_movement || "고정";
+  const light = scene.lighting || "자연광";
+
+  const movementDesc: any = {
+    "고정": "카메라가 안정적으로 고정되어",
+    "줌 인": "카메라가 천천히 줌 인하며",
+    "줌 아웃": "카메라가 서서히 줌 아웃하며",
+    "팬 좌": "카메라가 부드럽게 왼쪽으로 패닝하며",
+    "팬 우": "카메라가 부드럽게 오른쪽으로 패닝하며",
+    "틸트 업": "카메라가 위로 틸트하며",
+    "틸트 다운": "카메라가 아래로 틸트하며",
+    "달리 인": "카메라가 앞으로 달리 인하며",
+    "달리 아웃": "카메라가 뒤로 물러나며"
+  };
+
+  const lightDesc: any = {
+    "소프트 라이트": "부드럽고 확산된 조명으로 은은한 분위기를 연출합니다",
+    "하드 라이트": "강한 방향성 조명으로 드라마틱한 그림자를 만듭니다",
+    "자연광": "자연스러운 주변광으로 촬영합니다",
+    "스튜디오 조명": "컨트롤된 스튜디오 조명 아래에서 촬영합니다",
+    "역광": "역광으로 실루엣 효과를 만들어냅니다",
+    "하이 콘트라스트": "하이 콘트라스트 조명으로 시각적 임팩트를 줍니다"
+  };
+
+  return `${angle} 앵글에서 촬영한 ${shot}입니다. ${movementDesc[movement] || "카메라가 안정적으로 고정되어"} 피사체를 담아냅니다. ${lightDesc[light] || "균형 잡힌 조명으로 촬영합니다"} 길이: ${scene.duration || 3}초.`;
+};
+
+const formatDuration = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}분 ${s}초` : `${s}초`;
+};
+
+const calculateSceneCompletion = (scene: Scene) => {
+  const fields = [
+    scene.title && scene.title.trim(),
+    scene.description && scene.description.trim(),
+    scene.image,
+    scene.camera_angle,
+    scene.shot_size,
+    scene.camera_movement,
+    scene.lighting,
+    scene.notes && scene.notes.trim(),
+  ];
+  const completed = fields.filter(Boolean).length;
+  return Math.round((completed / fields.length) * 100);
+};
+
+const applyMemoTemplate = (currentNotes: string | undefined, templateType: string) => {
+  const templates: any = {
+    "인물": "\n[인물]\n- 배우: \n- 역할: \n- 의상: ",
+    "소품": "\n[소품]\n- 주요 소품: \n- 배치: ",
+    "장소": "\n[장소]\n- 위치: \n- 세팅: \n- 배경: ",
+    "의상": "\n[의상]\n- 스타일: \n- 색상: \n- 특징: ",
+    "음악/사운드": "\n[음악/사운드]\n- 음악: \n- 효과음: \n- 음성: "
+  };
+  return (currentNotes || "") + (templates[templateType] || "");
+};
+
+const createSampleProject = () => ({
+  id: generateId(),
+  title: "여름 컬렉션 런칭",
+  brand_name: "럭스 스튜디오",
+  production_company: "비전 프로덕션",
+  video_type: "광고",
+  platform: "인스타그램",
+  duration: "30",
+  tone: "럭셔리",
+  description: "2026 여름 컬렉션을 보여주는 30초 럭셔리 패션 광고입니다.",
+  created_at: new Date().toISOString(),
+  scenes: [
+    { id: generateId(), scene_number: 1, title: "브랜드 로고 인트로", duration: 3, description: "블랙 배경 위 은은한 파티클 이펙트와 함께 우아한 골드 로고 애니메이션.", camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "줌 인", lighting: "스튜디오 조명", transition: "컷", shooting_completed: false, notes: "브랜드 가이드라인에 맞춰 로고 애니메이션 적용", image: null },
+    { id: generateId(), scene_number: 2, title: "모델 워킹", duration: 5, description: "모델이 컬렉션의 히어로 의상을 입고 햇살 가득한 복도를 걸어갑니다.", camera_angle: "측면", shot_size: "와이드 샷", camera_movement: "달리 인", lighting: "자연광", transition: "컷", shooting_completed: false, notes: "골든아워 조명 선호", image: null },
+    { id: generateId(), scene_number: 3, title: "제품 디테일", duration: 4, description: "메인 의상의 원단 질감과 스티칭 디테일 클로즈업.", camera_angle: "45도", shot_size: "익스트림 클로즈업", camera_movement: "팬 우", lighting: "소프트 라이트", transition: "컷", shooting_completed: false, notes: "질감 디테일을 위한 매크로 렌즈 사용", image: null },
+  ]
+});
+
+const Badge = ({ children, variant = "default", className = "" }: any) => {
+  const variants: any = {
+    default: "bg-gray-100 text-gray-700",
+    blue: "bg-blue-50 text-blue-700",
+    green: "bg-emerald-50 text-emerald-700",
+    purple: "bg-purple-50 text-purple-700",
+    orange: "bg-orange-50 text-orange-700",
+  };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+const AngleIcon = ({ type, size = 40 }: any) => {
+  const s = size;
+  const common = { width: s, height: s, viewBox: "0 0 40 40", fill: "none", xmlns: "http://www.w3.org/2000/svg" };
+
+  const icons: any = {
+    "정면": (
+      <svg {...common}>
+        <rect x="12" y="8" width="16" height="20" rx="8" fill="currentColor" opacity="0.2"/>
+        <circle cx="20" cy="15" r="4" fill="currentColor" opacity="0.5"/>
+        <rect x="14" y="20" width="12" height="2" rx="1" fill="currentColor" opacity="0.3"/>
+        <path d="M20 4L20 2M20 2L17 5M20 2L23 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <rect x="8" y="30" width="24" height="6" rx="3" fill="currentColor" opacity="0.15"/>
+        <circle cx="20" cy="33" r="1.5" fill="currentColor" opacity="0.4"/>
+      </svg>
+    ),
+    "측면": (
+      <svg {...common}>
+        <ellipse cx="18" cy="16" rx="8" ry="10" fill="currentColor" opacity="0.2"/>
+        <circle cx="14" cy="14" r="2.5" fill="currentColor" opacity="0.5"/>
+        <path d="M10 22C10 22 14 26 22 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3"/>
+        <path d="M32 16L35 16M35 16L32 13M35 16L32 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <rect x="8" y="30" width="24" height="6" rx="3" fill="currentColor" opacity="0.15"/>
+      </svg>
+    ),
+    "45도": (
+      <svg {...common}>
+        <ellipse cx="18" cy="16" rx="9" ry="10" fill="currentColor" opacity="0.2" transform="rotate(-15 18 16)"/>
+        <circle cx="16" cy="14" r="3" fill="currentColor" opacity="0.5"/>
+        <path d="M30 6L33 3M33 3L30 3M33 3L33 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M33 3L22 12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 2" opacity="0.4"/>
+        <rect x="8" y="30" width="24" height="6" rx="3" fill="currentColor" opacity="0.15"/>
+      </svg>
+    ),
+    "탑뷰": (
+      <svg {...common}>
+        <ellipse cx="20" cy="22" rx="12" ry="8" fill="currentColor" opacity="0.2"/>
+        <circle cx="20" cy="22" r="4" fill="currentColor" opacity="0.3"/>
+        <circle cx="20" cy="22" r="1.5" fill="currentColor" opacity="0.5"/>
+        <path d="M20 4L20 12M20 4L17 7M20 4L23 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    ),
+    "로우앵글": (
+      <svg {...common}>
+        <rect x="12" y="6" width="16" height="22" rx="4" fill="currentColor" opacity="0.2"/>
+        <circle cx="20" cy="13" r="3.5" fill="currentColor" opacity="0.4"/>
+        <path d="M20 36L20 28M20 36L17 33M20 36L23 33" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M20 28L20 22" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 2" opacity="0.3"/>
+      </svg>
+    ),
+    "하이앵글": (
+      <svg {...common}>
+        <ellipse cx="20" cy="24" rx="10" ry="7" fill="currentColor" opacity="0.2"/>
+        <circle cx="20" cy="22" r="3" fill="currentColor" opacity="0.4"/>
+        <ellipse cx="20" cy="28" rx="6" ry="2" fill="currentColor" opacity="0.15"/>
+        <path d="M20 4L20 12M20 4L17 7M20 4L23 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M20 12L20 18" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeDasharray="2 2" opacity="0.3"/>
+      </svg>
+    ),
+  };
+  return icons[type] || null;
+};
+
+const ShotSizePreview = ({ type }: any) => {
+  const frames: any = {
+    "익스트림 클로즈업": { bodyTop: 10, bodyH: 40, head: true, crop: "4 8 32 24" },
+    "클로즈업": { bodyTop: 6, bodyH: 40, head: true, crop: "2 4 36 28" },
+    "미디엄 샷": { bodyTop: 4, bodyH: 40, head: true, crop: "0 0 40 32" },
+    "와이드 샷": { bodyTop: 2, bodyH: 40, head: true, crop: "0 0 40 40" },
+    "이스태블리싱 샷": { bodyTop: 0, bodyH: 40, head: true, crop: "0 0 40 40" },
+  };
+  const f = frames[type];
+  if (!f) return null;
+
+  const viewBox = type === "익스트림 클로즈업" ? "8 6 24 18"
+    : type === "클로즈업" ? "6 4 28 22"
+    : type === "미디엄 샷" ? "4 2 32 28"
+    : "0 0 40 40";
+
+  return (
+    <svg width="48" height="32" viewBox={viewBox} fill="none" xmlns="http://www.w3.org/2000/svg">
+      {type === "이스태블리싱 샷" && (
+        <>
+          <rect x="2" y="20" width="8" height="16" rx="1" fill="currentColor" opacity="0.1"/>
+          <rect x="12" y="16" width="6" height="20" rx="1" fill="currentColor" opacity="0.1"/>
+          <rect x="28" y="18" width="10" height="18" rx="1" fill="currentColor" opacity="0.1"/>
+          <line x1="0" y1="36" x2="40" y2="36" stroke="currentColor" strokeWidth="0.5" opacity="0.2"/>
+        </>
+      )}
+      <circle cx="20" cy="10" r="5" fill="currentColor" opacity="0.35"/>
+      <rect x="14" y="16" width="12" height="18" rx="4" fill="currentColor" opacity="0.2"/>
+      {type !== "이스태블리싱 샷" && type !== "와이드 샷" && (
+        <>
+          <circle cx="18" cy="9" r="1" fill="currentColor" opacity="0.5"/>
+          <circle cx="22" cy="9" r="1" fill="currentColor" opacity="0.5"/>
+          <path d="M18 12.5C18 12.5 19 13.5 22 12.5" stroke="currentColor" strokeWidth="0.5" opacity="0.4" strokeLinecap="round"/>
+        </>
+      )}
+    </svg>
+  );
+};
+
+const MovementIcon = ({ type, size = 32 }: any) => {
+  const s = size;
+  const common = { width: s, height: s, viewBox: "0 0 32 32", fill: "none", xmlns: "http://www.w3.org/2000/svg" };
+
+  const icons: any = {
+    "고정": (
+      <svg {...common}>
+        <circle cx="16" cy="16" r="6" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+        <circle cx="16" cy="16" r="2" fill="currentColor" opacity="0.6"/>
+      </svg>
+    ),
+    "줌 인": (
+      <svg {...common}>
+        <circle cx="16" cy="16" r="7" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <circle cx="16" cy="16" r="4" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+        <path d="M8 8L12 12M24 8L20 12M8 24L12 20M24 24L20 20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+      </svg>
+    ),
+    "줌 아웃": (
+      <svg {...common}>
+        <circle cx="16" cy="16" r="4" stroke="currentColor" strokeWidth="1.5" opacity="0.6"/>
+        <circle cx="16" cy="16" r="7" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <path d="M12 12L8 8M20 12L24 8M12 20L8 24M20 20L24 24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.5"/>
+      </svg>
+    ),
+    "팬 좌": (
+      <svg {...common}>
+        <rect x="10" y="10" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <path d="M8 16L3 16M3 16L6 13M3 16L6 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    "팬 우": (
+      <svg {...common}>
+        <rect x="10" y="10" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <path d="M24 16L29 16M29 16L26 13M29 16L26 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    "틸트 업": (
+      <svg {...common}>
+        <rect x="10" y="10" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <path d="M16 8L16 3M16 3L13 6M16 3L19 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    "틸트 다운": (
+      <svg {...common}>
+        <rect x="10" y="10" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.3"/>
+        <path d="M16 24L16 29M16 29L13 26M16 29L19 26" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
+    "달리 인": (
+      <svg {...common}>
+        <rect x="8" y="8" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1" opacity="0.2"/>
+        <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+        <circle cx="16" cy="16" r="2" fill="currentColor" opacity="0.4"/>
+        <path d="M16 6L16 2M16 2L14 4M16 2L18 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+      </svg>
+    ),
+    "달리 아웃": (
+      <svg {...common}>
+        <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" opacity="0.5"/>
+        <rect x="8" y="8" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="1" opacity="0.2"/>
+        <circle cx="16" cy="16" r="2" fill="currentColor" opacity="0.4"/>
+        <path d="M16 2L16 6M16 6L14 4M16 6L18 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+      </svg>
+    ),
+  };
+  return icons[type] || null;
+};
+
+const VisualAngleSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        <Camera className="w-3.5 h-3.5" /> 카메라 앵글
+      </label>
+      <div className="grid grid-cols-3 gap-2">
+        {CAMERA_ANGLES.map((a: any) => (
+          <button key={a.value} onClick={() => onChange(a.value)}
+            className={`relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center group hover:shadow-md ${
+              value === a.value
+                ? "border-blue-400 bg-blue-50 text-blue-700 shadow-sm shadow-blue-100"
+                : "border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50"
+            }`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === a.value ? "text-blue-600" : "text-gray-400"}`}>
+              <AngleIcon type={a.value} size={36} />
+            </div>
+            <span className="text-[10px] font-bold leading-tight">{a.value}</span>
+            <span className="text-[8px] opacity-60 leading-tight">{a.desc}</span>
+            {value === a.value && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                <Check className="w-2.5 h-2.5 text-white" />
+              </div>
+            )}
+          </button>
+        ))}
+        <button onClick={() => setShowCustomInput(!showCustomInput)}
+          className="relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50 transition-all text-center group hover:shadow-md">
+          <div className="transition-transform group-hover:scale-110 text-gray-400">✏️</div>
+          <span className="text-[10px] font-bold leading-tight">직접 입력</span>
+        </button>
+      </div>
+      {showCustomInput && (
+        <div className="col-span-full mt-2">
+          <input
+            type="text"
+            placeholder="카메라 앵글을 직접 입력..."
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VisualShotSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        <Maximize className="w-3.5 h-3.5" /> 샷 사이즈
+      </label>
+      <div className="space-y-1.5">
+        {SHOT_SIZES.map((s: any) => (
+          <button key={s.value} onClick={() => onChange(s.value)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
+              value === s.value
+                ? "border-blue-400 bg-blue-50 shadow-sm"
+                : "border-gray-100 bg-white hover:border-gray-200"
+            }`}>
+            <div className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${value === s.value ? "text-blue-600" : "text-gray-400"}`}>
+              <ShotSizePreview type={s.value} />
+            </div>
+            <div className="flex-1 text-left">
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r ${s.color} text-white`}>{s.short}</span>
+                <span className={`text-xs font-semibold ${value === s.value ? "text-blue-700" : "text-gray-700"}`}>{s.value}</span>
+              </div>
+              <span className="text-[10px] text-gray-400 leading-tight">{s.desc}</span>
+            </div>
+            {value === s.value && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+          </button>
+        ))}
+        <button onClick={() => setShowCustomInput(!showCustomInput)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white hover:border-gray-200 transition-all group hover:shadow-md">
+          <div className="w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-gray-400">✏️</div>
+          <div className="flex-1 text-left">
+            <span className="text-xs font-semibold text-gray-700">직접 입력</span>
+          </div>
+        </button>
+        {showCustomInput && (
+          <div className="mt-2">
+            <input
+              type="text"
+              placeholder="샷 사이즈를 직접 입력..."
+              value={customValue}
+              onChange={(e) => setCustomValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const VisualMovementSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        <Move className="w-3.5 h-3.5" /> 카메라 무브먼트
+      </label>
+      <div className="grid grid-cols-3 gap-1.5">
+        {CAMERA_MOVEMENTS.map((m: any) => (
+          <button key={m.value} onClick={() => onChange(m.value)}
+            className={`relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 transition-all group hover:shadow-md ${
+              value === m.value
+                ? "border-blue-400 bg-blue-50 text-blue-700 shadow-sm"
+                : "border-gray-100 bg-white text-gray-500 hover:border-gray-200"
+            }`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === m.value ? "text-blue-600" : "text-gray-400"}`}>
+              <MovementIcon type={m.value} size={28} />
+            </div>
+            <span className="text-[9px] font-bold leading-tight">{m.value}</span>
+            <span className="text-[8px] opacity-50 leading-tight">{m.desc}</span>
+            {value === m.value && (
+              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
+                <Check className="w-2 h-2 text-white" />
+              </div>
+            )}
+          </button>
+        ))}
+        <button onClick={() => setShowCustomInput(!showCustomInput)}
+          className="relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 border-gray-100 bg-white text-gray-500 hover:border-gray-200 transition-all group hover:shadow-md">
+          <div className="transition-transform group-hover:scale-110 text-gray-400">✏️</div>
+          <span className="text-[9px] font-bold leading-tight">직접</span>
+          <span className="text-[9px] font-bold leading-tight">입력</span>
+        </button>
+      </div>
+      {showCustomInput && (
+        <div className="col-span-full mt-2">
+          <input
+            type="text"
+            placeholder="카메라 무브먼트를 직접 입력..."
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VisualLightingSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        <Sun className="w-3.5 h-3.5" /> 조명
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        {LIGHTING_OPTIONS.map((l: any) => (
+          <button key={l.value} onClick={() => onChange(l.value)}
+            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
+              value === l.value
+                ? "border-blue-400 bg-blue-50 shadow-sm"
+                : "border-gray-100 bg-white hover:border-gray-200"
+            }`}>
+            <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">{l.icon}</span>
+            <div className="text-left flex-1 min-w-0">
+              <span className={`text-[10px] font-bold block leading-tight ${value === l.value ? "text-blue-700" : "text-gray-700"}`}>{l.value}</span>
+              <span className="text-[8px] text-gray-400 block leading-tight truncate">{l.desc}</span>
+            </div>
+            {value === l.value && <Check className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />}
+          </button>
+        ))}
+        <button onClick={() => setShowCustomInput(!showCustomInput)}
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 border-gray-100 bg-white hover:border-gray-200 transition-all group hover:shadow-md">
+          <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">✏️</span>
+          <div className="text-left flex-1 min-w-0">
+            <span className="text-[10px] font-bold block leading-tight text-gray-700">직접 입력</span>
+          </div>
+        </button>
+      </div>
+      {showCustomInput && (
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="조명을 직접 입력..."
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ImageUploadArea = ({ image, onImageChange }: any) => {
+  const fileRef = useRef(null);
+  const [dragOver, setDragOver] = useState(false);
+  const handleFile = (file: any) => {
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => onImageChange(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+  return (
+    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-blue-400" : ""}`}
+      onDragOver={(e: any) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e: any) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
+      {image ? (
+        <div className="relative group">
+          <img src={image} alt="씬" className="w-full h-full object-cover rounded-2xl" style={{ aspectRatio: "16/9" }} />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
+            <button onClick={() => (fileRef.current as any)?.click()} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
+            <button onClick={() => onImageChange(null)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
+          <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center mb-3"><Image className="w-7 h-7 text-gray-400" /></div>
+          <p className="text-sm font-medium text-gray-500">이미지를 드래그하거나 클릭하여 업로드</p>
+          <p className="text-xs text-gray-400 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
+        </button>
+      )}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: any) => handleFile(e.target.files?.[0])} />
+    </div>
+  );
+};
+
+const VisualLensSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        🎥 렌즈 설정
+      </label>
+      <select
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-200 transition-all">
+        <option value="">렌즈를 선택하세요</option>
+        {LENS_OPTIONS.map((l: any) => (
+          <option key={l.value} value={l.value}>{l.value} ({l.focal})</option>
+        ))}
+      </select>
+      <button
+        onClick={() => setShowCustomInput(!showCustomInput)}
+        className="w-full mt-2 px-3 py-2 text-sm font-medium text-gray-600 border-2 border-gray-100 bg-white rounded-lg hover:border-gray-200 hover:bg-gray-50 transition-all">
+        ✏️ 직접 입력
+      </button>
+      {showCustomInput && (
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="렌즈를 직접 입력..."
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const VisualFramerateSelector = ({ value, onChange }: any) => {
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+        ⚡ 프레임레이트
+      </label>
+      <select
+        value={value || '24fps'}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-3 py-2.5 border-2 border-gray-100 bg-white rounded-xl text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-gray-200 transition-all">
+        {FRAMERATE_OPTIONS.map((f: any) => (
+          <option key={f.value} value={f.value}>{f.value}</option>
+        ))}
+      </select>
+      <button
+        onClick={() => setShowCustomInput(!showCustomInput)}
+        className="w-full mt-2 px-3 py-2 text-sm font-medium text-gray-600 border-2 border-gray-100 bg-white rounded-lg hover:border-gray-200 hover:bg-gray-50 transition-all">
+        ✏️ 직접 입력
+      </button>
+      {showCustomInput && (
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="프레임레이트를 직접 입력..."
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SceneProgressRing = ({ completion }: any) => {
+  const radius = 18;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (completion / 100) * circumference;
+
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" className="transform -rotate-90">
+      <circle cx="22" cy="22" r={radius} fill="none" stroke="#e5e7eb" strokeWidth="2" />
+      <circle
+        cx="22"
+        cy="22"
+        r={radius}
+        fill="none"
+        stroke="#3b82f6"
+        strokeWidth="2"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="transition-all duration-300"
+      />
+      <text x="22" y="27" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1f2937">
+        {completion}%
+      </text>
+    </svg>
+  );
+};
+
+const SceneEditor = ({ scene, onUpdate }: any) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
+  const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      onUpdate({ ...scene, description: generateDescription(scene) });
+      setIsGenerating(false);
+    }, 800);
+  };
+
+  const handleApplyMemoTemplate = (templateType: string) => {
+    const newNotes = applyMemoTemplate(scene.notes, templateType);
+    onUpdate({ ...scene, notes: newNotes });
+  };
+
+  if (!scene) return (
+    <div className="flex-1 flex items-center justify-center text-gray-400"><div className="text-center"><Film className="w-12 h-12 mx-auto mb-3 opacity-50" /><p className="font-medium">편집할 씬을 선택하세요</p></div></div>
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6">
+        <div className="lg:col-span-3 space-y-5">
+          <div className="relative">
+            <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
+          </div>
+          <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-blue-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">씬 설명</label>
+              <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg text-xs font-medium hover:bg-purple-100 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
+            </div>
+            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm leading-relaxed" />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">감독 메모</label>
+              <div className="flex gap-1.5 flex-wrap justify-end">
+                {memoTemplates.map((template: any) => (
+                  <button
+                    key={template}
+                    onClick={() => handleApplyMemoTemplate(template)}
+                    className="px-2 py-1 text-xs bg-amber-100 text-amber-700 rounded hover:bg-amber-200 transition-colors"
+                  >
+                    + {template}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm bg-amber-50/50 border-amber-200/50" />
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 space-y-5 overflow-y-auto">
+          <div className="bg-gray-50 rounded-xl p-4">
+            <label className="text-xs font-semibold text-gray-700 mb-2 block flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 씬 길이</label>
+            <div className="flex items-center gap-3">
+              <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-blue-500 h-2" />
+              <div className="bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
+            </div>
+          </div>
+
+          <VisualAngleSelector value={scene.camera_angle} onChange={(v: any) => onUpdate({ ...scene, camera_angle: v })} />
+          <VisualShotSelector value={scene.shot_size} onChange={(v: any) => onUpdate({ ...scene, shot_size: v })} />
+          <VisualMovementSelector value={scene.camera_movement} onChange={(v: any) => onUpdate({ ...scene, camera_movement: v })} />
+          <VisualLightingSelector value={scene.lighting} onChange={(v: any) => onUpdate({ ...scene, lighting: v })} />
+          <VisualLensSelector value={scene.lens} onChange={(v: any) => onUpdate({ ...scene, lens: v })} />
+          <VisualFramerateSelector value={scene.framerate} onChange={(v: any) => onUpdate({ ...scene, framerate: v })} />
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-2.5 flex items-center gap-1.5">
+              ➡️ 씬 전환효과
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {TRANSITIONS.map((t: any) => (
+                <button key={t.value} onClick={() => onUpdate({ ...scene, transition: t.value })}
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 transition-all text-center group ${
+                    (scene.transition || "컷") === t.value
+                      ? "border-blue-400 bg-blue-50 shadow-sm"
+                      : "border-gray-100 bg-white hover:border-gray-200"
+                  }`}>
+                  <span className="text-lg flex-shrink-0">{t.icon}</span>
+                  <div className="text-left flex-1 min-w-0">
+                    <span className={`text-[9px] font-bold block leading-tight ${(scene.transition || "컷") === t.value ? "text-blue-700" : "text-gray-700"}`}>{t.value}</span>
+                    <span className="text-[7px] text-gray-400 block leading-tight">{t.desc}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-sm text-blue-900 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> 완성도</h3>
+              <div className="w-11 h-11">
+                <SceneProgressRing completion={completion} />
+              </div>
+            </div>
+            <p className="text-xs text-blue-700">
+              {completion < 50 && "더 많은 정보를 추가해주세요"}
+              {completion >= 50 && completion < 100 && "거의 완성되었습니다"}
+              {completion === 100 && "모든 필드가 작성되었습니다"}
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
+            <h3 className="font-semibold text-sm flex items-center gap-2 mb-3"><Eye className="w-4 h-4" /> 씬 요약</h3>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between"><span className="text-gray-400">길이</span><span className="font-medium">{scene.duration}초</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">앵글</span><span className="font-medium">{scene.camera_angle}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">샷</span><span className="font-medium">{scene.shot_size}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">무브먼트</span><span className="font-medium">{scene.camera_movement}</span></div>
+              <div className="flex justify-between"><span className="text-gray-400">조명</span><span className="font-medium">{scene.lighting}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StoryboardGrid = ({ scenes, onSelectScene }: any) => (
+  <div className="p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {scenes.map((scene: Scene) => (
+        <button key={scene.id} onClick={() => onSelectScene(scene.id)} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-blue-200 transition-all group text-left">
+          <div className="relative" style={{ aspectRatio: "16/9" }}>
+            {scene.image ? <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center"><Film className="w-8 h-8 text-gray-300" /></div>}
+            <div className="absolute top-2 left-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md">#{scene.scene_number}</span></div>
+            <div className="absolute bottom-2 right-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md">{scene.duration}초</span></div>
+          </div>
+          <div className="p-4">
+            <h4 className="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{scene.title || `씬 ${scene.scene_number}`}</h4>
+            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{scene.description || "설명 없음"}</p>
+            <div className="flex items-center gap-2 mt-3 flex-wrap"><Badge>{scene.shot_size}</Badge><Badge>{scene.camera_angle}</Badge></div>
+          </div>
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+const TimelineView = ({ scenes, activeSceneId, onSelectScene }: any) => {
+  const totalDuration = scenes.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0);
+  return (
+    <div className="p-6">
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-gray-900">타임라인</h3><div className="flex items-center gap-2 text-sm text-gray-500"><Clock className="w-4 h-4" /> 전체: <span className="font-bold text-gray-900">{formatDuration(totalDuration)}</span></div></div>
+        <div className="flex gap-1 mb-6 rounded-lg overflow-hidden">
+          {scenes.map((scene: Scene, i: number) => {
+            const width = totalDuration > 0 ? (scene.duration / totalDuration) * 100 : 100 / scenes.length;
+            const colors = ["bg-blue-400", "bg-purple-400", "bg-emerald-400", "bg-orange-400", "bg-pink-400", "bg-cyan-400", "bg-yellow-400"];
+            return <button key={scene.id} onClick={() => onSelectScene(scene.id)} className={`${colors[i % colors.length]} h-10 rounded transition-all hover:opacity-80 ${activeSceneId === scene.id ? "ring-2 ring-offset-1 ring-blue-600" : ""}`} style={{ width: `${width}%`, minWidth: "2rem" }} title={`${scene.title} (${scene.duration}초)`}><span className="text-white text-xs font-bold">{scene.scene_number}</span></button>;
+          })}
+        </div>
+        <div className="space-y-2">
+          {scenes.map((scene: Scene, i: number) => {
+            let accum = 0; for (let j = 0; j < i; j++) accum += scenes[j].duration || 0;
+            const transition = TRANSITIONS.find((t: any) => t.value === (scene.transition || "컷"));
+            return (
+              <div key={scene.id}>
+                <button onClick={() => onSelectScene(scene.id)} className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-all ${activeSceneId === scene.id ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-50"}`}>
+                  <span className="text-xs font-mono text-gray-400 w-16">{formatDuration(accum)}</span>
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">{scene.scene_number}</div>
+                  <div className="flex-1"><h4 className="text-sm font-medium text-gray-900">{scene.title || `씬 ${scene.scene_number}`}</h4><p className="text-xs text-gray-400">{scene.shot_size} · {scene.camera_movement}</p></div>
+                  <span className="text-sm font-medium text-gray-600">{scene.duration}초</span>
+                </button>
+                {i < scenes.length - 1 && transition && (
+                  <div className="ml-20 text-xs text-gray-500 py-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded">
+                      {transition.icon} {transition.value}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PresentationView = ({ scenes, projectTitle }: any) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scene = scenes[currentIndex];
+  if (!scene) return null;
+  return (
+    <div className="p-6">
+      <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl max-w-5xl mx-auto">
+        <div className="relative" style={{ aspectRatio: "16/9" }}>
+          {scene.image ? <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-700 flex items-center justify-center"><div className="text-center"><Film className="w-16 h-16 text-slate-500 mx-auto mb-4" /><h2 className="text-2xl font-bold text-white">{scene.title || `씬 ${scene.scene_number}`}</h2></div></div>}
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-8">
+            <div className="flex items-end justify-between">
+              <div><Badge variant="blue" className="mb-2">씬 {scene.scene_number}</Badge><h2 className="text-2xl font-bold text-white">{scene.title}</h2><p className="text-gray-300 text-sm mt-2 max-w-xl">{scene.description}</p></div>
+              <div className="text-right text-white text-sm space-y-1"><p>{scene.camera_angle} · {scene.shot_size}</p><p>{scene.camera_movement} · {scene.lighting}</p><p className="font-bold">{scene.duration}초</p></div>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between p-4 bg-slate-800">
+          <span className="text-sm text-slate-400">{projectTitle}</span>
+          <div className="flex items-center gap-2"><button onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} className="p-2 text-white hover:bg-slate-700 rounded-lg disabled:opacity-30 transition-colors"><ChevronLeft className="w-5 h-5" /></button><span className="text-white text-sm font-medium px-3">{currentIndex + 1} / {scenes.length}</span><button onClick={() => setCurrentIndex(Math.min(scenes.length - 1, currentIndex + 1))} disabled={currentIndex === scenes.length - 1} className="p-2 text-white hover:bg-slate-700 rounded-lg disabled:opacity-30 transition-colors"><ChevronRight className="w-5 h-5" /></button></div>
+          <span className="text-sm text-slate-400">{formatDuration(scenes.reduce((s: number, sc: Scene) => s + (sc.duration || 0), 0))}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChecklistView = ({ scenes, onUpdateScene }: any) => {
+  const completed = scenes.filter((s: Scene) => s.shooting_completed).length;
+  const total = scenes.length;
+  const percentage = Math.round((completed / total) * 100);
+
+  return (
+    <div className="p-6">
+      <div className="bg-white rounded-xl border border-gray-100 p-6">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-gray-900">촬영 진행도</h3>
+            <span className="text-sm font-bold text-blue-600">{completed}/{total} 촬영 완료</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">{percentage}% 완료</p>
+        </div>
+
+        <div className="space-y-3">
+          {scenes.map((scene: Scene) => (
+            <div key={scene.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <button
+                onClick={() => onUpdateScene({ ...scene, shooting_completed: !scene.shooting_completed })}
+                className="flex-shrink-0 mt-1"
+              >
+                {scene.shooting_completed ? (
+                  <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                ) : (
+                  <Circle className="w-6 h-6 text-gray-300 hover:text-gray-400 transition-colors" />
+                )}
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  {scene.image && (
+                    <img src={scene.image} alt={scene.title} className="w-12 h-9 object-cover rounded" />
+                  )}
+                  <div className="flex-1">
+                    <h4 className={`font-medium text-sm ${scene.shooting_completed ? "text-gray-500 line-through" : "text-gray-900"}`}>
+                      {scene.title || `씬 ${scene.scene_number}`}
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {scene.camera_angle} · {scene.shot_size} · {scene.duration}초
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => onUpdateScene({ ...scene, shooting_completed: !scene.shooting_completed })}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  scene.shooting_completed
+                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                }`}
+              >
+                {scene.shooting_completed ? "촬영 완료" : "촬영 예정"}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [showNewProject, setShowNewProject] = useState(false);
+  const [viewMode, setViewMode] = useState('editor');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+  const [history, setHistory] = useState<Project[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState(false);
+
+  const activeProject = projects.find(p => p.id === activeProjectId);
+  const activeScene = activeProject?.scenes?.find(s => s.id === activeSceneId);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('storyboard-projects');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setProjects(parsed);
+        if (parsed.length > 0) {
+          setActiveProjectId(parsed[0].id);
+          if (parsed[0].scenes.length > 0) {
+            setActiveSceneId(parsed[0].scenes[0].id);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load projects:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      if (projects.length > 0) {
+        setIsSaving(true);
+        localStorage.setItem('storyboard-projects', JSON.stringify(projects));
+        setTimeout(() => {
+          setIsSaving(false);
+          setLastSaved(true);
+          setTimeout(() => setLastSaved(false), 3000);
+        }, 500);
+      }
+    }, 1000);
+    return () => clearTimeout(saveTimer);
+  }, [projects]);
+
+  const addToHistory = useCallback((newProjects: Project[]) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(newProjects);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  }, [history, historyIndex]);
+
+  const handleCreateProject = (title: string, templateId?: string) => {
+    let newProject: Project;
+
+    if (templateId) {
+      const template = TEMPLATES.find((t: any) => t.id === templateId);
+      if (template) {
+        newProject = {
+          id: generateId(),
+          title: template.name,
+          video_type: template.videoType,
+          scenes: template.scenes.map((s: any, i: number) => ({
+            id: generateId(),
+            scene_number: i + 1,
+            ...s,
+            image: null,
+            notes: ""
+          })),
+          created_at: new Date().toISOString(),
+        };
+      } else {
+        newProject = {
+          id: generateId(),
+          title,
+          scenes: [{
+            id: generateId(),
+            scene_number: 1,
+            title: "씬 1",
+            duration: 3,
+            description: "",
+            camera_angle: "정면",
+            shot_size: "미디엄 샷",
+            camera_movement: "고정",
+            lighting: "자연광",
+            notes: "",
+            image: null
+          }],
+          created_at: new Date().toISOString(),
+        };
+      }
+    } else {
+      newProject = {
+        id: generateId(),
+        title,
+        scenes: [{
+          id: generateId(),
+          scene_number: 1,
+          title: "씬 1",
+          duration: 3,
+          description: "",
+          camera_angle: "정면",
+          shot_size: "미디엄 샷",
+          camera_movement: "고정",
+          lighting: "자연광",
+          notes: "",
+          image: null
+        }],
+        created_at: new Date().toISOString(),
+      };
+    }
+
+    const newProjects = [...projects, newProject];
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setActiveProjectId(newProject.id);
+    if (newProject.scenes.length > 0) {
+      setActiveSceneId(newProject.scenes[0].id);
+    }
+    setCurrentPage('editor');
+    setShowNewProject(false);
+  };
+
+  const handleDeleteProject = (projectId: string) => {
+    if (!confirm('프로젝트를 삭제하시겠습니까?')) return;
+    const newProjects = projects.filter(p => p.id !== projectId);
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    if (activeProjectId === projectId) {
+      setActiveProjectId(newProjects.length > 0 ? newProjects[0].id : null);
+      setActiveSceneId(null);
+    }
+  };
+
+  const handleAddScene = useCallback(() => {
+    if (!activeProjectId) return;
+    const newScene: Scene = {
+      id: generateId(),
+      scene_number: (activeProject?.scenes.length || 0) + 1,
+      title: `씬 ${(activeProject?.scenes.length || 0) + 1}`,
+      duration: 3,
+      description: "",
+      camera_angle: "정면",
+      shot_size: "미디엄 샷",
+      camera_movement: "고정",
+      lighting: "자연광",
+      transition: "컷",
+      shooting_completed: false,
+      notes: "",
+      image: null
+    };
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, scenes: [...p.scenes, newScene] };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setActiveSceneId(newScene.id);
+  }, [projects, activeProjectId, activeProject, addToHistory]);
+
+  const handleDeleteScene = useCallback((sceneId: string) => {
+    if (!activeProjectId) return;
+    if (activeProject?.scenes.length === 1) {
+      alert('최소 1개의 씬은 필요합니다.');
+      return;
+    }
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return {
+          ...p,
+          scenes: p.scenes
+            .filter(s => s.id !== sceneId)
+            .map((s, i) => ({ ...s, scene_number: i + 1 }))
+        };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    if (activeSceneId === sceneId) {
+      const remaining = activeProject?.scenes.filter(s => s.id !== sceneId);
+      if (remaining && remaining.length > 0) {
+        setActiveSceneId(remaining[0].id);
+      }
+    }
+  }, [projects, activeProjectId, activeSceneId, activeProject, addToHistory]);
+
+  const handleUpdateScene = useCallback((sceneId: string, updates: Partial<Scene>) => {
+    if (!activeProjectId) return;
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return {
+          ...p,
+          scenes: p.scenes.map(s => s.id === sceneId ? { ...s, ...updates } : s)
+        };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  }, [projects, activeProjectId, addToHistory]);
+
+  const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
+
+  return (
+    <div className={`h-screen flex overflow-hidden ${darkMode ? "bg-gray-900" : "bg-gray-50"}`}>
+      {/* Sidebar */}
+      <aside className={`border-r flex flex-col transition-all duration-300 w-64 hidden md:flex ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
+        <div className={`p-4 border-b ${darkMode ? "border-gray-700" : "border-gray-100"}`}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Film className="w-5 h-5 text-white" />
+            </div>
+            <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>스토리프레임</span>
+          </div>
+        </div>
+        {activeProject && (
+          <div className={`flex-1 overflow-y-auto p-4 space-y-2`}>
+            {activeProject.scenes.map((scene, index) => (
+              <button
+                key={scene.id}
+                onClick={() => setActiveSceneId(scene.id)}
+                className={`w-full text-left p-3 rounded-lg transition ${
+                  activeSceneId === scene.id
+                    ? 'bg-indigo-100 dark:bg-indigo-900 border-2 border-indigo-500'
+                    : 'bg-gray-100 dark:bg-gray-700 border-2 border-transparent hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                <div className="font-semibold text-sm text-gray-900 dark:text-white">{index + 1}. {scene.title}</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{scene.duration}초</div>
+              </button>
+            ))}
+          </div>
+        )}
+        <div className={`p-4 border-t ${darkMode ? "border-gray-700" : "border-gray-100"} space-y-2`}>
+          <button
+            onClick={handleAddScene}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+          >
+            <Plus size={18} />
+            씬 추가
+          </button>
+          <button
+            onClick={() => setCurrentPage('dashboard')}
+            className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+          >
+            대시보드
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Bar */}
+        <div className={`border-b px-6 py-4 flex items-center justify-between ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+            >
+              {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
+            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('editor')}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'editor' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                편집기
+              </button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                그리드
+              </button>
+              <button
+                onClick={() => setViewMode('timeline')}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'timeline' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                타임라인
+              </button>
+              <button
+                onClick={() => setViewMode('presentation')}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'presentation' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                프레젠테이션
+              </button>
+              <button
+                onClick={() => setViewMode('checklist')}
+                className={`px-3 py-2 rounded-lg transition ${viewMode === 'checklist' ? 'bg-indigo-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+              >
+                체크리스트
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {lastSaved && <span className="text-xs text-green-600">저장됨</span>}
+            {isSaving && <span className="text-xs text-gray-500">저장 중...</span>}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+            >
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            <button
+              onClick={onLogout}
+              className={`p-2 rounded-lg transition text-red-600 ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-auto">
+          {currentPage === 'dashboard' && !activeProjectId ? (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex justify-between items-center mb-12">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white">스토리프레임</h1>
+                  <button
+                    onClick={() => setShowNewProject(true)}
+                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                  >
+                    <Plus size={20} />
+                    새 프로젝트
+                  </button>
+                </div>
+
+                {projects.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Film size={48} className="mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">프로젝트가 없습니다</p>
+                    <button
+                      onClick={() => setShowNewProject(true)}
+                      className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    >
+                      첫 프로젝트 만들기
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {projects.map(project => (
+                      <div
+                        key={project.id}
+                        className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer"
+                        onClick={() => {
+                          setActiveProjectId(project.id);
+                          if (project.scenes.length > 0) {
+                            setActiveSceneId(project.scenes[0].id);
+                          }
+                          setCurrentPage('editor');
+                        }}
+                      >
+                        <div className="h-32 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-4xl">
+                          {project.video_type ? '🎬' : '📽️'}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-gray-900 dark:text-white mb-2">{project.title}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            {project.scenes.length} 씬 • {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject(project.id);
+                              }}
+                              className="flex-1 px-3 py-2 text-sm bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-800 transition"
+                            >
+                              삭제
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : activeProject ? (
+            <>
+              {viewMode === 'editor' && <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />}
+              {viewMode === 'grid' && <StoryboardGrid scenes={activeProject.scenes} onSelectScene={setActiveSceneId} />}
+              {viewMode === 'timeline' && <TimelineView scenes={activeProject.scenes} activeSceneId={activeSceneId} onSelectScene={setActiveSceneId} />}
+              {viewMode === 'presentation' && <PresentationView scenes={activeProject.scenes} projectTitle={activeProject.title} />}
+              {viewMode === 'checklist' && <ChecklistView scenes={activeProject.scenes} onUpdateScene={(scene: Scene) => handleUpdateScene(scene.id, scene)} />}
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      {/* New Project Modal */}
+      {showNewProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">새 프로젝트</h2>
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => {
+                  const name = prompt('프로젝트 이름을 입력하세요');
+                  if (name) handleCreateProject(name);
+                }}
+                className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-left"
+              >
+                빈 프로젝트로 시작
+              </button>
+              {TEMPLATES.map((template: any) => (
+                <button
+                  key={template.id}
+                  onClick={() => handleCreateProject(template.name, template.id)}
+                  className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition text-left"
+                >
+                  <div className="font-semibold">{template.icon} {template.name}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{template.description}</div>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowNewProject(false)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
