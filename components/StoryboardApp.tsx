@@ -18,10 +18,20 @@ import {
   type Announcement
 } from '@/lib/firebase';
 import Link from 'next/link';
+import { SceneCommentPanel, AssetLibraryPanel, AnimaticPreview, ShotListView, VersionManager } from './Features1';
+import { BudgetEstimator, CalendarView, SceneSearchFilter, MobileResponsiveWrapper, useMobileDetect, AISceneRecommender } from './Features2';
 
 interface StoryboardAppProps {
   user: any;
   onLogout: () => void;
+}
+
+interface SceneComment {
+  id: string;
+  author: string;
+  text: string;
+  timestamp: string;
+  resolved: boolean;
 }
 
 interface Scene {
@@ -40,6 +50,7 @@ interface Scene {
   image?: string;
   transition?: string;
   shooting_completed?: boolean;
+  comments?: SceneComment[];
   [key: string]: any;
 }
 
@@ -1025,70 +1036,7 @@ const PresentationView = ({ scenes, projectTitle }: any) => {
   );
 };
 
-const ChecklistView = ({ scenes, onUpdateScene }: any) => {
-  const completed = scenes.filter((s: Scene) => s.shooting_completed).length;
-  const total = scenes.length;
-  const percentage = Math.round((completed / total) * 100);
-
-  return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-gray-100 p-6">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">촬영 진행도</h3>
-            <span className="text-sm font-bold text-neutral-700">{completed}/{total} 촬영 완료</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="bg-neutral-800 h-2 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">{percentage}% 완료</p>
-        </div>
-
-        <div className="space-y-3">
-          {scenes.map((scene: Scene) => (
-            <div key={scene.id} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <button
-                onClick={() => onUpdateScene({ ...scene, shooting_completed: !scene.shooting_completed })}
-                className="flex-shrink-0 mt-1"
-              >
-                {scene.shooting_completed ? (
-                  <CheckCircle2 className="w-6 h-6 text-neutral-500" />
-                ) : (
-                  <Circle className="w-6 h-6 text-gray-300 hover:text-gray-400 transition-colors" />
-                )}
-              </button>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  {scene.image && (
-                    <img src={scene.image} alt={scene.title} className="w-12 h-9 object-cover rounded" />
-                  )}
-                  <div className="flex-1">
-                    <h4 className={`font-medium text-sm ${scene.shooting_completed ? "text-gray-500 line-through" : "text-gray-900"}`}>
-                      {scene.title || `씬 ${scene.scene_number}`}
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {scene.camera_angle} · {scene.shot_size} · {scene.duration}초
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => onUpdateScene({ ...scene, shooting_completed: !scene.shooting_completed })}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  scene.shooting_completed
-                    ? "bg-neutral-200 text-neutral-700 hover:bg-neutral-300"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                }`}
-              >
-                {scene.shooting_completed ? "촬영 완료" : "촬영 예정"}
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+// ChecklistView 제거됨 (촬영 진행도는 사이드바에서 확인 가능)
 
 // ========== 인라인 편집 필드 (포커스 유지를 위해 컴포넌트 바깥에 정의) ==========
 const InfoField = ({ label, field, placeholder, value, type, onChange, inputCls, labelCls }: {
@@ -2221,6 +2169,20 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               씬 추가
             </button>
             <button
+              onClick={() => setViewMode('search')}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              <Search size={14} />
+              씬 검색
+            </button>
+            <button
+              onClick={() => setViewMode('versions')}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              <Save size={14} />
+              버전 관리
+            </button>
+            <button
               onClick={() => { setActiveProjectId(null); setActiveSceneId(null); setCurrentPage('dashboard'); }}
               className={`w-full px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
             >
@@ -2255,7 +2217,11 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                   { id: 'grid', label: '그리드' },
                   { id: 'timeline', label: '타임라인' },
                   { id: 'timetable', label: '타임테이블' },
-                  { id: 'presentation', label: '프레젠테이션' },
+                  { id: 'animatic', label: '프리뷰' },
+                  { id: 'shotlist', label: '샷리스트' },
+                  { id: 'calendar', label: '캘린더' },
+                  { id: 'budget', label: '예산' },
+                  { id: 'ai-recommend', label: 'AI추천' },
                 ].map(({ id, label }) => (
                   <button
                     key={id}
@@ -2460,20 +2426,34 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                   </button>
                   {showGuide && (
                     <div className={`px-5 pb-5 ${darkMode ? "border-t border-neutral-700" : "border-t border-gray-100"}`}>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                      <div className="space-y-3 pt-4">
                         {[
-                          { step: '1', title: '프로젝트 만들기', desc: '"새 프로젝트" 버튼을 눌러 영상 비율과 해상도를 선택하고 시작하세요. 템플릿으로 빠르게 시작할 수도 있어요.', icon: '🎬' },
-                          { step: '2', title: '프로젝트 정보 입력', desc: '"프로젝트 정보" 탭에서 브랜드명, 담당자, 감독 등의 정보를 입력하세요. PDF 표지에 자동으로 들어갑니다.', icon: '📋' },
-                          { step: '3', title: '촬영 정보 입력', desc: '"촬영 정보" 탭에서 촬영 장소, 스튜디오, 주차 안내, 콜타임 등을 기록하세요.', icon: '📍' },
-                          { step: '4', title: '씬 편집하기', desc: '"편집기"에서 씬별로 이미지, 카메라 앵글, 샷 사이즈, 조명, 대사, 사운드를 설정하세요.', icon: '🎥' },
-                          { step: '5', title: '타임테이블 작성', desc: '"타임테이블" 탭에서 촬영 일정을 표로 관리하세요. "씬에서 자동 생성" 버튼으로 빠르게 만들 수 있어요.', icon: '⏰' },
-                          { step: '6', title: 'PDF로 내보내기', desc: '상단의 "PDF" 버튼을 눌러 표지+촬영정보+씬테이블+타임테이블을 한 번에 PDF로 출력하세요.', icon: '📄' },
+                          { step: '1', title: '시작하기', desc: '"새 프로젝트" 버튼을 눌러 프로젝트 이름, 영상 비율, 해상도를 선택하고 시작하세요. 샘플 프로젝트로 빠르게 시작할 수도 있습니다.', icon: '🚀' },
+                          { step: '2', title: '프로젝트 정보 (1페이지)', desc: '"프로젝트 정보" 탭에서 브랜드명, 담당자, 감독, DP(촬영감독), PD(프로듀서) 정보를 입력하세요. 이 정보는 PDF 표지와 촬영 자료에 자동으로 포함됩니다.', icon: '📋' },
+                          { step: '3', title: '촬영 정보 (2페이지)', desc: '"촬영 정보" 탭에서 촬영 일정(촬영일), 콜타임, 촬영 장소, 스튜디오 정보, 주차 안내, 병원 정보, 날씨 등을 기록하세요.', icon: '📍' },
+                          { step: '4', title: '씬 편집기', desc: '"편집기"에서 각 씬별로 이미지 업로드/편집, 카메라 앵글, 샷 사이즈, 무브먼트, 조명, 렌즈, 프레임레이트, 전환효과, 대사/나레이션, 사운드/BGM, 감독 메모를 설정할 수 있습니다.', icon: '🎥' },
+                          { step: '5', title: '씬 코멘트', desc: '각 씬에 대해 피드백이나 메모를 작성하고, 논의 사항을 관리할 수 있습니다. "해결" 표시로 완료된 항목을 체계적으로 관리하세요.', icon: '💬' },
+                          { step: '6', title: '에셋 라이브러리', desc: '미리 만들어진 프리셋을 적용하여 씬을 빠르게 설정할 수 있습니다. 자주 사용하는 설정을 저장하고 재사용하세요.', icon: '📦' },
+                          { step: '7', title: '그리드 뷰', desc: '"그리드 뷰"에서 전체 씬을 한눈에 썸네일로 확인할 수 있습니다. 전체 구성을 빠르게 파악하고 씬 순서를 드래그로 조정하세요.', icon: '⊞' },
+                          { step: '8', title: '타임라인 뷰', desc: '"타임라인 뷰"에서 씬의 시간 흐름을 시각적으로 확인할 수 있습니다. 각 씬의 소요 시간을 한눈에 보고 전체 영상 길이를 계산하세요.', icon: '📊' },
+                          { step: '9', title: '애니매틱 프리뷰', desc: '"프리뷰" 버튼을 눌러 씬을 자동으로 재생하는 슬라이드쇼를 볼 수 있습니다. 각 씬을 순서대로 자동 전환하며 전체 흐름을 확인하세요.', icon: '▶️' },
+                          { step: '10', title: '타임테이블', desc: '"타임테이블" 탭에서 촬영 일정을 시간 단위로 표 형식으로 관리하세요. "씬에서 자동 생성" 버튼으로 씬 정보를 기반으로 일정을 자동 생성할 수 있습니다.', icon: '⏰' },
+                          { step: '11', title: '샷 리스트', desc: '"샷 리스트"는 촬영팀용 샷 목록을 자동으로 생성합니다. 각 씬의 샷 정보를 테이블 형식으로 정리하고 "복사" 버튼으로 다른 도구에 붙여넣으세요.', icon: '📹' },
+                          { step: '12', title: '캘린더 뷰', desc: '"캘린더 뷰"에서 월간 촬영 일정을 시각적으로 확인할 수 있습니다. 촬영 날짜를 캘린더에 표시하고 전체 일정을 한눈에 파악하세요.', icon: '📅' },
+                          { step: '13', title: '예산 추정', desc: '"예산" 탭에서 씬 기반으로 제작비를 자동 계산할 수 있습니다. 각 씬의 복잡도, 소요 시간 등을 입력하면 총 예산을 추정합니다.', icon: '💰' },
+                          { step: '14', title: 'AI 씬 추천', desc: '"AI 추천" 기능으로 영상 유형별(광고, 뮤직비디오, 다큐멘터리 등) 추천 씬을 자동으로 구성받을 수 있습니다. 빠른 기획에 도움이 됩니다.', icon: '✨' },
+                          { step: '15', title: '버전 관리', desc: '"버전 관리"에서 프로젝트 스냅샷을 저장하고 복원할 수 있습니다. 이전 버전으로 돌아가거나 여러 버전을 비교하세요.', icon: '🔄' },
+                          { step: '16', title: '스마트 검색', desc: '"검색" 기능으로 씬 제목, 설명, 대사로 빠르게 검색할 수 있습니다. 다양한 필터를 사용하여 원하는 씬을 찾으세요.', icon: '🔍' },
+                          { step: '17', title: 'PDF 내보내기', desc: '상단의 "PDF" 버튼을 눌러 표지+프로젝트 정보+촬영 정보+씬테이블+타임테이블을 한 번에 PDF로 출력하세요. 외부 공유에 최적화되어 있습니다.', icon: '📄' },
+                          { step: '18', title: 'JSON 내보내기', desc: '"내보내기" 메뉴에서 프로젝트 데이터를 JSON 형식으로 내보낼 수 있습니다. 다른 시스템과의 연동이나 백업 용도로 사용하세요.', icon: '💾' },
+                          { step: '19', title: '키보드 단축키', desc: 'Ctrl+Z(실행 취소), Ctrl+Shift+Z(다시 하기), 마우스 휠(이미지 확대/축소), 마우스 드래그(이미지 이동) 등의 단축키로 빠르게 작업하세요.', icon: '⌨️' },
+                          { step: '20', title: '관리자 기능', desc: '"설정" > "공지사항"에서 팀 전체에 공지사항을 작성, 수정, 삭제할 수 있습니다. 어드민 권한이 필요합니다.', icon: '👨‍💼' },
                         ].map(item => (
                           <div key={item.step} className={`flex gap-3 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
                             <div className="text-2xl flex-shrink-0">{item.icon}</div>
-                            <div>
+                            <div className="flex-1">
                               <div className={`font-semibold text-sm mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>
-                                <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full text-[10px] mr-1.5 font-bold ${darkMode ? "bg-neutral-600 text-white" : "bg-neutral-800 text-white"}`}>{item.step}</span>
+                                <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] mr-2 font-bold ${darkMode ? "bg-neutral-600 text-white" : "bg-neutral-800 text-white"}`}>{item.step}</span>
                                 {item.title}
                               </div>
                               <p className={`text-xs leading-relaxed ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{item.desc}</p>
@@ -2482,7 +2462,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                         ))}
                       </div>
 
-                      {/* 키보드 단축키 */}
+                      {/* 키보드 단축키 상세 */}
                       <div className={`mt-4 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
                         <h4 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
                           <Keyboard size={14} /> 키보드 단축키
@@ -2565,16 +2545,23 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                 {/* 하단 기능 요약 */}
                 <div className={`rounded-2xl border p-6 ${darkMode ? "bg-neutral-800/50 border-neutral-700" : "bg-white border-gray-100"}`}>
                   <h3 className={`font-semibold text-sm mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>주요 기능</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {[
                       { icon: '📋', title: '프로젝트 정보', desc: '브랜드, 담당자, 제작진' },
                       { icon: '📍', title: '촬영 정보', desc: '스튜디오, 주차, 콜타임' },
                       { icon: '🎥', title: '씬 편집기', desc: '앵글, 조명, 대사, 사운드' },
-                      { icon: '📊', title: '그리드 뷰', desc: '한눈에 전체 씬 보기' },
-                      { icon: '⏰', title: '타임테이블', desc: '촬영 일정 표 관리' },
-                      { icon: '🎞️', title: '타임라인', desc: '시간 흐름 시각화' },
+                      { icon: '💬', title: '씬 코멘트', desc: '씬별 피드백/메모' },
+                      { icon: '🗂️', title: '에셋 라이브러리', desc: '프리셋으로 빠른 설정' },
+                      { icon: '▶️', title: '애니매틱 프리뷰', desc: '씬 자동 재생 슬라이드' },
+                      { icon: '📝', title: '샷 리스트', desc: '촬영팀용 샷 목록 생성' },
+                      { icon: '💾', title: '버전 관리', desc: '스냅샷 저장/복원' },
+                      { icon: '💰', title: '예산 추정', desc: '씬 기반 제작비 계산' },
+                      { icon: '📅', title: '촬영 캘린더', desc: '월간 일정 시각화' },
+                      { icon: '🔍', title: '스마트 검색', desc: '씬 필터/검색' },
+                      { icon: '📱', title: '반응형 UI', desc: '모바일/태블릿 지원' },
+                      { icon: '🤖', title: 'AI 씬 추천', desc: '영상 유형별 자동 구성' },
                       { icon: '📄', title: 'PDF 내보내기', desc: '표지+씬+일정 한번에' },
-                      { icon: '🖥️', title: '프레젠테이션', desc: '씬 슬라이드쇼' },
+                      { icon: '⏰', title: '타임테이블', desc: '촬영 일정 표 관리' },
                     ].map(f => (
                       <div key={f.title} className={`p-3 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
                         <div className="text-xl mb-2">{f.icon}</div>
@@ -2591,11 +2578,45 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             <>
               {viewMode === 'project-info' && <ProjectInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
-              {viewMode === 'editor' && <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />}
-              {viewMode === 'grid' && <StoryboardGrid scenes={activeProject.scenes} onSelectScene={setActiveSceneId} />}
+              {viewMode === 'editor' && (
+                <div className="flex flex-1 overflow-hidden">
+                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />
+                  {activeScene && (
+                    <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
+                      <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
+                      <div className={`border-t ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
+                        <AssetLibraryPanel onApplyPreset={(preset: any) => {
+                          if (activeScene) {
+                            handleUpdateScene(activeScene.id, { ...activeScene, ...preset });
+                          }
+                        }} darkMode={darkMode} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {viewMode === 'grid' && <StoryboardGrid scenes={activeProject.scenes} onSelectScene={(id: string) => { setActiveSceneId(id); setViewMode('editor'); }} />}
               {viewMode === 'timeline' && <TimelineView scenes={activeProject.scenes} activeSceneId={activeSceneId} onSelectScene={setActiveSceneId} />}
               {viewMode === 'timetable' && <TimetableView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
-              {viewMode === 'presentation' && <PresentationView scenes={activeProject.scenes} projectTitle={activeProject.title} />}
+              {viewMode === 'animatic' && <AnimaticPreview scenes={activeProject.scenes} projectTitle={activeProject.title} darkMode={darkMode} />}
+              {viewMode === 'shotlist' && <ShotListView project={activeProject} darkMode={darkMode} />}
+              {viewMode === 'calendar' && <CalendarView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
+              {viewMode === 'budget' && <BudgetEstimator project={activeProject} darkMode={darkMode} />}
+              {viewMode === 'search' && <SceneSearchFilter scenes={activeProject.scenes} onSelectScene={(id: string) => { setActiveSceneId(id); setViewMode('editor'); }} darkMode={darkMode} />}
+              {viewMode === 'versions' && <VersionManager project={activeProject} onRestore={(restored: any) => {
+                const updated = projects.map(p => p.id === activeProject.id ? { ...restored, id: activeProject.id } : p);
+                setProjects(updated);
+              }} darkMode={darkMode} />}
+              {viewMode === 'ai-recommend' && <AISceneRecommender project={activeProject} onAddScene={(sceneData: any) => {
+                const newScene = {
+                  ...sceneData,
+                  id: generateId(),
+                  scene_number: activeProject.scenes.length + 1,
+                };
+                const updated = projects.map(p => p.id === activeProject.id ? { ...p, scenes: [...p.scenes, newScene] } : p);
+                setProjects(updated);
+                setActiveSceneId(newScene.id);
+              }} darkMode={darkMode} />}
             </>
           ) : null}
         </div>
