@@ -1983,7 +1983,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                   { id: 'timeline', label: '타임라인' },
                   { id: 'timetable', label: '타임테이블' },
                   { id: 'presentation', label: '프레젠테이션' },
-                  { id: 'checklist', label: '체크리스트' },
                 ].map(({ id, label }) => (
                   <button
                     key={id}
@@ -2137,7 +2136,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               {viewMode === 'timeline' && <TimelineView scenes={activeProject.scenes} activeSceneId={activeSceneId} onSelectScene={setActiveSceneId} />}
               {viewMode === 'timetable' && <TimetableView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'presentation' && <PresentationView scenes={activeProject.scenes} projectTitle={activeProject.title} />}
-              {viewMode === 'checklist' && <ChecklistView scenes={activeProject.scenes} onUpdateScene={(scene: Scene) => handleUpdateScene(scene.id, scene)} />}
             </>
           ) : null}
         </div>
