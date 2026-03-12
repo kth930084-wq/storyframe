@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import {
   CAMERA_ANGLES, SHOT_SIZES, CAMERA_MOVEMENTS, LIGHTING_OPTIONS, TRANSITIONS,
-  VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS
+  VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS, isAdmin
 } from '@/lib/constants';
+import Link from 'next/link';
 
 interface StoryboardAppProps {
   user: any;
@@ -1251,6 +1252,14 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            {user?.email && isAdmin(user.email) && (
+              <Link
+                href="/admin"
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-gray-700 text-gray-300 hover:bg-gray-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+              >
+                관리자
+              </Link>
+            )}
             <button
               onClick={onLogout}
               className={`p-2 rounded-lg transition text-red-600 ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"}`}

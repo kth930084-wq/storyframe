@@ -4,7 +4,6 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { StoryboardApp } from '@/components/StoryboardApp';
-import { isAdmin } from '@/lib/constants';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,12 +22,6 @@ export default function DashboardPage() {
 
   if (!user) {
     router.push('/');
-    return null;
-  }
-
-  // Redirect admin users to admin dashboard
-  if (user.email && isAdmin(user.email)) {
-    router.push('/admin');
     return null;
   }
 
