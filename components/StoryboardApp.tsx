@@ -13,6 +13,10 @@ import {
   CAMERA_ANGLES, SHOT_SIZES, CAMERA_MOVEMENTS, LIGHTING_OPTIONS, TRANSITIONS,
   VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS, ASPECT_RATIOS, VIDEO_RESOLUTIONS, isAdmin
 } from '@/lib/constants';
+import {
+  getAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement,
+  type Announcement
+} from '@/lib/firebase';
 import Link from 'next/link';
 
 interface StoryboardAppProps {
@@ -1086,25 +1090,72 @@ const ChecklistView = ({ scenes, onUpdateScene }: any) => {
   );
 };
 
+// ========== 인라인 편집 필드 (포커스 유지를 위해 컴포넌트 바깥에 정의) ==========
+const InfoField = ({ label, field, placeholder, value, type, onChange, inputCls, labelCls }: {
+  label: string; field: string; placeholder: string; value?: string; type?: string;
+  onChange: (field: string, value: string) => void; inputCls: string; labelCls: string;
+}) => {
+  const [localVal, setLocalVal] = useState(value || '');
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    setLocalVal(value || '');
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setLocalVal(v);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onChange(field, v), 300);
+  };
+
+  return (
+    <div>
+      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
+      <input type={type || "text"} value={localVal} onChange={handleChange} placeholder={placeholder}
+        className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
+    </div>
+  );
+};
+
+const InfoTextarea = ({ label, value, placeholder, rows, onChange, inputCls, labelCls, className }: {
+  label: string; value?: string; placeholder: string; rows: number;
+  onChange: (value: string) => void; inputCls: string; labelCls: string; className?: string;
+}) => {
+  const [localVal, setLocalVal] = useState(value || '');
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    setLocalVal(value || '');
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setLocalVal(v);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => onChange(v), 300);
+  };
+
+  return (
+    <div className={className}>
+      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
+      <textarea value={localVal} onChange={handleChange} rows={rows} placeholder={placeholder}
+        className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
+    </div>
+  );
+};
+
 // ========== 프로젝트 정보 뷰 (1번째 페이지) ==========
 const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; onUpdate: (u: Partial<Project>) => void; darkMode: boolean }) => {
   const info = project.project_info || {};
-  const updateInfo = (field: string, value: string) => {
-    onUpdate({ project_info: { ...info, [field]: value } });
-  };
+  const updateInfo = useCallback((field: string, value: string) => {
+    onUpdate({ project_info: { ...project.project_info, [field]: value } });
+  }, [project.project_info, onUpdate]);
   const cardCls = darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100";
   const inputCls = darkMode
     ? "bg-neutral-700 text-white border-neutral-600 placeholder-neutral-500 focus:ring-neutral-400"
     : "bg-gray-50 text-gray-900 border-gray-200 placeholder-gray-400 focus:ring-neutral-500";
   const labelCls = darkMode ? "text-neutral-300" : "text-gray-600";
-
-  const Field = ({ label, field, placeholder, value }: { label: string; field: string; placeholder: string; value?: string }) => (
-    <div>
-      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
-      <input type="text" value={value || ''} onChange={(e) => updateInfo(field, e.target.value)} placeholder={placeholder}
-        className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
-    </div>
-  );
 
   return (
     <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
@@ -1121,13 +1172,9 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Film className="w-4 h-4" /> 프로젝트 기본</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>프로젝트명</label>
-              <input type="text" value={project.title || ''} onChange={(e) => onUpdate({ title: e.target.value })} placeholder="프로젝트 이름"
-                className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
-            </div>
-            <Field label="브랜드 / 클라이언트명" field="brand_name" placeholder="예: 삼성전자" value={info.brand_name} />
-            <Field label="광고주 / 클라이언트 담당자" field="client_name" placeholder="예: 홍길동 과장" value={info.client_name} />
+            <InfoField label="프로젝트명" field="__title" placeholder="프로젝트 이름" value={project.title} onChange={(_f, v) => onUpdate({ title: v })} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="브랜드 / 클라이언트명" field="brand_name" placeholder="예: 삼성전자" value={info.brand_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="광고주 / 클라이언트 담당자" field="client_name" placeholder="예: 홍길동 과장" value={info.client_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>영상 유형</label>
               <select value={project.video_type || ''} onChange={(e) => onUpdate({ video_type: e.target.value })}
@@ -1149,24 +1196,22 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Users className="w-4 h-4" /> 제작진 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="담당자 (PM)" field="manager_name" placeholder="이름" value={info.manager_name} />
-            <Field label="담당자 연락처" field="manager_phone" placeholder="010-0000-0000" value={info.manager_phone} />
-            <Field label="담당자 이메일" field="manager_email" placeholder="email@example.com" value={info.manager_email} />
-            <Field label="감독" field="director_name" placeholder="감독 이름" value={info.director_name} />
-            <Field label="감독 연락처" field="director_phone" placeholder="010-0000-0000" value={info.director_phone} />
-            <Field label="촬영감독 (DP)" field="dp_name" placeholder="촬영감독 이름" value={info.dp_name} />
-            <Field label="촬영감독 연락처" field="dp_phone" placeholder="010-0000-0000" value={info.dp_phone} />
-            <Field label="PD / 프로듀서" field="pd_name" placeholder="PD 이름" value={info.pd_name} />
-            <Field label="PD 연락처" field="pd_phone" placeholder="010-0000-0000" value={info.pd_phone} />
+            <InfoField label="담당자 (PM)" field="manager_name" placeholder="이름" value={info.manager_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="담당자 연락처" field="manager_phone" placeholder="010-0000-0000" value={info.manager_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="담당자 이메일" field="manager_email" placeholder="email@example.com" value={info.manager_email} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="감독" field="director_name" placeholder="감독 이름" value={info.director_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="감독 연락처" field="director_phone" placeholder="010-0000-0000" value={info.director_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="촬영감독 (DP)" field="dp_name" placeholder="촬영감독 이름" value={info.dp_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="촬영감독 연락처" field="dp_phone" placeholder="010-0000-0000" value={info.dp_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="PD / 프로듀서" field="pd_name" placeholder="PD 이름" value={info.pd_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="PD 연락처" field="pd_phone" placeholder="010-0000-0000" value={info.pd_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
           </div>
         </div>
 
         {/* 프로젝트 설명 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Edit3 className="w-4 h-4" /> 프로젝트 설명</h3>
-          <textarea value={project.description || ''} onChange={(e) => onUpdate({ description: e.target.value })} rows={4}
-            placeholder="이 프로젝트에 대한 간단한 설명, 컨셉, 목표 등을 적어주세요..."
-            className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
+          <InfoTextarea label="" value={project.description} placeholder="이 프로젝트에 대한 간단한 설명, 컨셉, 목표 등을 적어주세요..." rows={4} onChange={(v) => onUpdate({ description: v })} inputCls={inputCls} labelCls={labelCls} />
         </div>
       </div>
     </div>
@@ -1176,22 +1221,14 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
 // ========== 촬영 정보 뷰 (2번째 페이지) ==========
 const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; onUpdate: (u: Partial<Project>) => void; darkMode: boolean }) => {
   const info = project.shooting_info || {};
-  const updateInfo = (field: string, value: string) => {
-    onUpdate({ shooting_info: { ...info, [field]: value } });
-  };
+  const updateInfo = useCallback((field: string, value: string) => {
+    onUpdate({ shooting_info: { ...project.shooting_info, [field]: value } });
+  }, [project.shooting_info, onUpdate]);
   const cardCls = darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100";
   const inputCls = darkMode
     ? "bg-neutral-700 text-white border-neutral-600 placeholder-neutral-500 focus:ring-neutral-400"
     : "bg-gray-50 text-gray-900 border-gray-200 placeholder-gray-400 focus:ring-neutral-500";
   const labelCls = darkMode ? "text-neutral-300" : "text-gray-600";
-
-  const Field = ({ label, field, placeholder, value, type }: { label: string; field: string; placeholder: string; value?: string; type?: string }) => (
-    <div>
-      <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>{label}</label>
-      <input type={type || "text"} value={value || ''} onChange={(e) => updateInfo(field, e.target.value)} placeholder={placeholder}
-        className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
-    </div>
-  );
 
   return (
     <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
@@ -1208,11 +1245,11 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Clock className="w-4 h-4" /> 촬영 일정</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="촬영일" field="shoot_date" placeholder="2026-03-15" value={info.shoot_date} type="date" />
-            <Field label="촬영 일수" field="shoot_days" placeholder="예: 2일" value={info.shoot_days} />
-            <Field label="콜타임 (출근 시간)" field="call_time" placeholder="예: 07:00" value={info.call_time} type="time" />
-            <Field label="예상 종료 시간" field="wrap_time" placeholder="예: 19:00" value={info.wrap_time} type="time" />
-            <Field label="점심시간" field="lunch_time" placeholder="예: 12:00~13:00" value={info.lunch_time} />
+            <InfoField label="촬영일" field="shoot_date" placeholder="2026-03-15" value={info.shoot_date} type="date" onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="촬영 일수" field="shoot_days" placeholder="예: 2일" value={info.shoot_days} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="콜타임 (출근 시간)" field="call_time" placeholder="예: 07:00" value={info.call_time} type="time" onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="예상 종료 시간" field="wrap_time" placeholder="예: 19:00" value={info.wrap_time} type="time" onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="점심시간" field="lunch_time" placeholder="예: 12:00~13:00" value={info.lunch_time} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
           </div>
         </div>
 
@@ -1220,8 +1257,8 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Target className="w-4 h-4" /> 촬영 장소</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="촬영 장소명" field="location_name" placeholder="예: 한남동 루프탑" value={info.location_name} />
-            <Field label="촬영 장소 주소" field="location_address" placeholder="서울시 용산구 한남동 123-45" value={info.location_address} />
+            <InfoField label="촬영 장소명" field="location_name" placeholder="예: 한남동 루프탑" value={info.location_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="촬영 장소 주소" field="location_address" placeholder="서울시 용산구 한남동 123-45" value={info.location_address} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
           </div>
         </div>
 
@@ -1229,15 +1266,10 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Camera className="w-4 h-4" /> 스튜디오 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="스튜디오 이름" field="studio_name" placeholder="예: PEWPEW Studio A" value={info.studio_name} />
-            <Field label="스튜디오 주소" field="studio_address" placeholder="서울시 강남구..." value={info.studio_address} />
-            <Field label="스튜디오 연락처" field="studio_phone" placeholder="02-0000-0000" value={info.studio_phone} />
-            <div className="md:col-span-2">
-              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>주차 안내</label>
-              <textarea value={info.parking_info || ''} onChange={(e) => updateInfo('parking_info', e.target.value)} rows={3}
-                placeholder="주차 가능 대수, 위치, 유/무료 여부 등..."
-                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
-            </div>
+            <InfoField label="스튜디오 이름" field="studio_name" placeholder="예: PEWPEW Studio A" value={info.studio_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="스튜디오 주소" field="studio_address" placeholder="서울시 강남구..." value={info.studio_address} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="스튜디오 연락처" field="studio_phone" placeholder="02-0000-0000" value={info.studio_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoTextarea label="주차 안내" value={info.parking_info} placeholder="주차 가능 대수, 위치, 유/무료 여부 등..." rows={3} onChange={(v) => updateInfo('parking_info', v)} inputCls={inputCls} labelCls={labelCls} className="md:col-span-2" />
           </div>
         </div>
 
@@ -1245,14 +1277,9 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><HelpCircle className="w-4 h-4" /> 안전 / 기타</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="가까운 병원" field="nearest_hospital" placeholder="병원명 및 주소" value={info.nearest_hospital} />
-            <Field label="날씨 메모" field="weather_note" placeholder="예: 맑음, 30°C 예상" value={info.weather_note} />
-            <div className="md:col-span-2">
-              <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>특이사항 / 주의사항</label>
-              <textarea value={info.special_notes || ''} onChange={(e) => updateInfo('special_notes', e.target.value)} rows={3}
-                placeholder="현장 주의사항, 반입 금지 물품, 드레스코드 등..."
-                className={`w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 transition resize-none ${inputCls}`} />
-            </div>
+            <InfoField label="가까운 병원" field="nearest_hospital" placeholder="병원명 및 주소" value={info.nearest_hospital} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoField label="날씨 메모" field="weather_note" placeholder="예: 맑음, 30°C 예상" value={info.weather_note} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
+            <InfoTextarea label="특이사항 / 주의사항" value={info.special_notes} placeholder="현장 주의사항, 반입 금지 물품, 드레스코드 등..." rows={3} onChange={(v) => updateInfo('special_notes', v)} inputCls={inputCls} labelCls={labelCls} className="md:col-span-2" />
           </div>
         </div>
       </div>
@@ -1650,6 +1677,11 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [showAnnouncementEditor, setShowAnnouncementEditor] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', type: 'info' as 'info' | 'update' | 'important' });
 
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeScene = activeProject?.scenes?.find(s => s.id === activeSceneId);
@@ -1671,6 +1703,39 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       console.error('Failed to load projects:', e);
     }
   }, []);
+
+  // 공지사항 Firestore에서 불러오기
+  useEffect(() => {
+    const loadAnnouncements = async () => {
+      const data = await getAnnouncements();
+      setAnnouncements(data);
+    };
+    loadAnnouncements();
+  }, []);
+
+  const handleSaveAnnouncement = async () => {
+    if (!announcementForm.title.trim()) return;
+    if (editingAnnouncement?.id) {
+      const ok = await updateAnnouncement(editingAnnouncement.id, { ...announcementForm });
+      if (ok) {
+        setAnnouncements(prev => prev.map(a => a.id === editingAnnouncement.id ? { ...a, ...announcementForm } : a));
+      }
+    } else {
+      const id = await addAnnouncement({ ...announcementForm, active: true, author_email: user?.email });
+      if (id) {
+        setAnnouncements(prev => [{ id, ...announcementForm, active: true, author_email: user?.email }, ...prev]);
+      }
+    }
+    setShowAnnouncementEditor(false);
+    setEditingAnnouncement(null);
+    setAnnouncementForm({ title: '', content: '', type: 'info' });
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!confirm('이 공지사항을 삭제할까요?')) return;
+    const ok = await deleteAnnouncement(id);
+    if (ok) setAnnouncements(prev => prev.filter(a => a.id !== id));
+  };
 
   useEffect(() => {
     const saveTimer = setTimeout(() => {
@@ -2263,87 +2328,263 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
           {isDashboard ? (
-            <div className={`min-h-full p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
-              <div className="max-w-5xl mx-auto">
-                <div className="flex justify-between items-center mb-10">
+            <div className={`min-h-full p-6 md:p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+              <div className="max-w-6xl mx-auto space-y-8">
+
+                {/* 환영 + 새 프로젝트 */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>내 프로젝트</h1>
-                    <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>{projects.length}개의 프로젝트</p>
+                    <h1 className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                      {user?.displayName ? `${user.displayName}님, 환영합니다` : '환영합니다'}
+                    </h1>
+                    <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
                   </div>
-                  <button
-                    onClick={() => setShowNewProject(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white text-neutral-900 rounded-lg hover:bg-neutral-100 transition font-medium text-sm shadow-sm"
-                  >
-                    <Plus size={18} />
-                    새 프로젝트
+                  <button onClick={() => setShowNewProject(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
+                    <Plus size={18} /> 새 프로젝트
                   </button>
                 </div>
 
-                {projects.length === 0 ? (
-                  <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
-                    <Film size={48} className={`mx-auto mb-4 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
-                    <p className={`mb-2 font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>아직 프로젝트가 없어요</p>
-                    <p className={`text-sm mb-6 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>새 프로젝트를 만들어 스토리보드를 시작하세요</p>
-                    <button
-                      onClick={() => setShowNewProject(true)}
-                      className="px-6 py-2.5 bg-neutral-800 text-white rounded-lg hover:bg-neutral-900 transition text-sm font-medium"
-                    >
-                      첫 프로젝트 만들기
-                    </button>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {projects.map(project => (
-                      <div
-                        key={project.id}
-                        className={`rounded-xl overflow-hidden transition cursor-pointer group ${darkMode ? "bg-neutral-800 hover:bg-neutral-750 border border-neutral-700" : "bg-white border border-gray-100 hover:shadow-lg"}`}
-                        onClick={() => {
-                          setActiveProjectId(project.id);
-                          if (project.scenes.length > 0) {
-                            setActiveSceneId(project.scenes[0].id);
-                          }
-                          setCurrentPage('editor');
-                          setViewMode('editor');
-                        }}
-                      >
-                        <div className="h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-4xl">
-                          {project.video_type ? '🎬' : '📽️'}
-                        </div>
-                        <div className="p-4">
-                          <h3 className={`font-bold mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
-                          <p className={`text-sm mb-2 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
-                            {project.scenes.length} 씬 · {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
-                          </p>
-                          {project.aspect_ratio && (
-                            <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded mb-3 ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-600"}`}>
-                              {project.aspect_ratio} {project.resolution && `· ${project.resolution}`}
-                            </span>
-                          )}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicateProject(project.id);
-                              }}
-                              className={`px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                            >
-                              <Copy size={12} /> 복제
+                {/* 공지사항 배너 */}
+                <div className={`rounded-2xl border p-5 ${darkMode ? "bg-gradient-to-r from-neutral-800 to-neutral-800/50 border-neutral-700" : "bg-gradient-to-r from-white to-gray-50 border-gray-100"}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-neutral-700" : "bg-neutral-100"}`}>
+                      <Bell size={18} className={darkMode ? "text-neutral-300" : "text-neutral-600"} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>공지사항</h3>
+                        {announcements.length > 0 && (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${darkMode ? "bg-neutral-600 text-neutral-300" : "bg-neutral-200 text-neutral-600"}`}>
+                            {announcements.length}건
+                          </span>
+                        )}
+                        {isAdmin(user?.email) && (
+                          <button onClick={() => {
+                            setAnnouncementForm({ title: '', content: '', type: 'info' });
+                            setEditingAnnouncement(null);
+                            setShowAnnouncementEditor(true);
+                          }}
+                            className={`ml-auto text-[11px] px-3 py-1 rounded-lg font-medium transition ${darkMode ? "bg-neutral-600 text-neutral-200 hover:bg-neutral-500" : "bg-neutral-800 text-white hover:bg-neutral-700"}`}>
+                            + 공지 작성
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 공지사항 에디터 (어드민 전용) */}
+                      {showAnnouncementEditor && isAdmin(user?.email) && (
+                        <div className={`mt-3 p-4 rounded-xl border space-y-3 ${darkMode ? "bg-neutral-700 border-neutral-600" : "bg-gray-50 border-gray-200"}`}>
+                          <input type="text" value={announcementForm.title}
+                            onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="공지 제목 (예: v2.1 업데이트)"
+                            className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
+                          <textarea value={announcementForm.content}
+                            onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+                            rows={3} placeholder="공지 내용을 입력하세요..."
+                            className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none resize-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
+                          <div className="flex items-center gap-2">
+                            <select value={announcementForm.type}
+                              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
+                              className={`px-3 py-1.5 rounded-lg text-xs border ${darkMode ? "bg-neutral-600 text-white border-neutral-500" : "bg-white text-gray-700 border-gray-300"}`}>
+                              <option value="info">일반</option>
+                              <option value="update">업데이트</option>
+                              <option value="important">중요</option>
+                            </select>
+                            <div className="flex-1" />
+                            <button onClick={() => { setShowAnnouncementEditor(false); setEditingAnnouncement(null); }}
+                              className={`px-3 py-1.5 text-xs rounded-lg ${darkMode ? "text-neutral-400 hover:text-neutral-200" : "text-gray-500 hover:text-gray-700"}`}>
+                              취소
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteProject(project.id);
-                              }}
-                              className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}
-                            >
-                              삭제
+                            <button onClick={handleSaveAnnouncement}
+                              className="px-4 py-1.5 text-xs bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 font-medium">
+                              {editingAnnouncement ? '수정' : '등록'}
                             </button>
                           </div>
                         </div>
+                      )}
+
+                      {/* 공지 목록 */}
+                      <div className={`text-sm space-y-2 mt-2 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>
+                        {announcements.length > 0 ? (
+                          announcements.filter(a => a.active !== false).map(a => (
+                            <div key={a.id} className="flex items-start gap-2 group">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 mt-0.5 ${
+                                a.type === 'important' ? (darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600') :
+                                a.type === 'update' ? (darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600') :
+                                (darkMode ? 'bg-neutral-600 text-neutral-300' : 'bg-gray-200 text-gray-600')
+                              }`}>
+                                {a.type === 'important' ? '중요' : a.type === 'update' ? '업데이트' : '안내'}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-medium text-xs ${darkMode ? "text-neutral-200" : "text-gray-800"}`}>{a.title}</p>
+                                {a.content && <p className="text-xs mt-0.5">{a.content}</p>}
+                              </div>
+                              {isAdmin(user?.email) && (
+                                <div className="opacity-0 group-hover:opacity-100 flex gap-1 flex-shrink-0 transition">
+                                  <button onClick={() => {
+                                    setAnnouncementForm({ title: a.title, content: a.content, type: a.type });
+                                    setEditingAnnouncement(a);
+                                    setShowAnnouncementEditor(true);
+                                  }} className={`text-[10px] px-2 py-0.5 rounded ${darkMode ? "hover:bg-neutral-600 text-neutral-400" : "hover:bg-gray-200 text-gray-400"}`}>
+                                    수정
+                                  </button>
+                                  <button onClick={() => a.id && handleDeleteAnnouncement(a.id)}
+                                    className={`text-[10px] px-2 py-0.5 rounded ${darkMode ? "hover:bg-red-900/30 text-neutral-400 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`}>
+                                    삭제
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-xs">아직 공지사항이 없습니다.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 빠른 시작 가이드 (접기/펼치기) */}
+                <div className={`rounded-2xl border overflow-hidden ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
+                  <button
+                    onClick={() => setShowGuide && setShowGuide(!showGuide)}
+                    className={`w-full px-5 py-4 flex items-center justify-between text-left ${darkMode ? "hover:bg-neutral-750" : "hover:bg-gray-50"} transition`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? "bg-neutral-700" : "bg-neutral-100"}`}>
+                        <HelpCircle size={16} className={darkMode ? "text-neutral-300" : "text-neutral-600"} />
+                      </div>
+                      <span className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>사용법 가이드</span>
+                    </div>
+                    <ChevronDown size={16} className={`transition-transform ${showGuide ? "rotate-180" : ""} ${darkMode ? "text-neutral-500" : "text-gray-400"}`} />
+                  </button>
+                  {showGuide && (
+                    <div className={`px-5 pb-5 ${darkMode ? "border-t border-neutral-700" : "border-t border-gray-100"}`}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        {[
+                          { step: '1', title: '프로젝트 만들기', desc: '"새 프로젝트" 버튼을 눌러 영상 비율과 해상도를 선택하고 시작하세요. 템플릿으로 빠르게 시작할 수도 있어요.', icon: '🎬' },
+                          { step: '2', title: '프로젝트 정보 입력', desc: '"프로젝트 정보" 탭에서 브랜드명, 담당자, 감독 등의 정보를 입력하세요. PDF 표지에 자동으로 들어갑니다.', icon: '📋' },
+                          { step: '3', title: '촬영 정보 입력', desc: '"촬영 정보" 탭에서 촬영 장소, 스튜디오, 주차 안내, 콜타임 등을 기록하세요.', icon: '📍' },
+                          { step: '4', title: '씬 편집하기', desc: '"편집기"에서 씬별로 이미지, 카메라 앵글, 샷 사이즈, 조명, 대사, 사운드를 설정하세요.', icon: '🎥' },
+                          { step: '5', title: '타임테이블 작성', desc: '"타임테이블" 탭에서 촬영 일정을 표로 관리하세요. "씬에서 자동 생성" 버튼으로 빠르게 만들 수 있어요.', icon: '⏰' },
+                          { step: '6', title: 'PDF로 내보내기', desc: '상단의 "PDF" 버튼을 눌러 표지+촬영정보+씬테이블+타임테이블을 한 번에 PDF로 출력하세요.', icon: '📄' },
+                        ].map(item => (
+                          <div key={item.step} className={`flex gap-3 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
+                            <div className="text-2xl flex-shrink-0">{item.icon}</div>
+                            <div>
+                              <div className={`font-semibold text-sm mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                                <span className={`inline-flex w-5 h-5 items-center justify-center rounded-full text-[10px] mr-1.5 font-bold ${darkMode ? "bg-neutral-600 text-white" : "bg-neutral-800 text-white"}`}>{item.step}</span>
+                                {item.title}
+                              </div>
+                              <p className={`text-xs leading-relaxed ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{item.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* 키보드 단축키 */}
+                      <div className={`mt-4 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
+                        <h4 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                          <Keyboard size={14} /> 키보드 단축키
+                        </h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {[
+                            { keys: 'Ctrl + Z', action: '실행 취소' },
+                            { keys: 'Ctrl + Shift + Z', action: '다시 하기' },
+                            { keys: '마우스 휠', action: '이미지 확대/축소' },
+                            { keys: '마우스 드래그', action: '이미지 이동' },
+                          ].map(s => (
+                            <div key={s.keys} className="flex items-center gap-2">
+                              <kbd className={`px-2 py-1 rounded text-[10px] font-mono font-bold ${darkMode ? "bg-neutral-600 text-neutral-200" : "bg-neutral-200 text-neutral-700"}`}>{s.keys}</kbd>
+                              <span className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{s.action}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 내 프로젝트 */}
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <h2 className={`text-lg font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>내 프로젝트 <span className={`text-sm font-normal ml-1 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{projects.length}개</span></h2>
+                  </div>
+
+                  {projects.length === 0 ? (
+                    <div className={`text-center py-16 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
+                      <Film size={48} className={`mx-auto mb-4 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
+                      <p className={`mb-2 font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>아직 프로젝트가 없어요</p>
+                      <p className={`text-sm mb-6 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>새 프로젝트를 만들어 스토리보드를 시작하세요</p>
+                      <button onClick={() => setShowNewProject(true)}
+                        className="px-6 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition text-sm font-medium">
+                        첫 프로젝트 만들기
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {projects.map(project => (
+                        <div key={project.id}
+                          className={`rounded-xl overflow-hidden transition cursor-pointer group ${darkMode ? "bg-neutral-800 hover:bg-neutral-750 border border-neutral-700" : "bg-white border border-gray-100 hover:shadow-lg"}`}
+                          onClick={() => {
+                            setActiveProjectId(project.id);
+                            if (project.scenes.length > 0) setActiveSceneId(project.scenes[0].id);
+                            setCurrentPage('editor');
+                            setViewMode('editor');
+                          }}>
+                          <div className="h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-4xl">
+                            {project.video_type ? '🎬' : '📽️'}
+                          </div>
+                          <div className="p-4">
+                            <h3 className={`font-bold mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
+                            <p className={`text-sm mb-2 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+                              {project.scenes.length} 씬 · {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
+                            </p>
+                            {project.aspect_ratio && (
+                              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded mb-3 ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-600"}`}>
+                                {project.aspect_ratio} {project.resolution && `· ${project.resolution}`}
+                              </span>
+                            )}
+                            <div className="flex gap-2">
+                              <button onClick={(e) => { e.stopPropagation(); handleDuplicateProject(project.id); }}
+                                className={`px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                                <Copy size={12} /> 복제
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); if(confirm('프로젝트를 삭제할까요?')) handleDeleteProject(project.id); }}
+                                className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}>
+                                삭제
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 하단 기능 요약 */}
+                <div className={`rounded-2xl border p-6 ${darkMode ? "bg-neutral-800/50 border-neutral-700" : "bg-white border-gray-100"}`}>
+                  <h3 className={`font-semibold text-sm mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>주요 기능</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { icon: '📋', title: '프로젝트 정보', desc: '브랜드, 담당자, 제작진' },
+                      { icon: '📍', title: '촬영 정보', desc: '스튜디오, 주차, 콜타임' },
+                      { icon: '🎥', title: '씬 편집기', desc: '앵글, 조명, 대사, 사운드' },
+                      { icon: '📊', title: '그리드 뷰', desc: '한눈에 전체 씬 보기' },
+                      { icon: '⏰', title: '타임테이블', desc: '촬영 일정 표 관리' },
+                      { icon: '🎞️', title: '타임라인', desc: '시간 흐름 시각화' },
+                      { icon: '📄', title: 'PDF 내보내기', desc: '표지+씬+일정 한번에' },
+                      { icon: '🖥️', title: '프레젠테이션', desc: '씬 슬라이드쇼' },
+                    ].map(f => (
+                      <div key={f.title} className={`p-3 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
+                        <div className="text-xl mb-2">{f.icon}</div>
+                        <div className={`text-xs font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{f.title}</div>
+                        <div className={`text-[10px] mt-0.5 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{f.desc}</div>
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
+
               </div>
             </div>
           ) : activeProject ? (
