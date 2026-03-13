@@ -13,10 +13,6 @@ import {
   CAMERA_ANGLES, SHOT_SIZES, CAMERA_MOVEMENTS, LIGHTING_OPTIONS, TRANSITIONS,
   VIDEO_TYPES, PLATFORMS, TONES, TEMPLATES, LENS_OPTIONS, FRAMERATE_OPTIONS, ASPECT_RATIOS, VIDEO_RESOLUTIONS, isAdmin
 } from '@/lib/constants';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import SketchPicker from './SketchPicker';
-import { SKETCH_REFERENCES, type SketchRef } from '@/lib/sketch-references';
 import {
   getAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement,
   type Announcement
@@ -56,7 +52,6 @@ interface Scene {
   transition?: string;
   shooting_completed?: boolean;
   comments?: SceneComment[];
-  sketch?: { character?: string; background?: string; combined?: string };
   [key: string]: any;
 }
 
@@ -817,7 +812,7 @@ const SceneProgressRing = ({ completion }: any) => {
   );
 };
 
-const SceneEditor = ({ scene, onUpdate, onOpenSketchPicker }: any) => {
+const SceneEditor = ({ scene, onUpdate }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
   const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
@@ -845,24 +840,6 @@ const SceneEditor = ({ scene, onUpdate, onOpenSketchPicker }: any) => {
         <div className="lg:col-span-3 space-y-5">
           <div className="relative">
             <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
-            {/* 스케치 레퍼런스 미리보기 */}
-            {scene.sketch && (scene.sketch.combined || scene.sketch.character || scene.sketch.background) && (
-              <div className="mt-2 flex gap-2 items-center">
-                {[scene.sketch.combined, scene.sketch.character, scene.sketch.background].filter(Boolean).map(skId => {
-                  const sk = SKETCH_REFERENCES.find(s => s.id === skId);
-                  return sk ? (
-                    <div key={sk.id} className="flex items-center gap-1.5 px-2 py-1 bg-neutral-100 rounded-lg">
-                      <div className="w-10 h-6 text-neutral-600" dangerouslySetInnerHTML={{ __html: sk.svg }} />
-                      <span className="text-[10px] text-neutral-500">{sk.nameKo}</span>
-                    </div>
-                  ) : null;
-                })}
-                <button onClick={() => onUpdate({ ...scene, sketch: undefined })} className="text-red-400 hover:text-red-600 p-1"><X className="w-3 h-3" /></button>
-              </div>
-            )}
-            <button onClick={() => onOpenSketchPicker?.(scene.id)} className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-100 transition-colors">
-              <Grid className="w-3.5 h-3.5" />스케치 레퍼런스 선택
-            </button>
           </div>
           <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
           <div>
@@ -1648,8 +1625,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [history, setHistory] = useState<Project[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isSaving, setIsSaving] = useState(false);
-  const [sketchPickerOpen, setSketchPickerOpen] = useState(false);
-  const [sketchPickerSceneId, setSketchPickerSceneId] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState(false);
   const [showGuide, setShowGuide] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -1984,242 +1959,181 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
-  const handleExportPDF = useCallback(async () => {
+  const handleExportPDF = useCallback(() => {
     if (!activeProject) return;
-    try {
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      const pw = doc.internal.pageSize.getWidth();
-      const ph = doc.internal.pageSize.getHeight();
-      const margin = 15;
+    const p = activeProject;
+    const pInfo = p.project_info || {} as any;
+    const sInfo = p.shooting_info || {} as any;
+    const today = new Date().toLocaleDateString('ko-KR');
+    const brand = pInfo.brand_name || '';
+    const production = pInfo.production_company || 'PEWPEW STUDIO';
+    const videoType = p.video_type || '';
+    const platform = p.platform || '';
+    const tone = p.tone || '';
+    const dur = formatDuration(totalDuration);
+    const sceneCnt = p.scenes.length;
 
-      // ── 한글 폰트 로드 (NanumGothic, public/fonts에서) ──
-      let fontName = 'helvetica';
-      try {
-        const fontRes = await fetch('/fonts/NanumGothic-Regular.ttf');
-        if (fontRes.ok) {
-          const blob = await fontRes.blob();
-          const b64: string = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const dataUrl = reader.result as string;
-              resolve(dataUrl.split(',')[1]);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          doc.addFileToVFS('NanumGothic.ttf', b64);
-          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'bold');
-          fontName = 'NanumGothic';
-        }
-      } catch (e) {
-        console.warn('한글 폰트 로드 실패, 기본 폰트 사용:', e);
-      }
-      doc.setFont(fontName);
+    // 타임라인 바 비율 계산
+    const tlSegs = p.scenes.map((s, i) => {
+      const pct = totalDuration > 0 ? ((s.duration || 0) / totalDuration * 100) : (100 / sceneCnt);
+      const colors = ['#333','#555','#777','#999','#bbb','#666','#888','#aaa'];
+      return `<div style="width:${pct}%;background:${colors[i % colors.length]};display:flex;align-items:center;justify-content:center;color:white;font-size:7pt;font-weight:700;">${i + 1}</div>`;
+    }).join('');
 
-      // ===== 1페이지: 표지 =====
-      doc.setFillColor(20, 20, 20);
-      doc.rect(0, 0, pw, ph, 'F');
-      // 상단 얇은 강조선
-      doc.setFillColor(255, 255, 255);
-      doc.rect(pw / 2 - 30, 35, 60, 0.5, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont(fontName);
-      doc.setFontSize(10);
-      doc.text('PEWPEW STUDIO', pw / 2, 30, { align: 'center' });
-      doc.setFontSize(28);
-      doc.text(activeProject.title || 'Untitled', pw / 2, 52, { align: 'center' });
-      doc.setFontSize(12);
-      doc.setTextColor(180, 180, 180);
-      const pInfo = activeProject.project_info || {};
-      if (pInfo.brand_name) doc.text(pInfo.brand_name, pw / 2, 66, { align: 'center' });
-      doc.setFontSize(9);
-      doc.setTextColor(140, 140, 140);
-      doc.text(`${activeProject.aspect_ratio || '16:9'}  |  ${activeProject.resolution || '1920x1080'}  |  ${activeProject.scenes.length} Scenes  |  ${formatDuration(totalDuration)}`, pw / 2, 78, { align: 'center' });
+    // 씬 요약 행
+    const summaryRows = p.scenes.map((s, i) =>
+      `<tr><td style="font-weight:800;color:#111;text-align:center;width:40px;">${i + 1}</td><td>${s.title || '-'}</td><td>${s.duration || 0}초</td><td>${s.camera_angle || '-'}</td><td>${s.shot_size || '-'}</td><td>${s.camera_movement || '-'}</td><td>${s.lighting || '-'}</td></tr>`
+    ).join('');
 
-      // 하단 구분선
-      doc.setFillColor(60, 60, 60);
-      doc.rect(pw / 2 - 40, 88, 80, 0.3, 'F');
+    // 스토리보드 전체보기 카드
+    const sbCards = p.scenes.map((s, i) => `
+      <div style="border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;page-break-inside:avoid;">
+        <div style="background:#111;color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:8pt;font-weight:700;background:rgba(255,255,255,0.12);padding:2px 10px;border-radius:12px;">${String(i + 1).padStart(2, '0')}</span><span style="font-size:9pt;font-weight:700;">${s.title || '-'}</span></div>
+          <span style="font-size:8pt;color:#888;">${s.duration || 0}초</span>
+        </div>
+        <div style="width:100%;aspect-ratio:16/9;background:#f5f5f5;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;">
+          ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#ccc;font-size:9pt;text-align:center;"><div style="font-size:20pt;margin-bottom:4px;">🎞️</div></div>`}
+        </div>
+        <div style="padding:12px 14px;">
+          <div style="font-size:8pt;color:#555;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${s.description || ''}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            ${[s.camera_angle, s.shot_size, s.camera_movement, s.lighting].filter(Boolean).map(t => `<span style="background:#f5f5f5;border:1px solid #e5e5e5;padding:3px 8px;border-radius:4px;font-size:7pt;font-weight:600;color:#666;">${t}</span>`).join('')}
+          </div>
+        </div>
+      </div>`).join('');
 
-      let coverY = 100;
-      doc.setFontSize(9);
-      doc.setTextColor(200, 200, 200);
-      const coverLines = [
-        pInfo.manager_name ? `PM  ${pInfo.manager_name}  ${pInfo.manager_phone || ''}` : null,
-        pInfo.director_name ? `Director  ${pInfo.director_name}  ${pInfo.director_phone || ''}` : null,
-        pInfo.dp_name ? `DP  ${pInfo.dp_name}  ${pInfo.dp_phone || ''}` : null,
-        pInfo.pd_name ? `PD  ${pInfo.pd_name}  ${pInfo.pd_phone || ''}` : null,
-        pInfo.manager_email ? `${pInfo.manager_email}` : null,
-      ].filter(Boolean);
-      coverLines.forEach((line) => {
-        if (line) { doc.text(line, pw / 2, coverY, { align: 'center' }); coverY += 7; }
-      });
+    // 씬 상세 페이지들
+    const scenePages = p.scenes.map((s, i) => {
+      const pgNum = String(4 + i).padStart(2, '0');
+      const scNum = String(i + 1).padStart(2, '0');
+      const settings = [
+        ['카메라 앵글', s.camera_angle], ['샷 사이즈', s.shot_size],
+        ['카메라 무브먼트', s.camera_movement], ['조명', s.lighting], ['길이', `${s.duration || 0}초`],
+        ['전환', s.transition],
+      ].filter(([, v]) => v).map(([k, v]) => `<tr><th style="background:#fafafa;padding:7px 12px;font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1px;font-weight:600;text-align:left;border-bottom:1px solid #eee;width:30%;">${k}</th><td style="padding:7px 12px;font-size:9pt;font-weight:600;color:#333;border-bottom:1px solid #f5f5f5;">${v}</td></tr>`).join('');
 
-      doc.setFontSize(7);
-      doc.setTextColor(80, 80, 80);
-      doc.text('Confidential  -  For internal use only', pw / 2, ph - 15, { align: 'center' });
-      doc.text(new Date().toLocaleDateString('ko-KR'), pw / 2, ph - 10, { align: 'center' });
+      return `
+      <div class="page" style="padding:40px 52px 56px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+          <h2 style="font-size:14pt;font-weight:800;color:#111;">씬 ${scNum} — ${s.title || 'Untitled'}</h2>
+          <div style="font-size:8pt;color:#999;font-weight:500;">${pgNum}</div>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;">
+          <div style="background:#111;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <span style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);padding:4px 14px;border-radius:20px;font-size:8pt;font-weight:700;">씬 ${scNum}</span>
+              <span style="font-size:13pt;font-weight:700;">${s.title || '-'}</span>
+            </div>
+            <span style="font-size:10pt;color:#888;">${s.duration || 0}초</span>
+          </div>
+          <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div style="border-radius:10px;overflow:hidden;background:#f5f5f5;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;">
+              ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#bbb;font-size:10pt;text-align:center;"><div style="font-size:28pt;margin-bottom:6px;">🎞️</div><div>이미지 미등록</div></div>`}
+            </div>
+            <div>
+              <div style="font-size:10pt;color:#444;line-height:1.8;margin-bottom:16px;">${s.description || ''}</div>
+              <table style="width:100%;border-collapse:collapse;">${settings}</table>
+            </div>
+            ${(s.dialogue || s.sound || s.notes) ? `<div style="grid-column:1/-1;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:14px 18px;">
+              ${s.dialogue ? `<div style="margin-bottom:8px;"><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">대사 / 나레이션</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.dialogue}</div></div>` : ''}
+              ${s.sound ? `<div style="margin-bottom:8px;"><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">사운드 / BGM</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.sound}</div></div>` : ''}
+              ${s.notes ? `<div><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">감독 메모</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.notes}</div></div>` : ''}
+            </div>` : ''}
+          </div>
+        </div>
+        <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
+          <span>스토리프레임</span><span>${production}</span><span>${today}</span>
+        </div>
+      </div>`;
+    }).join('');
 
-      // ===== 2페이지: 촬영 정보 =====
-      const sInfo = activeProject.shooting_info || {};
-      const hasShootInfo = Object.values(sInfo).some(v => v);
-      if (hasShootInfo) {
-        doc.addPage();
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, pw, ph, 'F');
-        doc.setFont(fontName);
-        doc.setTextColor(30, 30, 30);
-        doc.setFontSize(16);
-        doc.text('촬영 정보', margin, 22);
-        doc.setFillColor(40, 40, 40);
-        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
+    // 타임라인 범례
+    const tlLegend = p.scenes.map((s, i) => {
+      const colors = ['#333','#555','#777','#999','#bbb','#666','#888','#aaa'];
+      return `<div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:8px;border-radius:2px;background:${colors[i % colors.length]};"></div>씬 ${i + 1}: ${s.title || '-'} (${s.duration || 0}초)</div>`;
+    }).join('');
 
-        const shootFieldsRaw: [string, any][] = [
-          ['촬영일', sInfo.shoot_date], ['촬영일수', sInfo.shoot_days], ['콜타임', sInfo.call_time],
-          ['종료시간', sInfo.wrap_time], ['점심시간', sInfo.lunch_time],
-          ['촬영장소', sInfo.location_name], ['주소', sInfo.location_address],
-          ['스튜디오', sInfo.studio_name], ['스튜디오 주소', sInfo.studio_address],
-          ['스튜디오 연락처', sInfo.studio_phone], ['주차', sInfo.parking_info],
-          ['인근 병원', sInfo.nearest_hospital], ['날씨', sInfo.weather_note],
-          ['특이사항', sInfo.special_notes],
-        ];
-        const shootFields = shootFieldsRaw.filter(([, val]) => val);
+    const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${p.title} - 영상 기획안</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;background:#d4d4d4;line-height:1.5;-webkit-font-smoothing:antialiased;}
+@page{size:A4 landscape;margin:0;}
+.page{width:297mm;min-height:210mm;margin:20px auto;background:white;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.15);page-break-after:always;}
+@media print{body{background:white;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}.page{margin:0;box-shadow:none;}.no-print{display:none!important;}}
+</style></head><body>
+<div class="page" style="background:#111;color:white;display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;height:100%;display:flex;align-items:center;padding:56px 72px;position:relative;">
+    <div style="flex:1;">
+      <div style="display:inline-block;font-size:8pt;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#888;border:1px solid #444;border-radius:4px;padding:4px 12px;margin-bottom:24px;">Video Storyboard</div>
+      <h1 style="font-size:36pt;font-weight:900;letter-spacing:-1.5px;line-height:1.15;margin-bottom:16px;color:#fff;">${p.title || 'Untitled'}</h1>
+      <div style="font-size:11pt;color:#888;font-weight:300;line-height:1.7;max-width:500px;">${pInfo.description || p.description || ''}</div>
+    </div>
+    <div style="width:320px;flex-shrink:0;border-left:1px solid #333;padding-left:48px;margin-left:48px;">
+      ${brand ? `<div style="margin-bottom:20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:4px;">브랜드</div><div style="font-size:13pt;font-weight:700;color:#ccc;">${brand}</div></div>` : ''}
+      <div style="margin-bottom:20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:4px;">제작</div><div style="font-size:13pt;font-weight:700;color:#ccc;">${production}</div></div>
+      ${videoType ? `<div style="margin-bottom:20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:4px;">유형</div><div style="font-size:13pt;font-weight:700;color:#ccc;">${videoType}${platform ? ' · ' + platform : ''}</div></div>` : ''}
+      ${tone ? `<div style="margin-bottom:20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:4px;">톤</div><div style="font-size:13pt;font-weight:700;color:#ccc;">${tone}</div></div>` : ''}
+      <div style="margin-bottom:20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:2px;font-weight:600;margin-bottom:4px;">전체 길이</div><div style="font-size:13pt;font-weight:700;color:#ccc;">${dur} · ${sceneCnt}개 씬</div></div>
+    </div>
+    <div style="position:absolute;bottom:36px;left:72px;right:72px;display:flex;justify-content:space-between;font-size:8pt;color:#555;border-top:1px solid #333;padding-top:12px;">
+      <span>${production}</span><span>CONFIDENTIAL</span><span>${today}</span>
+    </div>
+  </div>
+</div>
 
-        autoTable(doc, {
-          startY: 30,
-          body: shootFields.map(([label, val]) => [label, String(val)]),
-          styles: { fontSize: 9, cellPadding: 3, font: fontName },
-          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
-          alternateRowStyles: { fillColor: [248, 248, 248] },
-          margin: { left: margin, right: margin },
-          theme: 'plain',
-        });
-      }
+<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">프로젝트 개요</h2>
+    <div style="font-size:8pt;color:#999;font-weight:500;">02</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+    <div style="background:#111;border:1px solid #111;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">프로젝트</div><div style="font-size:14pt;font-weight:800;color:#fff;">${p.title || '-'}</div></div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">브랜드</div><div style="font-size:14pt;font-weight:800;color:#111;">${brand || '-'}</div></div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">제작 회사</div><div style="font-size:14pt;font-weight:800;color:#111;">${production}</div></div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">영상 유형</div><div style="font-size:14pt;font-weight:800;color:#111;">${videoType || '-'}</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px 24px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:8px;">프로젝트 설명</div><p style="font-size:10pt;color:#444;line-height:1.8;">${pInfo.description || p.description || '-'}</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">플랫폼</div><div style="font-size:14pt;font-weight:800;color:#111;">${platform || '-'}</div></div>
+      <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">톤 & 무드</div><div style="font-size:14pt;font-weight:800;color:#111;">${tone || '-'}</div></div>
+      <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">전체 길이</div><div style="font-size:14pt;font-weight:800;color:#111;">${dur}</div></div>
+      <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">총 씬 수</div><div style="font-size:14pt;font-weight:800;color:#111;">${sceneCnt}개</div></div>
+    </div>
+  </div>
+  <div style="margin-bottom:8px;font-size:9pt;font-weight:700;color:#111;">타임라인</div>
+  <div style="display:flex;gap:2px;height:24px;border-radius:6px;overflow:hidden;margin-bottom:12px;">${tlSegs}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px 20px;font-size:8pt;color:#666;margin-bottom:20px;">${tlLegend}</div>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead><tr><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:6px 0 0 0;">씬</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">제목</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">길이</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">앵글</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">샷 사이즈</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">무브먼트</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:0 6px 0 0;">조명</th></tr></thead>
+    <tbody>${summaryRows}</tbody>
+  </table>
+  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
+    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
+  </div>
+</div>
 
-      // ===== 3페이지~: 씬 테이블 =====
-      doc.addPage();
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, pw, ph, 'F');
-      doc.setFont(fontName);
-      doc.setTextColor(30, 30, 30);
-      doc.setFontSize(16);
-      doc.text('씬 브레이크다운', margin, 22);
-      doc.setFillColor(40, 40, 40);
-      doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
+<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">스토리보드 전체보기</h2>
+    <div style="font-size:8pt;color:#999;font-weight:500;">03</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">${sbCards}</div>
+  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
+    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
+  </div>
+</div>
 
-      let currentTime = 0;
-      const tableData = activeProject.scenes.map((scene, i) => {
-        const start = formatDuration(currentTime);
-        currentTime += scene.duration || 0;
-        const end = formatDuration(currentTime);
-        return [
-          String(i + 1),
-          scene.title || '-',
-          `${start}-${end}`,
-          `${scene.duration}s`,
-          scene.camera_angle || '-',
-          scene.shot_size || '-',
-          scene.camera_movement || '-',
-          scene.lighting || '-',
-          (scene.description || '-').substring(0, 40),
-        ];
-      });
+${scenePages}
+</body></html>`;
 
-      autoTable(doc, {
-        startY: 30,
-        head: [['#', '제목', '시간', '길이', '앵글', '샷', '무브', '조명', '설명']],
-        body: tableData,
-        styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
-        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [248, 248, 248] },
-        margin: { left: margin, right: margin },
-      });
-
-      // ===== 타임테이블 페이지 (있으면) =====
-      if (activeProject.timetable && activeProject.timetable.length > 0) {
-        doc.addPage();
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, pw, ph, 'F');
-        doc.setFont(fontName);
-        doc.setTextColor(30, 30, 30);
-        doc.setFontSize(16);
-        doc.text('타임테이블', margin, 22);
-        doc.setFillColor(40, 40, 40);
-        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
-
-        const ttData = activeProject.timetable.map((e, i) => [
-          String(i + 1), e.time_start || '-', e.time_end || '-', e.activity || '-',
-          e.location || '-', e.int_ext || '-', e.day_night || '-', e.cast || '-', e.notes || '-',
-        ]);
-
-        autoTable(doc, {
-          startY: 30,
-          head: [['#', '시작', '종료', '활동', '장소', '실내/외', '주/야', '출연', '비고']],
-          body: ttData,
-          styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
-          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-          alternateRowStyles: { fillColor: [248, 248, 248] },
-          margin: { left: margin, right: margin },
-        });
-      }
-
-      // ===== 예산 페이지 =====
-      try {
-        const sceneCount = activeProject.scenes?.length || 1;
-        const shootDays = parseInt(activeProject.shooting_info?.shoot_days) || 1;
-        const teamMembers = (activeProject.project_info as any)?.team_members?.length || 3;
-        const locationCount = (activeProject.shooting_info as any)?.locations?.length || 1;
-        const baseCost = 500000;
-        const sceneCost = sceneCount * baseCost;
-        const shootingDayCost = shootDays * 2000000;
-        const equipmentCost = sceneCount * 1000000;
-        const crewCost = teamMembers * 5000000;
-        const locationCost = locationCount * 3000000;
-        const subtotal = sceneCost + shootingDayCost + equipmentCost + crewCost + locationCost;
-        const tax = Math.round(subtotal * 0.1);
-        const budgetTotal = subtotal + tax;
-
-        doc.addPage();
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, pw, ph, 'F');
-        doc.setFont(fontName);
-        doc.setTextColor(30, 30, 30);
-        doc.setFontSize(16);
-        doc.text('예산 추정', margin, 22);
-        doc.setFillColor(40, 40, 40);
-        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
-
-        const budgetData = [
-          [`씬 제작비 (${sceneCount}개)`, `${sceneCost.toLocaleString()}원`],
-          [`촬영 일당 (${shootDays}일)`, `${shootingDayCost.toLocaleString()}원`],
-          ['장비비', `${equipmentCost.toLocaleString()}원`],
-          [`스태프비 (${teamMembers}명)`, `${crewCost.toLocaleString()}원`],
-          [`로케이션비 (${locationCount}곳)`, `${locationCost.toLocaleString()}원`],
-        ];
-        const budgetSummary = [
-          ['소계', `${subtotal.toLocaleString()}원`],
-          ['부가세 (10%)', `${tax.toLocaleString()}원`],
-          ['총합계', `${budgetTotal.toLocaleString()}원`],
-        ];
-
-        autoTable(doc, {
-          startY: 30,
-          head: [['항목', '금액']],
-          body: budgetData,
-          foot: budgetSummary,
-          styles: { fontSize: 9, cellPadding: 4, font: fontName },
-          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-          footStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-          alternateRowStyles: { fillColor: [248, 248, 248] },
-          margin: { left: margin, right: margin },
-          columnStyles: { 1: { halign: 'right' } },
-        });
-      } catch { /* 예산 계산 실패 시 스킵 */ }
-
-      doc.save(`${activeProject.title}_스토리보드.pdf`);
-    } catch (err: any) {
-      console.error('PDF export error:', err);
-      alert(`PDF 생성 중 오류: ${err?.message || err}`);
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 800);
     }
   }, [activeProject, totalDuration]);
 
@@ -2787,7 +2701,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
                 <div className="flex flex-1 overflow-hidden">
-                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenSketchPicker={(sceneId: string) => { setSketchPickerSceneId(sceneId); setSketchPickerOpen(true); }} />
+                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />
                   {activeScene && (
                     <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
@@ -2838,42 +2752,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         />
       )}
 
-      {/* Sketch Reference Picker */}
-      <SketchPicker
-        isOpen={sketchPickerOpen}
-        onClose={() => { setSketchPickerOpen(false); setSketchPickerSceneId(null); }}
-        darkMode={darkMode}
-        currentSketch={activeProject?.scenes.find(s => s.id === sketchPickerSceneId)?.sketch}
-        onSelect={(sketchSelection) => {
-          if (!activeProject || !sketchPickerSceneId) return;
-          const selectedSketch = sketchSelection.combined || sketchSelection.character || sketchSelection.background;
-          if (selectedSketch) {
-            const svgStr = selectedSketch.svg.replace(/currentColor/g, '#333333');
-            const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
-            const img = new window.Image();
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              canvas.width = 960; canvas.height = 540;
-              const ctx = canvas.getContext('2d')!;
-              ctx.fillStyle = '#f5f5f5';
-              ctx.fillRect(0, 0, 960, 540);
-              ctx.drawImage(img, 0, 0, 960, 540);
-              const dataUrl = canvas.toDataURL('image/png');
-              URL.revokeObjectURL(url);
-              const newScenes = activeProject.scenes.map(s =>
-                s.id === sketchPickerSceneId ? { ...s, image: dataUrl, sketch: { character: sketchSelection.character?.id, background: sketchSelection.background?.id, combined: sketchSelection.combined?.id } } : s
-              );
-              const newProjects = projects.map(p => p.id === activeProject.id ? { ...p, scenes: newScenes } : p);
-              setProjects(newProjects);
-              addToHistory(newProjects);
-            };
-            img.src = url;
-          }
-          setSketchPickerOpen(false);
-          setSketchPickerSceneId(null);
-        }}
-      />
     </div>
   );
 };
