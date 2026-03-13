@@ -2846,12 +2846,30 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         currentSketch={activeProject?.scenes.find(s => s.id === sketchPickerSceneId)?.sketch}
         onSelect={(sketchSelection) => {
           if (!activeProject || !sketchPickerSceneId) return;
-          const newScenes = activeProject.scenes.map(s =>
-            s.id === sketchPickerSceneId ? { ...s, sketch: { character: sketchSelection.character?.id, background: sketchSelection.background?.id, combined: sketchSelection.combined?.id } } : s
-          );
-          const newProjects = projects.map(p => p.id === activeProject.id ? { ...p, scenes: newScenes } : p);
-          setProjects(newProjects);
-          addToHistory(newProjects);
+          const selectedSketch = sketchSelection.combined || sketchSelection.character || sketchSelection.background;
+          if (selectedSketch) {
+            const svgStr = selectedSketch.svg.replace(/currentColor/g, '#333333');
+            const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const img = new window.Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = 960; canvas.height = 540;
+              const ctx = canvas.getContext('2d')!;
+              ctx.fillStyle = '#f5f5f5';
+              ctx.fillRect(0, 0, 960, 540);
+              ctx.drawImage(img, 0, 0, 960, 540);
+              const dataUrl = canvas.toDataURL('image/png');
+              URL.revokeObjectURL(url);
+              const newScenes = activeProject.scenes.map(s =>
+                s.id === sketchPickerSceneId ? { ...s, image: dataUrl, sketch: { character: sketchSelection.character?.id, background: sketchSelection.background?.id, combined: sketchSelection.combined?.id } } : s
+              );
+              const newProjects = projects.map(p => p.id === activeProject.id ? { ...p, scenes: newScenes } : p);
+              setProjects(newProjects);
+              addToHistory(newProjects);
+            };
+            img.src = url;
+          }
           setSketchPickerOpen(false);
           setSketchPickerSceneId(null);
         }}
