@@ -1962,9 +1962,12 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const handleExportPDF = useCallback(async () => {
     if (!activeProject) return;
     try {
-      const { default: jsPDF } = await import('jspdf');
-      const autoTableModule = await import('jspdf-autotable');
-      const autoTable = (autoTableModule.default || autoTableModule) as any;
+      const jsPDFModule = await import('jspdf');
+      const jsPDF = jsPDFModule.default || jsPDFModule.jsPDF;
+      const atMod: any = await import('jspdf-autotable');
+      // applyPlugin으로 jsPDF 프로토타입에 autoTable 부착
+      const applyPlugin = atMod.applyPlugin || atMod.default?.applyPlugin;
+      if (applyPlugin) applyPlugin(jsPDF);
       const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pw = doc.internal.pageSize.getWidth();
       const ph = doc.internal.pageSize.getHeight();
@@ -2063,7 +2066,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         ];
         const shootFields = shootFieldsRaw.filter(([, val]) => val);
 
-        autoTable(doc, {
+        (doc as any).autoTable({
           startY: 30,
           body: shootFields.map(([label, val]) => [label, String(val)]),
           styles: { fontSize: 9, cellPadding: 3, font: fontName },
@@ -2103,7 +2106,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         ];
       });
 
-      autoTable(doc, {
+      (doc as any).autoTable({
         startY: 30,
         head: [['#', '제목', '시간', '길이', '앵글', '샷', '무브', '조명', '설명']],
         body: tableData,
@@ -2130,7 +2133,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           e.location || '-', e.int_ext || '-', e.day_night || '-', e.cast || '-', e.notes || '-',
         ]);
 
-        autoTable(doc, {
+        (doc as any).autoTable({
           startY: 30,
           head: [['#', '시작', '종료', '활동', '장소', '실내/외', '주/야', '출연', '비고']],
           body: ttData,
@@ -2180,7 +2183,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           ['총합계', `${budgetTotal.toLocaleString()}원`],
         ];
 
-        autoTable(doc, {
+        (doc as any).autoTable({
           startY: 30,
           head: [['항목', '금액']],
           body: budgetData,
