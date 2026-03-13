@@ -2127,6 +2127,44 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;backgroun
 </div>
 
 ${scenePages}
+
+${(p.timetable && p.timetable.length > 0) ? `
+<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">타임테이블</h2>
+    <div style="font-size:8pt;color:#999;font-weight:500;">${String(4 + sceneCnt).padStart(2, '0')}</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead><tr>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:6px 0 0 0;">#</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">시작</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">종료</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">활동</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">장소</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">실내/외</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">주/야</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">출연</th>
+      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:0 6px 0 0;">비고</th>
+    </tr></thead>
+    <tbody>${p.timetable.map((e: any, i: number) => `
+      <tr>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:800;color:#111;text-align:center;width:40px;border-bottom:1px solid #f0f0f0;">${i + 1}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.time_start || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.time_end || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:600;color:#333;border-bottom:1px solid #f0f0f0;">${e.activity || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.location || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.int_ext || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.day_night || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#333;border-bottom:1px solid #f0f0f0;">${e.cast || '-'}</td>
+        <td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#555;border-bottom:1px solid #f0f0f0;">${e.notes || '-'}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
+    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
+  </div>
+</div>` : ''}
+
 </body></html>`;
 
     const w = window.open('', '_blank');
