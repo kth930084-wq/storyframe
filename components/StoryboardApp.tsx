@@ -2360,16 +2360,10 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                     </h1>
                     <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button onClick={() => setCurrentPage('proposal')}
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition font-medium text-sm shadow-sm border ${darkMode ? "bg-neutral-700 text-white border-neutral-600 hover:bg-neutral-600" : "bg-white text-neutral-800 border-neutral-300 hover:bg-neutral-50"}`}>
-                      <Star size={18} /> 영상 기획안 작성
-                    </button>
-                    <button onClick={() => setShowNewProject(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
-                      <Plus size={18} /> 새 프로젝트
-                    </button>
-                  </div>
+                  <button onClick={() => setShowNewProject(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
+                    <Plus size={18} /> 새 프로젝트
+                  </button>
                 </div>
 
                 {/* 공지사항 배너 */}
@@ -2470,6 +2464,27 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
                     </div>
                   </div>
                 </div>
+
+                {/* 영상 기획안 의뢰 CTA 카드 */}
+                <button
+                  onClick={() => setCurrentPage('proposal')}
+                  className={`w-full rounded-2xl border p-5 text-left transition group ${darkMode ? "bg-gradient-to-r from-neutral-800 via-neutral-800 to-neutral-700 border-neutral-700 hover:border-neutral-500" : "bg-gradient-to-r from-neutral-50 via-white to-neutral-50 border-gray-200 hover:border-neutral-400 hover:shadow-md"}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-neutral-700 group-hover:bg-neutral-600" : "bg-neutral-100 group-hover:bg-neutral-200"} transition`}>
+                      <Star size={22} className={darkMode ? "text-yellow-400" : "text-yellow-500"} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-bold text-sm mb-0.5 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                        우리 포트폴리오 보고 영상 의뢰하기
+                      </h3>
+                      <p className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+                        PEWPEW Studio가 만든 영상을 둘러보고, 마음에 드는 스타일을 골라 간단하게 기획안을 작성해보세요
+                      </p>
+                    </div>
+                    <ChevronRight size={20} className={`flex-shrink-0 transition-transform group-hover:translate-x-1 ${darkMode ? "text-neutral-500" : "text-gray-400"}`} />
+                  </div>
+                </button>
 
                 {/* 빠른 시작 가이드 (접기/펼치기) */}
                 <div className={`rounded-2xl border overflow-hidden ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
