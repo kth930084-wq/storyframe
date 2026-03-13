@@ -15,6 +15,8 @@ import {
 } from '@/lib/constants';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import SketchPicker from './SketchPicker';
+import { SKETCH_REFERENCES, type SketchRef } from '@/lib/sketch-references';
 import {
   getAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement,
   type Announcement
@@ -54,6 +56,7 @@ interface Scene {
   transition?: string;
   shooting_completed?: boolean;
   comments?: SceneComment[];
+  sketch?: { character?: string; background?: string; combined?: string };
   [key: string]: any;
 }
 
@@ -814,7 +817,7 @@ const SceneProgressRing = ({ completion }: any) => {
   );
 };
 
-const SceneEditor = ({ scene, onUpdate }: any) => {
+const SceneEditor = ({ scene, onUpdate, onOpenSketchPicker }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
   const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
@@ -842,6 +845,24 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
         <div className="lg:col-span-3 space-y-5">
           <div className="relative">
             <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
+            {/* 스케치 레퍼런스 미리보기 */}
+            {scene.sketch && (scene.sketch.combined || scene.sketch.character || scene.sketch.background) && (
+              <div className="mt-2 flex gap-2 items-center">
+                {[scene.sketch.combined, scene.sketch.character, scene.sketch.background].filter(Boolean).map(skId => {
+                  const sk = SKETCH_REFERENCES.find(s => s.id === skId);
+                  return sk ? (
+                    <div key={sk.id} className="flex items-center gap-1.5 px-2 py-1 bg-neutral-100 rounded-lg">
+                      <div className="w-10 h-6 text-neutral-600" dangerouslySetInnerHTML={{ __html: sk.svg }} />
+                      <span className="text-[10px] text-neutral-500">{sk.nameKo}</span>
+                    </div>
+                  ) : null;
+                })}
+                <button onClick={() => onUpdate({ ...scene, sketch: undefined })} className="text-red-400 hover:text-red-600 p-1"><X className="w-3 h-3" /></button>
+              </div>
+            )}
+            <button onClick={() => onOpenSketchPicker?.(scene.id)} className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-neutral-50 border border-neutral-200 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-100 transition-colors">
+              <Grid className="w-3.5 h-3.5" />스케치 레퍼런스 선택
+            </button>
           </div>
           <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
           <div>
@@ -1627,6 +1648,8 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [history, setHistory] = useState<Project[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isSaving, setIsSaving] = useState(false);
+  const [sketchPickerOpen, setSketchPickerOpen] = useState(false);
+  const [sketchPickerSceneId, setSketchPickerSceneId] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState(false);
   const [showGuide, setShowGuide] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -2764,7 +2787,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
                 <div className="flex flex-1 overflow-hidden">
-                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />
+                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenSketchPicker={(sceneId: string) => { setSketchPickerSceneId(sceneId); setSketchPickerOpen(true); }} />
                   {activeScene && (
                     <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
@@ -2814,6 +2837,25 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           onCreate={handleCreateProject}
         />
       )}
+
+      {/* Sketch Reference Picker */}
+      <SketchPicker
+        isOpen={sketchPickerOpen}
+        onClose={() => { setSketchPickerOpen(false); setSketchPickerSceneId(null); }}
+        darkMode={darkMode}
+        currentSketch={activeProject?.scenes.find(s => s.id === sketchPickerSceneId)?.sketch}
+        onSelect={(sketchSelection) => {
+          if (!activeProject || !sketchPickerSceneId) return;
+          const newScenes = activeProject.scenes.map(s =>
+            s.id === sketchPickerSceneId ? { ...s, sketch: { character: sketchSelection.character?.id, background: sketchSelection.background?.id, combined: sketchSelection.combined?.id } } : s
+          );
+          const newProjects = projects.map(p => p.id === activeProject.id ? { ...p, scenes: newScenes } : p);
+          setProjects(newProjects);
+          addToHistory(newProjects);
+          setSketchPickerOpen(false);
+          setSketchPickerSceneId(null);
+        }}
+      />
     </div>
   );
 };
