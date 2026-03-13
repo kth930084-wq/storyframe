@@ -1974,14 +1974,16 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       try {
         const fontRes = await fetch('/fonts/NanumGothic-Regular.ttf');
         if (fontRes.ok) {
-          const buf = await fontRes.arrayBuffer();
-          const u8 = new Uint8Array(buf);
-          const chunks: string[] = [];
-          const chunkSize = 4096;
-          for (let i = 0; i < u8.length; i += chunkSize) {
-            chunks.push(String.fromCharCode(...u8.subarray(i, i + chunkSize)));
-          }
-          const b64 = btoa(chunks.join(''));
+          const blob = await fontRes.blob();
+          const b64: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const dataUrl = reader.result as string;
+              resolve(dataUrl.split(',')[1]);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
           doc.addFileToVFS('NanumGothic.ttf', b64);
           doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
           fontName = 'NanumGothic';
