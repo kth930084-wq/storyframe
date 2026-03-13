@@ -1969,8 +1969,26 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       const ph = doc.internal.pageSize.getHeight();
       const margin = 15;
 
-      // 기본 폰트 사용 (helvetica)
-      const fontName = 'helvetica';
+      // ── 한글 폰트 로드 (NanumGothic, public/fonts에서) ──
+      let fontName = 'helvetica';
+      try {
+        const fontRes = await fetch('/fonts/NanumGothic-Regular.ttf');
+        if (fontRes.ok) {
+          const buf = await fontRes.arrayBuffer();
+          const u8 = new Uint8Array(buf);
+          const chunks: string[] = [];
+          const chunkSize = 4096;
+          for (let i = 0; i < u8.length; i += chunkSize) {
+            chunks.push(String.fromCharCode(...u8.subarray(i, i + chunkSize)));
+          }
+          const b64 = btoa(chunks.join(''));
+          doc.addFileToVFS('NanumGothic.ttf', b64);
+          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+          fontName = 'NanumGothic';
+        }
+      } catch (e) {
+        console.warn('한글 폰트 로드 실패, 기본 폰트 사용:', e);
+      }
       doc.setFont(fontName);
 
       // ===== 1페이지: 표지 =====
@@ -2044,7 +2062,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         (doc as any).autoTable({
           startY: 30,
           body: shootFields.map(([label, val]) => [label, String(val)]),
-          styles: { fontSize: 9, cellPadding: 3 },
+          styles: { fontSize: 9, cellPadding: 3, font: fontName },
           columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
           alternateRowStyles: { fillColor: [248, 248, 248] },
           margin: { left: margin, right: margin },
@@ -2085,7 +2103,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         startY: 30,
         head: [['#', '제목', '시간', '길이', '앵글', '샷', '무브', '조명', '설명']],
         body: tableData,
-        styles: { fontSize: 7, cellPadding: 2.5 },
+        styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
         headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [248, 248, 248] },
         margin: { left: margin, right: margin },
@@ -2112,7 +2130,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           startY: 30,
           head: [['#', '시작', '종료', '활동', '장소', '실내/외', '주/야', '출연', '비고']],
           body: ttData,
-          styles: { fontSize: 7, cellPadding: 2.5 },
+          styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
           headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
           alternateRowStyles: { fillColor: [248, 248, 248] },
           margin: { left: margin, right: margin },
@@ -2163,7 +2181,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           head: [['항목', '금액']],
           body: budgetData,
           foot: budgetSummary,
-          styles: { fontSize: 9, cellPadding: 4 },
+          styles: { fontSize: 9, cellPadding: 4, font: fontName },
           headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
           footStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
           alternateRowStyles: { fillColor: [248, 248, 248] },
