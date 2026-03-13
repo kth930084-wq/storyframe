@@ -1969,36 +1969,9 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       const ph = doc.internal.pageSize.getHeight();
       const margin = 15;
 
-      // ── 한글 폰트 로드 (NanumGothic) ──
-      let fontName = 'helvetica';
-      try {
-        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/nanumgothic/NanumGothic-Regular.ttf';
-        const fontRes = await fetch(fontUrl);
-        if (fontRes.ok) {
-          const buf = await fontRes.arrayBuffer();
-          const u8 = new Uint8Array(buf);
-          let bin = '';
-          const chunk = 8192;
-          for (let i = 0; i < u8.length; i += chunk) {
-            bin += String.fromCharCode.apply(null, Array.from(u8.slice(i, i + chunk)));
-          }
-          const b64 = btoa(bin);
-          doc.addFileToVFS('NanumGothic.ttf', b64);
-          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-          fontName = 'NanumGothic';
-        }
-      } catch { /* 폰트 로드 실패 시 기본 폰트 사용 */ }
+      // 기본 폰트 사용 (helvetica)
+      const fontName = 'helvetica';
       doc.setFont(fontName);
-
-      // 헬퍼: 페이지 헤더 + 푸터 공통
-      const pageFooter = (pageNum: number) => {
-        doc.setFont(fontName);
-        doc.setFontSize(7);
-        doc.setTextColor(160, 160, 160);
-        doc.text(`PEWPEW Studio  |  ${activeProject.title}  |  ${new Date().toLocaleDateString('ko-KR')}`, margin, ph - 8);
-        doc.text(`${pageNum}`, pw - margin, ph - 8, { align: 'right' });
-      };
-      let pageNum = 1;
 
       // ===== 1페이지: 표지 =====
       doc.setFillColor(20, 20, 20);
@@ -2048,7 +2021,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       const hasShootInfo = Object.values(sInfo).some(v => v);
       if (hasShootInfo) {
         doc.addPage();
-        pageNum++;
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, pw, ph, 'F');
         doc.setFont(fontName);
@@ -2072,18 +2044,16 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         (doc as any).autoTable({
           startY: 30,
           body: shootFields.map(([label, val]) => [label, String(val)]),
-          styles: { fontSize: 9, cellPadding: 3, font: fontName },
+          styles: { fontSize: 9, cellPadding: 3 },
           columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
           alternateRowStyles: { fillColor: [248, 248, 248] },
           margin: { left: margin, right: margin },
           theme: 'plain',
         });
-        pageFooter(pageNum);
       }
 
       // ===== 3페이지~: 씬 테이블 =====
       doc.addPage();
-      pageNum++;
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pw, ph, 'F');
       doc.setFont(fontName);
@@ -2115,18 +2085,15 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         startY: 30,
         head: [['#', '제목', '시간', '길이', '앵글', '샷', '무브', '조명', '설명']],
         body: tableData,
-        styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
-        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+        styles: { fontSize: 7, cellPadding: 2.5 },
+        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [248, 248, 248] },
         margin: { left: margin, right: margin },
-        didDrawPage: () => { pageNum++; pageFooter(pageNum); },
       });
-      pageFooter(pageNum);
 
       // ===== 타임테이블 페이지 (있으면) =====
       if (activeProject.timetable && activeProject.timetable.length > 0) {
         doc.addPage();
-        pageNum++;
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, pw, ph, 'F');
         doc.setFont(fontName);
@@ -2145,12 +2112,11 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           startY: 30,
           head: [['#', '시작', '종료', '활동', '장소', '실내/외', '주/야', '출연', '비고']],
           body: ttData,
-          styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
-          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+          styles: { fontSize: 7, cellPadding: 2.5 },
+          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
           alternateRowStyles: { fillColor: [248, 248, 248] },
           margin: { left: margin, right: margin },
         });
-        pageFooter(pageNum);
       }
 
       // ===== 예산 페이지 =====
@@ -2170,7 +2136,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         const budgetTotal = subtotal + tax;
 
         doc.addPage();
-        pageNum++;
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, pw, ph, 'F');
         doc.setFont(fontName);
@@ -2198,14 +2163,13 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           head: [['항목', '금액']],
           body: budgetData,
           foot: budgetSummary,
-          styles: { fontSize: 9, cellPadding: 4, font: fontName },
-          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
-          footStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+          styles: { fontSize: 9, cellPadding: 4 },
+          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+          footStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
           alternateRowStyles: { fillColor: [248, 248, 248] },
           margin: { left: margin, right: margin },
           columnStyles: { 1: { halign: 'right' } },
         });
-        pageFooter(pageNum);
       } catch { /* 예산 계산 실패 시 스킵 */ }
 
       doc.save(`${activeProject.title}_스토리보드.pdf`);
