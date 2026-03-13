@@ -32,11 +32,13 @@ import {
 interface BudgetEstimatorProps {
   project: any;
   darkMode: boolean;
+  onExportPDF?: () => void;
 }
 
 export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
   project,
   darkMode,
+  onExportPDF,
 }) => {
   const [baseCostPerScene, setBaseCostPerScene] = useState(500000);
   const [equipmentOverride, setEquipmentOverride] = useState<number | null>(null);
@@ -197,13 +199,15 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
             {total.toLocaleString()}원
           </p>
         </div>
-        <button className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-          darkMode
-            ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100'
-            : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'
-        }`}>
+        <button
+          onClick={() => onExportPDF?.()}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+            darkMode
+              ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100'
+              : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'
+          }`}>
           <Download className="w-4 h-4" />
-          내보내기
+          전체 PDF 내보내기
         </button>
       </div>
     </div>

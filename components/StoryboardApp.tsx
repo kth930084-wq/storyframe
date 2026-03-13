@@ -1961,135 +1961,258 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const handleExportPDF = useCallback(async () => {
     if (!activeProject) return;
-    const { default: jsPDF } = await import('jspdf');
-    await import('jspdf-autotable');
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const pw = doc.internal.pageSize.getWidth();
-    const ph = doc.internal.pageSize.getHeight();
-    const margin = 15;
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      await import('jspdf-autotable');
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+      const margin = 15;
 
-    // 한글 폰트 대신 기본 폰트 사용 (한글은 unicode 처리)
-    doc.setFont('helvetica');
+      // ── 한글 폰트 로드 (NanumGothic) ──
+      let fontName = 'helvetica';
+      try {
+        const fontUrl = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/nanumgothic/NanumGothic-Regular.ttf';
+        const fontRes = await fetch(fontUrl);
+        if (fontRes.ok) {
+          const buf = await fontRes.arrayBuffer();
+          const u8 = new Uint8Array(buf);
+          let bin = '';
+          const chunk = 8192;
+          for (let i = 0; i < u8.length; i += chunk) {
+            bin += String.fromCharCode.apply(null, Array.from(u8.slice(i, i + chunk)));
+          }
+          const b64 = btoa(bin);
+          doc.addFileToVFS('NanumGothic.ttf', b64);
+          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+          fontName = 'NanumGothic';
+        }
+      } catch { /* 폰트 로드 실패 시 기본 폰트 사용 */ }
+      doc.setFont(fontName);
 
-    // ===== 1페이지: 표지 =====
-    doc.setFillColor(20, 20, 20);
-    doc.rect(0, 0, pw, ph, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(32);
-    doc.text(activeProject.title || 'Untitled', pw / 2, 50, { align: 'center' });
-    doc.setFontSize(14);
-    doc.setTextColor(180, 180, 180);
-    const pInfo = activeProject.project_info || {};
-    if (pInfo.brand_name) doc.text(pInfo.brand_name, pw / 2, 65, { align: 'center' });
-    doc.text(`${activeProject.aspect_ratio || '16:9'} | ${activeProject.resolution || '1920x1080'} | ${activeProject.scenes.length} Scenes | ${formatDuration(totalDuration)}`, pw / 2, 78, { align: 'center' });
+      // 헬퍼: 페이지 헤더 + 푸터 공통
+      const pageFooter = (pageNum: number) => {
+        doc.setFont(fontName);
+        doc.setFontSize(7);
+        doc.setTextColor(160, 160, 160);
+        doc.text(`PEWPEW Studio  |  ${activeProject.title}  |  ${new Date().toLocaleDateString('ko-KR')}`, margin, ph - 8);
+        doc.text(`${pageNum}`, pw - margin, ph - 8, { align: 'right' });
+      };
+      let pageNum = 1;
 
-    let coverY = 100;
-    doc.setFontSize(10);
-    doc.setTextColor(200, 200, 200);
-    const coverLines = [
-      pInfo.manager_name ? `PM: ${pInfo.manager_name} ${pInfo.manager_phone || ''}` : null,
-      pInfo.director_name ? `Director: ${pInfo.director_name} ${pInfo.director_phone || ''}` : null,
-      pInfo.dp_name ? `DP: ${pInfo.dp_name} ${pInfo.dp_phone || ''}` : null,
-      pInfo.pd_name ? `PD: ${pInfo.pd_name} ${pInfo.pd_phone || ''}` : null,
-      pInfo.manager_email ? `Email: ${pInfo.manager_email}` : null,
-    ].filter(Boolean);
-    coverLines.forEach((line) => {
-      if (line) { doc.text(line, pw / 2, coverY, { align: 'center' }); coverY += 7; }
-    });
-
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`PEWPEW Storyboard | ${new Date().toLocaleDateString('ko-KR')}`, pw / 2, ph - 10, { align: 'center' });
-
-    // ===== 2페이지: 촬영 정보 =====
-    const sInfo = activeProject.shooting_info || {};
-    const hasShootInfo = Object.values(sInfo).some(v => v);
-    if (hasShootInfo) {
-      doc.addPage();
-      doc.setFillColor(250, 250, 250);
+      // ===== 1페이지: 표지 =====
+      doc.setFillColor(20, 20, 20);
       doc.rect(0, 0, pw, ph, 'F');
-      doc.setTextColor(30, 30, 30);
-      doc.setFontSize(18);
-      doc.text('Shooting Info', margin, 25);
+      // 상단 얇은 강조선
+      doc.setFillColor(255, 255, 255);
+      doc.rect(pw / 2 - 30, 35, 60, 0.5, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(fontName);
+      doc.setFontSize(10);
+      doc.text('PEWPEW STUDIO', pw / 2, 30, { align: 'center' });
+      doc.setFontSize(28);
+      doc.text(activeProject.title || 'Untitled', pw / 2, 52, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setTextColor(180, 180, 180);
+      const pInfo = activeProject.project_info || {};
+      if (pInfo.brand_name) doc.text(pInfo.brand_name, pw / 2, 66, { align: 'center' });
       doc.setFontSize(9);
-      doc.setTextColor(80, 80, 80);
-      let sy = 38;
-      const shootFields = [
-        ['Date', sInfo.shoot_date], ['Days', sInfo.shoot_days], ['Call Time', sInfo.call_time],
-        ['Wrap Time', sInfo.wrap_time], ['Lunch', sInfo.lunch_time],
-        ['Location', sInfo.location_name], ['Address', sInfo.location_address],
-        ['Studio', sInfo.studio_name], ['Studio Address', sInfo.studio_address],
-        ['Studio Tel', sInfo.studio_phone], ['Parking', sInfo.parking_info],
-        ['Hospital', sInfo.nearest_hospital], ['Weather', sInfo.weather_note],
-        ['Notes', sInfo.special_notes],
-      ];
-      shootFields.forEach(([label, val]) => {
-        if (val) { doc.text(`${label}: ${val}`, margin, sy); sy += 6; }
+      doc.setTextColor(140, 140, 140);
+      doc.text(`${activeProject.aspect_ratio || '16:9'}  |  ${activeProject.resolution || '1920x1080'}  |  ${activeProject.scenes.length} Scenes  |  ${formatDuration(totalDuration)}`, pw / 2, 78, { align: 'center' });
+
+      // 하단 구분선
+      doc.setFillColor(60, 60, 60);
+      doc.rect(pw / 2 - 40, 88, 80, 0.3, 'F');
+
+      let coverY = 100;
+      doc.setFontSize(9);
+      doc.setTextColor(200, 200, 200);
+      const coverLines = [
+        pInfo.manager_name ? `PM  ${pInfo.manager_name}  ${pInfo.manager_phone || ''}` : null,
+        pInfo.director_name ? `Director  ${pInfo.director_name}  ${pInfo.director_phone || ''}` : null,
+        pInfo.dp_name ? `DP  ${pInfo.dp_name}  ${pInfo.dp_phone || ''}` : null,
+        pInfo.pd_name ? `PD  ${pInfo.pd_name}  ${pInfo.pd_phone || ''}` : null,
+        pInfo.manager_email ? `${pInfo.manager_email}` : null,
+      ].filter(Boolean);
+      coverLines.forEach((line) => {
+        if (line) { doc.text(line, pw / 2, coverY, { align: 'center' }); coverY += 7; }
       });
-    }
 
-    // ===== 3페이지~: 씬 테이블 =====
-    doc.addPage();
-    doc.setFillColor(255, 255, 255);
-    doc.rect(0, 0, pw, ph, 'F');
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(14);
-    doc.text('Scene Breakdown', margin, 20);
+      doc.setFontSize(7);
+      doc.setTextColor(80, 80, 80);
+      doc.text('Confidential  -  For internal use only', pw / 2, ph - 15, { align: 'center' });
+      doc.text(new Date().toLocaleDateString('ko-KR'), pw / 2, ph - 10, { align: 'center' });
 
-    let currentTime = 0;
-    const tableData = activeProject.scenes.map((scene, i) => {
-      const start = formatDuration(currentTime);
-      currentTime += scene.duration || 0;
-      const end = formatDuration(currentTime);
-      return [
-        String(i + 1),
-        scene.title || '-',
-        `${start}-${end}`,
-        `${scene.duration}s`,
-        scene.camera_angle || '-',
-        scene.shot_size || '-',
-        scene.camera_movement || '-',
-        scene.lighting || '-',
-        (scene.description || '-').substring(0, 40),
-      ];
-    });
+      // ===== 2페이지: 촬영 정보 =====
+      const sInfo = activeProject.shooting_info || {};
+      const hasShootInfo = Object.values(sInfo).some(v => v);
+      if (hasShootInfo) {
+        doc.addPage();
+        pageNum++;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, pw, ph, 'F');
+        doc.setFont(fontName);
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(16);
+        doc.text('촬영 정보', margin, 22);
+        doc.setFillColor(40, 40, 40);
+        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
 
-    (doc as any).autoTable({
-      startY: 27,
-      head: [['#', 'Title', 'Time', 'Dur', 'Angle', 'Shot', 'Move', 'Light', 'Description']],
-      body: tableData,
-      styles: { fontSize: 7, cellPadding: 2 },
-      headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [248, 248, 248] },
-      margin: { left: margin, right: margin },
-    });
+        const shootFieldsRaw: [string, any][] = [
+          ['촬영일', sInfo.shoot_date], ['촬영일수', sInfo.shoot_days], ['콜타임', sInfo.call_time],
+          ['종료시간', sInfo.wrap_time], ['점심시간', sInfo.lunch_time],
+          ['촬영장소', sInfo.location_name], ['주소', sInfo.location_address],
+          ['스튜디오', sInfo.studio_name], ['스튜디오 주소', sInfo.studio_address],
+          ['스튜디오 연락처', sInfo.studio_phone], ['주차', sInfo.parking_info],
+          ['인근 병원', sInfo.nearest_hospital], ['날씨', sInfo.weather_note],
+          ['특이사항', sInfo.special_notes],
+        ];
+        const shootFields = shootFieldsRaw.filter(([, val]) => val);
 
-    // ===== 타임테이블 페이지 (있으면) =====
-    if (activeProject.timetable && activeProject.timetable.length > 0) {
+        (doc as any).autoTable({
+          startY: 30,
+          body: shootFields.map(([label, val]) => [label, String(val)]),
+          styles: { fontSize: 9, cellPadding: 3, font: fontName },
+          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40 } },
+          alternateRowStyles: { fillColor: [248, 248, 248] },
+          margin: { left: margin, right: margin },
+          theme: 'plain',
+        });
+        pageFooter(pageNum);
+      }
+
+      // ===== 3페이지~: 씬 테이블 =====
       doc.addPage();
+      pageNum++;
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pw, ph, 'F');
+      doc.setFont(fontName);
       doc.setTextColor(30, 30, 30);
-      doc.setFontSize(14);
-      doc.text('Timetable', margin, 20);
+      doc.setFontSize(16);
+      doc.text('씬 브레이크다운', margin, 22);
+      doc.setFillColor(40, 40, 40);
+      doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
 
-      const ttData = activeProject.timetable.map((e, i) => [
-        String(i + 1), e.time_start || '-', e.time_end || '-', e.activity || '-',
-        e.location || '-', e.int_ext || '-', e.day_night || '-', e.cast || '-', e.notes || '-',
-      ]);
+      let currentTime = 0;
+      const tableData = activeProject.scenes.map((scene, i) => {
+        const start = formatDuration(currentTime);
+        currentTime += scene.duration || 0;
+        const end = formatDuration(currentTime);
+        return [
+          String(i + 1),
+          scene.title || '-',
+          `${start}-${end}`,
+          `${scene.duration}s`,
+          scene.camera_angle || '-',
+          scene.shot_size || '-',
+          scene.camera_movement || '-',
+          scene.lighting || '-',
+          (scene.description || '-').substring(0, 40),
+        ];
+      });
 
       (doc as any).autoTable({
-        startY: 27,
-        head: [['#', 'Start', 'End', 'Activity', 'Location', 'INT/EXT', 'D/N', 'Cast', 'Notes']],
-        body: ttData,
-        styles: { fontSize: 7, cellPadding: 2 },
-        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+        startY: 30,
+        head: [['#', '제목', '시간', '길이', '앵글', '샷', '무브', '조명', '설명']],
+        body: tableData,
+        styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
+        headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
         alternateRowStyles: { fillColor: [248, 248, 248] },
         margin: { left: margin, right: margin },
+        didDrawPage: () => { pageNum++; pageFooter(pageNum); },
       });
-    }
+      pageFooter(pageNum);
 
-    doc.save(`${activeProject.title}_스토리보드.pdf`);
+      // ===== 타임테이블 페이지 (있으면) =====
+      if (activeProject.timetable && activeProject.timetable.length > 0) {
+        doc.addPage();
+        pageNum++;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, pw, ph, 'F');
+        doc.setFont(fontName);
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(16);
+        doc.text('타임테이블', margin, 22);
+        doc.setFillColor(40, 40, 40);
+        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
+
+        const ttData = activeProject.timetable.map((e, i) => [
+          String(i + 1), e.time_start || '-', e.time_end || '-', e.activity || '-',
+          e.location || '-', e.int_ext || '-', e.day_night || '-', e.cast || '-', e.notes || '-',
+        ]);
+
+        (doc as any).autoTable({
+          startY: 30,
+          head: [['#', '시작', '종료', '활동', '장소', '실내/외', '주/야', '출연', '비고']],
+          body: ttData,
+          styles: { fontSize: 7, cellPadding: 2.5, font: fontName },
+          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+          alternateRowStyles: { fillColor: [248, 248, 248] },
+          margin: { left: margin, right: margin },
+        });
+        pageFooter(pageNum);
+      }
+
+      // ===== 예산 페이지 =====
+      try {
+        const sceneCount = activeProject.scenes?.length || 1;
+        const shootDays = parseInt(activeProject.shooting_info?.shoot_days) || 1;
+        const teamMembers = (activeProject.project_info as any)?.team_members?.length || 3;
+        const locationCount = (activeProject.shooting_info as any)?.locations?.length || 1;
+        const baseCost = 500000;
+        const sceneCost = sceneCount * baseCost;
+        const shootingDayCost = shootDays * 2000000;
+        const equipmentCost = sceneCount * 1000000;
+        const crewCost = teamMembers * 5000000;
+        const locationCost = locationCount * 3000000;
+        const subtotal = sceneCost + shootingDayCost + equipmentCost + crewCost + locationCost;
+        const tax = Math.round(subtotal * 0.1);
+        const budgetTotal = subtotal + tax;
+
+        doc.addPage();
+        pageNum++;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, pw, ph, 'F');
+        doc.setFont(fontName);
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(16);
+        doc.text('예산 추정', margin, 22);
+        doc.setFillColor(40, 40, 40);
+        doc.rect(margin, 25, pw - margin * 2, 0.3, 'F');
+
+        const budgetData = [
+          [`씬 제작비 (${sceneCount}개)`, `${sceneCost.toLocaleString()}원`],
+          [`촬영 일당 (${shootDays}일)`, `${shootingDayCost.toLocaleString()}원`],
+          ['장비비', `${equipmentCost.toLocaleString()}원`],
+          [`스태프비 (${teamMembers}명)`, `${crewCost.toLocaleString()}원`],
+          [`로케이션비 (${locationCount}곳)`, `${locationCost.toLocaleString()}원`],
+        ];
+        const budgetSummary = [
+          ['소계', `${subtotal.toLocaleString()}원`],
+          ['부가세 (10%)', `${tax.toLocaleString()}원`],
+          ['총합계', `${budgetTotal.toLocaleString()}원`],
+        ];
+
+        (doc as any).autoTable({
+          startY: 30,
+          head: [['항목', '금액']],
+          body: budgetData,
+          foot: budgetSummary,
+          styles: { fontSize: 9, cellPadding: 4, font: fontName },
+          headStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+          footStyles: { fillColor: [40, 40, 40], textColor: [255, 255, 255], fontStyle: 'bold', font: fontName },
+          alternateRowStyles: { fillColor: [248, 248, 248] },
+          margin: { left: margin, right: margin },
+          columnStyles: { 1: { halign: 'right' } },
+        });
+        pageFooter(pageNum);
+      } catch { /* 예산 계산 실패 시 스킵 */ }
+
+      doc.save(`${activeProject.title}_스토리보드.pdf`);
+    } catch (err) {
+      console.error('PDF export error:', err);
+      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   }, [activeProject, totalDuration]);
 
   const handleExportJSON = useCallback(() => {
@@ -2677,7 +2800,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               {viewMode === 'animatic' && <AnimaticPreview scenes={activeProject.scenes} projectTitle={activeProject.title} darkMode={darkMode} />}
               {viewMode === 'shotlist' && <ShotListView project={activeProject} darkMode={darkMode} />}
               {viewMode === 'calendar' && <CalendarView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
-              {viewMode === 'budget' && <BudgetEstimator project={activeProject} darkMode={darkMode} />}
+              {viewMode === 'budget' && <BudgetEstimator project={activeProject} darkMode={darkMode} onExportPDF={handleExportPDF} />}
               {viewMode === 'search' && <SceneSearchFilter scenes={activeProject.scenes} onSelectScene={(id: string) => { setActiveSceneId(id); setViewMode('editor'); }} darkMode={darkMode} />}
               {viewMode === 'versions' && <VersionManager project={activeProject} onRestore={(restored: any) => {
                 const updated = projects.map(p => p.id === activeProject.id ? { ...restored, id: activeProject.id } : p);

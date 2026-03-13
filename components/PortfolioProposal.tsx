@@ -85,54 +85,57 @@ const CT_LABEL: Record<string, string> = {
 
 /* ── 포트폴리오 카드 (메모이즈) — 풍부한 썸네일 ── */
 const Card = React.memo(({ item, on, toggle, dk }: { item: PortfolioItem; on: boolean; toggle: () => void; dk: boolean }) => (
-  <button type="button" onClick={toggle}
-    className={`text-left rounded-xl overflow-hidden transition-all ${on ? `ring-2 ${dk ? 'ring-neutral-400' : 'ring-neutral-800'} shadow-lg scale-[1.02]` : 'hover:shadow-md hover:scale-[1.01]'}`}>
-    {/* 썸네일 영역 */}
-    <div className={`aspect-video bg-gradient-to-br ${CP[item.color] || 'from-gray-200 to-gray-300'} relative overflow-hidden`}>
-      {/* 카테고리 이모지 + 브랜드 이니셜 대형 표시 */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl mb-0.5 drop-shadow-sm">{CAT_EMOJI[item.category] || '🎬'}</span>
-        <span className="text-white/70 text-[10px] font-bold tracking-wider drop-shadow-sm">{item.brand.split(' ')[0].slice(0, 8)}</span>
-      </div>
-      {/* 재생 버튼 오버레이 */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-        <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <Play size={18} className="text-white ml-0.5" fill="white" />
+  <div className={`text-left rounded-xl overflow-hidden transition-all ${on ? `ring-2 ${dk ? 'ring-neutral-400' : 'ring-neutral-800'} shadow-lg scale-[1.02]` : 'hover:shadow-md hover:scale-[1.01]'}`}>
+    {/* 썸네일 영역 (클릭 = 선택 토글) */}
+    <button type="button" onClick={toggle} className="w-full">
+      <div className={`aspect-video bg-gradient-to-br ${CP[item.color] || 'from-gray-200 to-gray-300'} relative overflow-hidden`}>
+        {/* 카테고리 이모지 + 브랜드 이니셜 */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-3xl mb-0.5 drop-shadow-sm">{CAT_EMOJI[item.category] || '🎬'}</span>
+          <span className="text-white/70 text-[10px] font-bold tracking-wider drop-shadow-sm">{item.brand.split(' ')[0].slice(0, 8)}</span>
         </div>
-      </div>
-      {/* 콘텐츠 유형 뱃지 (좌상단) */}
-      <span className="absolute top-1.5 left-1.5 bg-black/50 backdrop-blur-sm text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-md">
-        {CT_LABEL[item.contentType] || '영상'}
-      </span>
-      {/* 모델/타이포 표시 (우상단) */}
-      <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-        {item.hasModel && <span className="bg-black/50 backdrop-blur-sm text-white text-[8px] px-1 py-0.5 rounded-md" title="모델 출연"><User size={8} className="inline" /></span>}
-        {item.hasTypo && <span className="bg-black/50 backdrop-blur-sm text-white text-[8px] px-1 py-0.5 rounded-md" title="타이포그래피"><Type size={8} className="inline" /></span>}
-      </div>
-      {/* 선택 오버레이 */}
-      {on && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center ${dk ? 'bg-white' : 'bg-neutral-900'}`}>
-            <Check size={18} className={dk ? 'text-neutral-900' : 'text-white'} />
+        {/* 콘텐츠 유형 뱃지 (좌상단) */}
+        <span className="absolute top-1.5 left-1.5 bg-black/50 backdrop-blur-sm text-white text-[8px] font-semibold px-1.5 py-0.5 rounded-md">
+          {CT_LABEL[item.contentType] || '영상'}
+        </span>
+        {/* 모델/타이포 표시 (우상단) */}
+        <div className="absolute top-1.5 right-1.5 flex gap-0.5">
+          {item.hasModel && <span className="bg-black/50 backdrop-blur-sm text-white text-[8px] px-1 py-0.5 rounded-md" title="모델 출연"><User size={8} className="inline" /></span>}
+          {item.hasTypo && <span className="bg-black/50 backdrop-blur-sm text-white text-[8px] px-1 py-0.5 rounded-md" title="타이포그래피"><Type size={8} className="inline" /></span>}
+        </div>
+        {/* 선택 오버레이 */}
+        {on && (
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center ${dk ? 'bg-white' : 'bg-neutral-900'}`}>
+              <Check size={18} className={dk ? 'text-neutral-900' : 'text-white'} />
+            </div>
           </div>
-        </div>
-      )}
-      {/* 하단 그라디언트 + 길이 */}
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/50 to-transparent" />
-      {item.duration && <span className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">{item.duration}</span>}
-      {/* 톤 표시 (하단 좌) */}
-      <span className="absolute bottom-1.5 left-1.5 text-white/80 text-[8px] font-medium">{item.tone.feel}</span>
-    </div>
+        )}
+        {/* 하단 그라디언트 + 길이 */}
+        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/50 to-transparent" />
+        {item.duration && <span className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">{item.duration}</span>}
+        <span className="absolute bottom-1.5 left-1.5 text-white/80 text-[8px] font-medium">{item.tone.feel}</span>
+      </div>
+    </button>
     {/* 정보 영역 */}
     <div className={`p-2.5 ${dk ? 'bg-neutral-800' : 'bg-white'}`}>
       <p className={`text-[9px] font-bold uppercase tracking-wider ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>{item.brand}</p>
       <p className={`text-xs font-semibold line-clamp-1 mb-1 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>{item.title}</p>
-      <div className="flex flex-wrap gap-0.5">
-        {item.platform.slice(0, 2).map(p => <span key={p} className={`text-[8px] px-1 py-0.5 rounded ${dk ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>{p}</span>)}
-        <span className={`text-[8px] px-1 py-0.5 rounded ${dk ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>{item.tone.temp}</span>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-0.5">
+          {item.platform.slice(0, 2).map(p => <span key={p} className={`text-[8px] px-1 py-0.5 rounded ${dk ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>{p}</span>)}
+        </div>
+        {/* 영상 보기 링크 */}
+        {item.videoUrl && (
+          <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
+            className={`inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded transition ${dk ? 'text-blue-400 hover:bg-neutral-700' : 'text-blue-600 hover:bg-blue-50'}`}>
+            <Play size={9} fill="currentColor" /> 영상보기
+          </a>
+        )}
       </div>
     </div>
-  </button>
+  </div>
 ));
 Card.displayName = 'Card';
 
@@ -144,6 +147,8 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
   const [proposal, setProposal] = useState<ProposalData>(createEmptyProposal());
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
 
   const up = useCallback((p: Partial<ProposalData>) => setProposal(v => ({ ...v, ...p })), []);
   const toggle = useCallback((id: string) => setProposal(v => ({
@@ -176,42 +181,38 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [proposal.selectedPortfolios]);
 
-  /* 이메일 제출 (mailto) */
-  const submitEmail = useCallback(() => {
-    const cat = PORTFOLIO_CATEGORIES.find(c => c.value === proposal.category)?.label || '';
-    const typ = CONTENT_TYPES.find(c => c.value === proposal.contentType)?.label || '';
-    const refs = sel.map(i => `- ${i.brand}: ${i.title}${proposal.referenceItemNotes[i.id] ? ` → ${proposal.referenceItemNotes[i.id]}` : ''}`).join('\n');
-    const subj = encodeURIComponent(`[영상 기획안] ${proposal.projectTitle} - ${proposal.clientCompany || proposal.clientName}`);
-    const body = encodeURIComponent(
-`PEWPEW Studio 영상 기획안
+  /* 이메일 제출 (API route → formsubmit.co + Firestore) */
+  const submitEmail = useCallback(async () => {
+    setSending(true);
+    setSendError('');
+    try {
+      const cat = PORTFOLIO_CATEGORIES.find(c => c.value === proposal.category)?.label || '';
+      const typ = CONTENT_TYPES.find(c => c.value === proposal.contentType)?.label || '';
+      const refs = sel.map(i => `- ${i.brand}: ${i.title}${proposal.referenceItemNotes[i.id] ? ` → ${proposal.referenceItemNotes[i.id]}` : ''}`).join('\n');
 
-■ 클라이언트
-이름: ${proposal.clientName}
-회사: ${proposal.clientCompany}
-이메일: ${proposal.clientEmail}
-연락처: ${proposal.clientPhone}
+      const res = await fetch('/api/send-proposal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...proposal,
+          categoryLabel: cat,
+          contentTypeLabel: typ,
+          referenceText: refs,
+          selectedPortfolioTitles: sel.map(i => `${i.brand}: ${i.title}`),
+        }),
+      });
 
-■ 프로젝트
-제목: ${proposal.projectTitle}
-설명: ${proposal.projectDescription}
-카테고리: ${cat} / 유형: ${typ}
-플랫폼: ${proposal.platforms.join(', ')}
-톤: ${proposal.tonePref.temp} ${proposal.tonePref.feel}
-타겟: ${proposal.targetAudience}
-목적: ${proposal.videoPurpose}
-길이: ${proposal.desiredDuration}
-납품 포맷: ${proposal.deliveryFormat.join(', ')}
-
-■ 참고 영상
-${refs}
-${proposal.referenceNotes ? `\n전체 참고: ${proposal.referenceNotes}` : ''}
-
-■ 일정/예산
-촬영: ${proposal.desiredDate || '미정'} / 납품: ${proposal.deadline || '미정'}
-예산: ${proposal.budget || '미정'}
-${proposal.additionalNotes ? `\n추가: ${proposal.additionalNotes}` : ''}`);
-    window.location.href = `mailto:kth930084@gmail.com?subject=${subj}&body=${body}`;
-    go('done');
+      const result = await res.json();
+      if (result.success) {
+        go('done');
+      } else {
+        setSendError('전송에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (err) {
+      setSendError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setSending(false);
+    }
   }, [proposal, sel, go]);
 
   /* 스토리보드 변환 */
@@ -665,17 +666,28 @@ ${proposal.additionalNotes ? `\n추가: ${proposal.additionalNotes}` : ''}`);
               </div>
             </div>
 
+            {/* 에러 메시지 */}
+            {sendError && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                {sendError}
+              </div>
+            )}
+
             {/* 제출 버튼 */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <button onClick={() => go('step2')}
+              <button onClick={() => go('step2')} disabled={sending}
                 className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}>
                 <ChevronLeft size={16} /> 수정하기
               </button>
-              <button onClick={submitEmail}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900'}`}>
-                <Mail size={18} /> 이메일로 기획안 보내기
+              <button onClick={submitEmail} disabled={sending}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition ${sending ? 'opacity-60 cursor-not-allowed' : ''} ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900'}`}>
+                {sending ? (
+                  <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 전송 중...</>
+                ) : (
+                  <><Mail size={18} /> 기획안 보내기</>
+                )}
               </button>
-              <button onClick={toStoryboard}
+              <button onClick={toStoryboard} disabled={sending}
                 className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}>
                 <Sparkles size={16} /> 스토리보드로
               </button>
