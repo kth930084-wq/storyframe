@@ -1986,6 +1986,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           });
           doc.addFileToVFS('NanumGothic.ttf', b64);
           doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+          doc.addFont('NanumGothic.ttf', 'NanumGothic', 'bold');
           fontName = 'NanumGothic';
         }
       } catch (e) {
@@ -2193,9 +2194,9 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       } catch { /* 예산 계산 실패 시 스킵 */ }
 
       doc.save(`${activeProject.title}_스토리보드.pdf`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('PDF export error:', err);
-      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      alert(`PDF 생성 중 오류: ${err?.message || err}`);
     }
   }, [activeProject, totalDuration]);
 
