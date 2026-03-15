@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -12,6 +14,13 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Film, Camera, Layers, MonitorPlay, Zap, ArrowRight, Play, Clock, Clapperboard, Sparkles, ChevronDown } from 'lucide-react';
+
+// 인앱 브라우저 감지 (카카오톡, 인스타그램, 페이스북, 라인, 네이버 등)
+const isInAppBrowser = () => {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || navigator.vendor || '';
+  return /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Whale\/1|Snapchat|WeChat|MicroMessenger|DaumApps|SamsungBrowser\/.*CrossApp/i.test(ua);
+};
 
 export default function Home() {
   const router = useRouter();
@@ -25,6 +34,19 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
+
+  // 리다이렉트 로그인 결과 처리 (인앱 브라우저용)
+  useEffect(() => {
+    getRedirectResult(auth).then((result) => {
+      if (result?.user) {
+        router.push('/dashboard');
+      }
+    }).catch((error) => {
+      if (error?.code !== 'auth/popup-closed-by-user') {
+        setError(error.message || '로그인 처리 중 오류가 발생했습니다');
+      }
+    });
+  }, [router]);
 
   if (loading) {
     return (
@@ -43,9 +65,28 @@ export default function Home() {
     try {
       setIsLoading(true); setError('');
       const provider = new GoogleAuthProvider();
+      if (isInAppBrowser()) {
+        // 인앱 브라우저에서는 signInWithRedirect 사용
+        await signInWithRedirect(auth, provider);
+        // 리다이렉트되므로 여기 이후 코드는 실행되지 않음
+        return;
+      }
       await signInWithPopup(auth, provider);
       router.push('/dashboard');
-    } catch (error: any) { setError(error.message || '구글 로그인 실패'); }
+    } catch (error: any) {
+      // signInWithPopup이 실패하면 signInWithRedirect로 폴백
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/unauthorized-domain' || error.message?.includes('disallowed_useragent')) {
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithRedirect(auth, provider);
+          return;
+        } catch (fallbackError: any) {
+          setError(fallbackError.message || '구글 로그인 실패');
+        }
+      } else {
+        setError(error.message || '구글 로그인 실패');
+      }
+    }
     finally { setIsLoading(false); }
   };
 
@@ -213,6 +254,25 @@ export default function Home() {
 
                     {error && (
                       <div className="bg-red-950/30 border border-red-900/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>
+                    )}
+
+                    {/* 인앱 브라우저 감지 시 외부 브라우저 안내 */}
+                    {mounted && isInAppBrowser() && (
+                      <div className="bg-yellow-950/30 border border-yellow-800/30 text-yellow-400 px-4 py-3 rounded-lg mb-4 text-sm">
+                        <p className="mb-2">인앱 브라우저에서 접속 중입니다.</p>
+                        <button
+                          onClick={() => {
+                            const url = window.location.href;
+                            // 시스템 브라우저로 열기 시도
+                            window.open(url, '_system');
+                            // 안드로이드: intent scheme
+                            window.location.href = `intent://${window.location.host}${window.location.pathname}#Intent;scheme=https;package=com.android.chrome;end`;
+                          }}
+                          className="text-yellow-300 underline underline-offset-4 text-xs font-medium"
+                        >
+                          외부 브라우저로 열기 (권장)
+                        </button>
+                      </div>
                     )}
 
                     <button onClick={handleGoogleSignIn} disabled={isLoading}

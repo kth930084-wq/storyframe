@@ -25,6 +25,7 @@ import { SlideView } from './SlideView';
 import { BlankPageEditor, BlankPageContent } from './BlankPageEditor';
 import { CanvasEditor, type CanvasElement } from './CanvasEditor';
 import ReferenceLibrary from './ReferenceLibrary';
+import PDFExportModal from './PDFExportModal';
 
 interface StoryboardAppProps {
   user: any;
@@ -1673,6 +1674,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', type: 'info' as 'info' | 'update' | 'important' });
   const [showBlankPageEditor, setShowBlankPageEditor] = useState(false);
   const [showReferenceLibrary, setShowReferenceLibrary] = useState(false);
+  const [showPDFExportModal, setShowPDFExportModal] = useState(false);
   const [slideViewMode, setSlideViewMode] = useState(false);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -2051,8 +2053,10 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const totalDuration = activeProject?.scenes?.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0) || 0;
 
-  const handleExportPDF = useCallback(() => {
+  const handleExportPDF = useCallback((enabledPages?: string[]) => {
     if (!activeProject) return;
+    const allPages = enabledPages || ['cover', 'overview', 'storyboard-grid', 'scene-details', 'timetable', 'budget'];
+    const isEnabled = (id: string) => allPages.includes(id);
     const p = activeProject;
     const pInfo = p.project_info || {} as any;
     const sInfo = p.shooting_info || {} as any;
@@ -2146,16 +2150,35 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       return `<div style="display:flex;align-items:center;gap:5px;"><div style="width:8px;height:8px;border-radius:2px;background:${colors[i % colors.length]};"></div>씬 ${i + 1}: ${s.title || '-'} (${s.duration || 0}초)</div>`;
     }).join('');
 
-    const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${p.title} - 영상 기획안</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;background:#d4d4d4;line-height:1.5;-webkit-font-smoothing:antialiased;}
-@page{size:A4 landscape;margin:0;}
-.page{width:297mm;min-height:210mm;margin:20px auto;background:white;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.15);page-break-after:always;}
-@media print{body{background:white;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}.page{margin:0;box-shadow:none;}.no-print{display:none!important;}}
-</style></head><body>
-<div class="page" style="background:#111;color:white;display:flex;align-items:center;justify-content:center;">
+    // Budget page data (use default values for PDF)
+    const pdfShootDays = sInfo.shoot_days || Math.ceil(totalDuration / 480) || 1;
+    const pdfTeamMembers = pInfo.team_members?.length || 3;
+    const pdfLocationCount = sInfo.locations?.length || 1;
+    const budgetItems = [
+      { name: '씬 제작비', qty: sceneCnt, unit: '씬', unitCost: 500000 },
+      { name: '촬영 일당', qty: pdfShootDays, unit: '일', unitCost: 2000000 },
+      { name: '장비비', qty: sceneCnt, unit: '씬', unitCost: 1000000 },
+      { name: '스태프비', qty: pdfTeamMembers, unit: '명', unitCost: 5000000 },
+      { name: '로케이션비', qty: pdfLocationCount, unit: '곳', unitCost: 3000000 },
+    ];
+    const budgetSubtotal = budgetItems.reduce((s, i) => s + i.qty * i.unitCost, 0);
+    const budgetTax = Math.round(budgetSubtotal * 0.1);
+    const budgetTotal = budgetSubtotal + budgetTax;
+
+    const budgetRows = budgetItems.map(item =>
+      `<tr><td style="padding:10px 14px;font-size:9pt;font-weight:600;color:#333;border-bottom:1px solid #f0f0f0;">${item.name}</td><td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#555;text-align:center;border-bottom:1px solid #f0f0f0;">${item.qty} ${item.unit}</td><td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#555;text-align:right;font-family:monospace;border-bottom:1px solid #f0f0f0;">${item.unitCost.toLocaleString()}원</td><td style="padding:10px 14px;font-size:9pt;font-weight:600;color:#111;text-align:right;font-family:monospace;border-bottom:1px solid #f0f0f0;">${(item.qty * item.unitCost).toLocaleString()}원</td></tr>`
+    ).join('');
+
+    // footer helper
+    const footer = `<div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;"><span>스토리프레임</span><span>${production}</span><span>${today}</span></div>`;
+    const thStyle = `background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;`;
+
+    // Build pages array based on selection
+    const htmlPages: string[] = [];
+
+    // Cover Page
+    if (isEnabled('cover')) {
+      htmlPages.push(`<div class="page" style="background:#111;color:white;display:flex;align-items:center;justify-content:center;">
   <div style="width:100%;height:100%;display:flex;align-items:center;padding:56px 72px;position:relative;">
     <div style="flex:1;">
       <div style="display:inline-block;font-size:8pt;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#888;border:1px solid #444;border-radius:4px;padding:4px 12px;margin-bottom:24px;">Video Storyboard</div>
@@ -2173,12 +2196,14 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;backgroun
       <span>${production}</span><span>CONFIDENTIAL</span><span>${today}</span>
     </div>
   </div>
-</div>
+</div>`);
+    }
 
-<div class="page" style="padding:40px 52px 56px;">
+    // Overview Page
+    if (isEnabled('overview')) {
+      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
     <h2 style="font-size:14pt;font-weight:800;color:#111;">프로젝트 개요</h2>
-    <div style="font-size:8pt;color:#999;font-weight:500;">02</div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
     <div style="background:#111;border:1px solid #111;border-radius:10px;padding:16px 20px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">프로젝트</div><div style="font-size:14pt;font-weight:800;color:#fff;">${p.title || '-'}</div></div>
@@ -2199,44 +2224,42 @@ body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;backgroun
   <div style="display:flex;gap:2px;height:24px;border-radius:6px;overflow:hidden;margin-bottom:12px;">${tlSegs}</div>
   <div style="display:flex;flex-wrap:wrap;gap:10px 20px;font-size:8pt;color:#666;margin-bottom:20px;">${tlLegend}</div>
   <table style="width:100%;border-collapse:collapse;">
-    <thead><tr><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:6px 0 0 0;">씬</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">제목</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">길이</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">앵글</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">샷 사이즈</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">무브먼트</th><th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:0 6px 0 0;">조명</th></tr></thead>
+    <thead><tr><th style="${thStyle}border-radius:6px 0 0 0;">씬</th><th style="${thStyle}">제목</th><th style="${thStyle}">길이</th><th style="${thStyle}">앵글</th><th style="${thStyle}">샷 사이즈</th><th style="${thStyle}">무브먼트</th><th style="${thStyle}border-radius:0 6px 0 0;">조명</th></tr></thead>
     <tbody>${summaryRows}</tbody>
   </table>
-  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
-    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
-  </div>
-</div>
+  ${footer}
+</div>`);
+    }
 
-<div class="page" style="padding:40px 52px 56px;">
+    // Storyboard Grid
+    if (isEnabled('storyboard-grid')) {
+      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
     <h2 style="font-size:14pt;font-weight:800;color:#111;">스토리보드 전체보기</h2>
-    <div style="font-size:8pt;color:#999;font-weight:500;">03</div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">${sbCards}</div>
-  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
-    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
-  </div>
-</div>
+  ${footer}
+</div>`);
+    }
 
-${scenePages}
+    // Scene Detail Pages
+    if (isEnabled('scene-details')) {
+      htmlPages.push(scenePages);
+    }
 
-${(p.timetable && p.timetable.length > 0) ? `
-<div class="page" style="padding:40px 52px 56px;">
+    // Timetable
+    if (isEnabled('timetable') && p.timetable && p.timetable.length > 0) {
+      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
     <h2 style="font-size:14pt;font-weight:800;color:#111;">타임테이블</h2>
-    <div style="font-size:8pt;color:#999;font-weight:500;">${String(4 + sceneCnt).padStart(2, '0')}</div>
   </div>
   <table style="width:100%;border-collapse:collapse;">
     <thead><tr>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:6px 0 0 0;">#</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">시작</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">종료</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">활동</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">장소</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">실내/외</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">주/야</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;">출연</th>
-      <th style="background:#111;color:#999;padding:8px 14px;font-size:7pt;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;text-align:left;border-radius:0 6px 0 0;">비고</th>
+      <th style="${thStyle}border-radius:6px 0 0 0;">#</th>
+      <th style="${thStyle}">시작</th><th style="${thStyle}">종료</th>
+      <th style="${thStyle}">활동</th><th style="${thStyle}">장소</th>
+      <th style="${thStyle}">실내/외</th><th style="${thStyle}">주/야</th>
+      <th style="${thStyle}">출연</th><th style="${thStyle}border-radius:0 6px 0 0;">비고</th>
     </tr></thead>
     <tbody>${p.timetable.map((e: any, i: number) => `
       <tr>
@@ -2252,11 +2275,57 @@ ${(p.timetable && p.timetable.length > 0) ? `
       </tr>`).join('')}
     </tbody>
   </table>
-  <div style="position:absolute;bottom:20px;left:52px;right:52px;display:flex;justify-content:space-between;font-size:7pt;color:#aaa;border-top:1px solid #eee;padding-top:8px;">
-    <span>스토리프레임</span><span>${production}</span><span>${today}</span>
-  </div>
-</div>` : ''}
+  ${footer}
+</div>`);
+    }
 
+    // Budget Page
+    if (isEnabled('budget')) {
+      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">예산 견적서</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;">
+    <div style="background:#111;border-radius:10px;padding:20px 24px;"><div style="font-size:7pt;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:6px;">프로젝트</div><div style="font-size:16pt;font-weight:800;color:#fff;">${p.title || '-'}</div></div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px 24px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:6px;">총 예산</div><div style="font-size:16pt;font-weight:800;color:#111;font-family:monospace;">${budgetTotal.toLocaleString()}원</div></div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px 24px;"><div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:6px;">견적 일자</div><div style="font-size:16pt;font-weight:800;color:#111;">${today}</div></div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+    <thead><tr>
+      <th style="${thStyle}border-radius:6px 0 0 0;">항목</th>
+      <th style="${thStyle}text-align:center;">수량</th>
+      <th style="${thStyle}text-align:right;">단가</th>
+      <th style="${thStyle}text-align:right;border-radius:0 6px 0 0;">금액</th>
+    </tr></thead>
+    <tbody>
+      ${budgetRows}
+      <tr style="background:#fafafa;"><td colspan="3" style="padding:10px 14px;font-size:10pt;font-weight:700;color:#111;border-top:2px solid #e0e0e0;">소계</td><td style="padding:10px 14px;font-size:10pt;font-weight:700;color:#111;text-align:right;font-family:monospace;border-top:2px solid #e0e0e0;">${budgetSubtotal.toLocaleString()}원</td></tr>
+      <tr><td colspan="3" style="padding:10px 14px;font-size:9pt;font-weight:500;color:#555;">부가세 (10%)</td><td style="padding:10px 14px;font-size:9pt;font-weight:500;color:#555;text-align:right;font-family:monospace;">${budgetTax.toLocaleString()}원</td></tr>
+      <tr style="background:#111;"><td colspan="3" style="padding:14px;font-size:12pt;font-weight:800;color:#fff;border-radius:0 0 0 6px;">총합계</td><td style="padding:14px;font-size:12pt;font-weight:800;color:#fff;text-align:right;font-family:monospace;border-radius:0 0 6px 0;">${budgetTotal.toLocaleString()}원</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:32px;padding:20px 24px;background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;">
+    <div style="font-size:8pt;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">참고 사항</div>
+    <div style="font-size:9pt;color:#555;line-height:1.8;">
+      • 상기 금액은 추정 비용이며, 실제 비용은 협의에 따라 달라질 수 있습니다.<br>
+      • 부가세(VAT) 10%가 포함된 금액입니다.<br>
+      • 촬영 일수: ${pdfShootDays}일 / 스태프: ${pdfTeamMembers}명 / 로케이션: ${pdfLocationCount}곳 기준
+    </div>
+  </div>
+  ${footer}
+</div>`);
+    }
+
+    const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>${p.title} - 영상 기획안</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;background:#d4d4d4;line-height:1.5;-webkit-font-smoothing:antialiased;}
+@page{size:A4 landscape;margin:0;}
+.page{width:297mm;min-height:210mm;margin:20px auto;background:white;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.15);page-break-after:always;}
+@media print{body{background:white;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}.page{margin:0;box-shadow:none;}.no-print{display:none!important;}}
+</style></head><body>
+${htmlPages.join('\n')}
 </body></html>`;
 
     const w = window.open('', '_blank');
@@ -2489,7 +2558,7 @@ ${(p.timetable && p.timetable.length > 0) ? `
             {activeProject && (
               <div className="flex gap-1">
                 <button
-                  onClick={() => handleExportPDF()}
+                  onClick={() => setShowPDFExportModal(true)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-neutral-800 text-white hover:bg-neutral-900"
                   title="PDF 내보내기"
                 >
@@ -2878,7 +2947,7 @@ ${(p.timetable && p.timetable.length > 0) ? `
               {viewMode === 'animatic' && <AnimaticPreview scenes={activeProject.scenes} projectTitle={activeProject.title} darkMode={darkMode} />}
               {viewMode === 'shotlist' && <ShotListView project={activeProject} darkMode={darkMode} />}
               {viewMode === 'calendar' && <CalendarView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
-              {viewMode === 'budget' && <BudgetEstimator project={activeProject} darkMode={darkMode} onExportPDF={handleExportPDF} />}
+              {viewMode === 'budget' && <BudgetEstimator project={activeProject} darkMode={darkMode} onExportPDF={() => setShowPDFExportModal(true)} />}
               {viewMode === 'search' && <SceneSearchFilter scenes={activeProject.scenes} onSelectScene={(id: string) => { setActiveSceneId(id); setViewMode('editor'); }} darkMode={darkMode} />}
               {viewMode === 'versions' && <VersionManager project={activeProject} onRestore={(restored: any) => {
                 const updated = projects.map(p => p.id === activeProject.id ? { ...restored, id: activeProject.id } : p);
@@ -2939,6 +3008,18 @@ ${(p.timetable && p.timetable.length > 0) ? `
               addToHistory(updatedProjects);
             }
             setShowReferenceLibrary(false);
+          }}
+        />
+      )}
+
+      {showPDFExportModal && activeProject && (
+        <PDFExportModal
+          project={activeProject}
+          darkMode={darkMode}
+          onClose={() => setShowPDFExportModal(false)}
+          onExport={(enabledPages) => {
+            handleExportPDF(enabledPages);
+            setShowPDFExportModal(false);
           }}
         />
       )}

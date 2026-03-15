@@ -29,6 +29,15 @@ import {
 // Feature 6: BudgetEstimator (예산/리소스 추정 계산기)
 // ============================================================================
 
+interface BudgetItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unitLabel: string;
+  unitCost: number;
+  isCustom?: boolean;
+}
+
 interface BudgetEstimatorProps {
   project: any;
   darkMode: boolean;
@@ -40,28 +49,57 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
   darkMode,
   onExportPDF,
 }) => {
-  const [baseCostPerScene, setBaseCostPerScene] = useState(500000);
-  const [equipmentOverride, setEquipmentOverride] = useState<number | null>(null);
-  const [crewOverride, setCrewOverride] = useState<number | null>(null);
-  const [locationOverride, setLocationOverride] = useState<number | null>(null);
-
-  // Calculate estimated values
   const sceneCount = project?.scenes?.length || 0;
   const totalDuration = project?.scenes?.reduce((sum: number, scene: any) => sum + (scene.duration || 0), 0) || 0;
-  const shootDays = project?.shooting_info?.shoot_days || Math.ceil(totalDuration / 480); // 8 hours per day
-  const teamMembers = project?.project_info?.team_members?.length || 3;
-  const locationCount = project?.shooting_info?.locations?.length || 1;
+  const defaultShootDays = project?.shooting_info?.shoot_days || Math.ceil(totalDuration / 480) || 1;
+  const defaultTeamMembers = project?.project_info?.team_members?.length || 3;
+  const defaultLocationCount = project?.shooting_info?.locations?.length || 1;
 
-  // Calculate costs
-  const sceneCost = sceneCount * baseCostPerScene;
-  const shootingDayCost = shootDays * 2000000; // 200만원 per day
-  const equipmentCost = equipmentOverride ?? (sceneCount * 1000000); // 100만원 base per scene
-  const crewCost = crewOverride ?? (teamMembers * 5000000); // 500만원 per member
-  const locationCost = locationOverride ?? (locationCount * 3000000); // 300만원 per location
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([
+    { id: 'scene', name: '씬 제작비', quantity: sceneCount, unitLabel: '씬', unitCost: 500000 },
+    { id: 'shooting', name: '촬영 일당', quantity: defaultShootDays, unitLabel: '일', unitCost: 2000000 },
+    { id: 'equipment', name: '장비비', quantity: sceneCount, unitLabel: '씬', unitCost: 1000000 },
+    { id: 'crew', name: '스태프비', quantity: defaultTeamMembers, unitLabel: '명', unitCost: 5000000 },
+    { id: 'location', name: '로케이션비', quantity: defaultLocationCount, unitLabel: '곳', unitCost: 3000000 },
+  ]);
+  const [taxRate, setTaxRate] = useState(10);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [showAddItem, setShowAddItem] = useState(false);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemQuantity, setNewItemQuantity] = useState(1);
+  const [newItemUnit, setNewItemUnit] = useState('건');
+  const [newItemUnitCost, setNewItemUnitCost] = useState(1000000);
 
-  const subtotal = sceneCost + shootingDayCost + equipmentCost + crewCost + locationCost;
-  const tax = Math.round(subtotal * 0.1);
+  const subtotal = budgetItems.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
+  const tax = Math.round(subtotal * taxRate / 100);
   const total = subtotal + tax;
+
+  const updateItem = (id: string, field: keyof BudgetItem, value: any) => {
+    setBudgetItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const removeItem = (id: string) => {
+    setBudgetItems(prev => prev.filter(item => item.id !== id));
+  };
+
+  const addItem = () => {
+    if (!newItemName.trim()) return;
+    const newId = 'custom_' + Date.now();
+    setBudgetItems(prev => [...prev, {
+      id: newId,
+      name: newItemName.trim(),
+      quantity: newItemQuantity,
+      unitLabel: newItemUnit,
+      unitCost: newItemUnitCost,
+      isCustom: true,
+    }]);
+    setNewItemName('');
+    setNewItemQuantity(1);
+    setNewItemUnit('건');
+    setNewItemUnitCost(1000000);
+    setShowAddItem(false);
+  };
 
   const bgColor = darkMode ? 'bg-neutral-900' : 'bg-neutral-50';
   const borderColor = darkMode ? 'border-neutral-800' : 'border-neutral-200';
@@ -69,122 +107,247 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
   const secondaryText = darkMode ? 'text-neutral-400' : 'text-neutral-600';
   const cardBg = darkMode ? 'bg-neutral-800' : 'bg-white';
   const inputBg = darkMode ? 'bg-neutral-700' : 'bg-neutral-100';
+  const inputBorder = darkMode ? 'border-neutral-600' : 'border-neutral-300';
+
+  const EditableCell = ({ value, onChange, suffix, type = 'number', width = 'w-28' }: { value: number | string; onChange: (v: any) => void; suffix?: string; type?: string; width?: string }) => (
+    <div className="flex items-center gap-1">
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+        className={`${width} px-2 py-1 rounded text-right font-mono text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+        onFocus={(e) => e.target.select()}
+      />
+      {suffix && <span className={`text-xs ${secondaryText} whitespace-nowrap`}>{suffix}</span>}
+    </div>
+  );
 
   return (
     <div className={`${bgColor} rounded-lg border ${borderColor} p-6 space-y-6`}>
-      <div className="flex items-center gap-2 mb-6">
-        <DollarSign className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
-        <h3 className={`text-xl font-bold ${textColor}`}>예산 추정 계산기</h3>
-      </div>
-
-      {/* Base Cost Slider */}
-      <div className={`${cardBg} rounded-lg p-4 border ${borderColor}`}>
-        <label className={`block text-sm font-medium ${secondaryText} mb-3`}>
-          씬당 기본 비용
-        </label>
-        <div className="flex items-center gap-4">
-          <input
-            type="range"
-            min="100000"
-            max="2000000"
-            step="100000"
-            value={baseCostPerScene}
-            onChange={(e) => setBaseCostPerScene(Number(e.target.value))}
-            className="flex-1 h-2 bg-neutral-300 dark:bg-neutral-600 rounded-lg appearance-none cursor-pointer"
-          />
-          <span className={`font-mono text-lg font-bold ${textColor} min-w-32`}>
-            {baseCostPerScene.toLocaleString()}원
-          </span>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <DollarSign className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
+          <h3 className={`text-xl font-bold ${textColor}`}>예산 추정 계산기</h3>
         </div>
+        <span className={`text-xs ${secondaryText}`}>모든 항목을 직접 수정할 수 있습니다</span>
       </div>
 
-      {/* Budget Breakdown Table */}
+      {/* Budget Breakdown Table - Fully Editable */}
       <div className={`${cardBg} rounded-lg border ${borderColor} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
-                <th className={`text-left px-4 py-3 font-semibold text-sm ${secondaryText}`}>
-                  항목
-                </th>
-                <th className={`text-right px-4 py-3 font-semibold text-sm ${secondaryText}`}>
-                  금액
-                </th>
+                <th className={`text-left px-4 py-3 font-semibold text-sm ${secondaryText}`}>항목</th>
+                <th className={`text-center px-4 py-3 font-semibold text-sm ${secondaryText} w-36`}>수량</th>
+                <th className={`text-center px-4 py-3 font-semibold text-sm ${secondaryText} w-44`}>단가</th>
+                <th className={`text-right px-4 py-3 font-semibold text-sm ${secondaryText} w-40`}>금액</th>
+                <th className={`text-center px-4 py-3 font-semibold text-sm ${secondaryText} w-16`}></th>
               </tr>
             </thead>
             <tbody>
-              <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>
-                  씬 제작비 ({sceneCount}개)
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
-                  {sceneCost.toLocaleString()}원
-                </td>
-              </tr>
-              <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>
-                  촬영 일당 ({shootDays}일)
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
-                  {shootingDayCost.toLocaleString()}원
-                </td>
-              </tr>
-              <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>
-                  <div className="flex items-center justify-between">
-                    <span>장비비</span>
-                    <button className={`text-xs px-2 py-1 rounded ${inputBg} ${secondaryText} hover:opacity-70`}>
-                      편집
+              {budgetItems.map((item) => {
+                const itemTotal = item.quantity * item.unitCost;
+                return (
+                  <tr key={item.id} className={`border-b ${borderColor} hover:${darkMode ? 'bg-neutral-750' : 'bg-neutral-50'} transition-colors`}>
+                    <td className={`px-4 py-3 ${textColor}`}>
+                      {editingId === item.id && editingField === 'name' ? (
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) => updateItem(item.id, 'name', e.target.value)}
+                          onBlur={() => { setEditingId(null); setEditingField(null); }}
+                          onKeyDown={(e) => e.key === 'Enter' && (setEditingId(null), setEditingField(null))}
+                          autoFocus
+                          className={`w-full px-2 py-1 rounded text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                        />
+                      ) : (
+                        <span
+                          className="cursor-pointer hover:underline"
+                          onClick={() => { setEditingId(item.id); setEditingField('name'); }}
+                        >
+                          {item.name}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(item.id, 'quantity', Math.max(0, Number(e.target.value)))}
+                          className={`w-16 px-2 py-1 rounded text-center font-mono text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                          onFocus={(e) => e.target.select()}
+                          min={0}
+                        />
+                        {editingId === item.id && editingField === 'unit' ? (
+                          <input
+                            type="text"
+                            value={item.unitLabel}
+                            onChange={(e) => updateItem(item.id, 'unitLabel', e.target.value)}
+                            onBlur={() => { setEditingId(null); setEditingField(null); }}
+                            onKeyDown={(e) => e.key === 'Enter' && (setEditingId(null), setEditingField(null))}
+                            autoFocus
+                            className={`w-12 px-1 py-1 rounded text-center text-xs ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                          />
+                        ) : (
+                          <span
+                            className={`text-xs ${secondaryText} cursor-pointer hover:underline min-w-6`}
+                            onClick={() => { setEditingId(item.id); setEditingField('unit'); }}
+                          >
+                            {item.unitLabel}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          value={item.unitCost}
+                          onChange={(e) => updateItem(item.id, 'unitCost', Math.max(0, Number(e.target.value)))}
+                          className={`w-32 px-2 py-1 rounded text-right font-mono text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                          onFocus={(e) => e.target.select()}
+                          step={10000}
+                          min={0}
+                        />
+                        <span className={`text-xs ${secondaryText}`}>원</span>
+                      </div>
+                    </td>
+                    <td className={`px-4 py-3 text-right font-mono font-medium ${textColor}`}>
+                      {itemTotal.toLocaleString()}원
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className={`p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-400 hover:text-red-600 transition-colors`}
+                        title="항목 삭제"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* Add New Item Row */}
+              {showAddItem ? (
+                <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-750' : 'bg-blue-50/50'}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="text"
+                      placeholder="항목 이름"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && addItem()}
+                      autoFocus
+                      className={`w-full px-2 py-1 rounded text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <input
+                        type="number"
+                        value={newItemQuantity}
+                        onChange={(e) => setNewItemQuantity(Math.max(0, Number(e.target.value)))}
+                        className={`w-16 px-2 py-1 rounded text-center font-mono text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                        min={0}
+                      />
+                      <input
+                        type="text"
+                        value={newItemUnit}
+                        onChange={(e) => setNewItemUnit(e.target.value)}
+                        className={`w-12 px-1 py-1 rounded text-center text-xs ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <input
+                        type="number"
+                        value={newItemUnitCost}
+                        onChange={(e) => setNewItemUnitCost(Math.max(0, Number(e.target.value)))}
+                        className={`w-32 px-2 py-1 rounded text-right font-mono text-sm ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                        step={10000}
+                        min={0}
+                      />
+                      <span className={`text-xs ${secondaryText}`}>원</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={addItem}
+                        className="px-2.5 py-1 rounded text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors"
+                      >
+                        추가
+                      </button>
+                      <button
+                        onClick={() => setShowAddItem(false)}
+                        className={`px-2.5 py-1 rounded text-xs font-medium ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'} hover:opacity-80 transition-colors`}
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </td>
+                  <td></td>
+                </tr>
+              ) : (
+                <tr className={`border-b ${borderColor}`}>
+                  <td colSpan={5} className="px-4 py-2">
+                    <button
+                      onClick={() => setShowAddItem(true)}
+                      className={`flex items-center gap-1.5 text-sm ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'} transition-colors`}
+                    >
+                      <Plus className="w-4 h-4" />
+                      새 항목 추가
                     </button>
-                  </div>
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
-                  {(equipmentOverride ?? equipmentCost).toLocaleString()}원
-                </td>
-              </tr>
-              <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>
-                  <div className="flex items-center justify-between">
-                    <span>스태프비 ({teamMembers}명)</span>
-                    <button className={`text-xs px-2 py-1 rounded ${inputBg} ${secondaryText} hover:opacity-70`}>
-                      편집
-                    </button>
-                  </div>
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
-                  {(crewOverride ?? crewCost).toLocaleString()}원
-                </td>
-              </tr>
-              <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>
-                  <div className="flex items-center justify-between">
-                    <span>로케이션비 ({locationCount}곳)</span>
-                    <button className={`text-xs px-2 py-1 rounded ${inputBg} ${secondaryText} hover:opacity-70`}>
-                      편집
-                    </button>
-                  </div>
-                </td>
-                <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
-                  {(locationOverride ?? locationCost).toLocaleString()}원
-                </td>
-              </tr>
+                  </td>
+                </tr>
+              )}
+
+              {/* Subtotal */}
               <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-700' : 'bg-neutral-50'}`}>
-                <td className={`px-4 py-3 font-semibold ${textColor}`}>소계</td>
+                <td colSpan={3} className={`px-4 py-3 font-semibold ${textColor}`}>소계</td>
                 <td className={`px-4 py-3 text-right font-mono font-semibold ${textColor}`}>
                   {subtotal.toLocaleString()}원
                 </td>
+                <td></td>
               </tr>
+
+              {/* Tax - Editable Rate */}
               <tr className={`border-b ${borderColor}`}>
-                <td className={`px-4 py-3 ${textColor}`}>부가세 (10%)</td>
+                <td className={`px-4 py-3 ${textColor}`}>
+                  <div className="flex items-center gap-2">
+                    <span>부가세</span>
+                    <div className="flex items-center gap-1">
+                      <span className={`text-xs ${secondaryText}`}>(</span>
+                      <input
+                        type="number"
+                        value={taxRate}
+                        onChange={(e) => setTaxRate(Math.max(0, Math.min(100, Number(e.target.value))))}
+                        className={`w-12 px-1 py-0.5 rounded text-center font-mono text-xs ${inputBg} border ${inputBorder} ${textColor} focus:outline-none focus:ring-1 focus:ring-blue-500`}
+                        min={0}
+                        max={100}
+                      />
+                      <span className={`text-xs ${secondaryText}`}>%)</span>
+                    </div>
+                  </div>
+                </td>
+                <td colSpan={2}></td>
                 <td className={`px-4 py-3 text-right font-mono ${textColor}`}>
                   {tax.toLocaleString()}원
                 </td>
+                <td></td>
               </tr>
+
+              {/* Total */}
               <tr className={`${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
-                <td className={`px-4 py-3 font-bold text-lg ${textColor}`}>총합계</td>
+                <td colSpan={3} className={`px-4 py-3 font-bold text-lg ${textColor}`}>총합계</td>
                 <td className={`px-4 py-3 text-right font-mono font-bold text-lg ${darkMode ? 'text-neutral-200' : 'text-neutral-800'}`}>
                   {total.toLocaleString()}원
                 </td>
+                <td></td>
               </tr>
             </tbody>
           </table>
@@ -198,6 +361,9 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
           <p className={`text-2xl font-bold ${textColor} font-mono`}>
             {total.toLocaleString()}원
           </p>
+          <p className={`text-xs ${secondaryText} mt-1`}>
+            {budgetItems.length}개 항목 · 부가세 {taxRate}% 포함
+          </p>
         </div>
         <button
           onClick={() => onExportPDF?.()}
@@ -207,7 +373,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
               : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'
           }`}>
           <Download className="w-4 h-4" />
-          전체 PDF 내보내기
+          PDF 내보내기
         </button>
       </div>
     </div>
