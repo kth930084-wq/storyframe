@@ -2494,13 +2494,13 @@ ${htmlPages.join('\n')}
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Bar */}
-        <div className={`border-b px-6 py-4 flex items-center justify-between ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
-          <div className="flex items-center gap-4">
+        <div className={`border-b px-3 md:px-6 py-2 md:py-4 flex items-center justify-between ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
+          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
             {/* 사이드바 토글 - 프로젝트 편집 중일 때만 */}
             {activeProject && (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
+                className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
               >
                 {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
               </button>
@@ -2508,26 +2508,27 @@ ${htmlPages.join('\n')}
 
             {/* 뷰모드 버튼 - 프로젝트 편집 중일 때만 */}
             {activeProject && (
-              <div className="flex gap-1.5">
+              <div className="flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar min-w-0">
                 {[
-                  { id: 'project-info', label: '프로젝트 정보' },
-                  { id: 'shooting-info', label: '촬영 정보' },
-                  { id: 'editor', label: '편집기' },
-                  { id: 'grid', label: '그리드' },
-                  { id: 'timeline', label: '타임라인' },
-                  { id: 'timetable', label: '타임테이블' },
-                  { id: 'animatic', label: '프리뷰' },
-                  { id: 'shotlist', label: '샷리스트' },
-                  { id: 'calendar', label: '캘린더' },
-                  { id: 'budget', label: '예산' },
-                  { id: 'ai-recommend', label: 'AI추천' },
-                ].map(({ id, label }) => (
+                  { id: 'project-info', label: '프로젝트 정보', mobileLabel: '정보' },
+                  { id: 'shooting-info', label: '촬영 정보', mobileLabel: '촬영' },
+                  { id: 'editor', label: '편집기', mobileLabel: '편집' },
+                  { id: 'grid', label: '그리드', mobileLabel: '그리드' },
+                  { id: 'timeline', label: '타임라인', mobileLabel: '타임라인' },
+                  { id: 'timetable', label: '타임테이블', mobileLabel: '일정' },
+                  { id: 'animatic', label: '프리뷰', mobileLabel: '프리뷰' },
+                  { id: 'shotlist', label: '샷리스트', mobileLabel: '샷' },
+                  { id: 'calendar', label: '캘린더', mobileLabel: '캘린더' },
+                  { id: 'budget', label: '예산', mobileLabel: '예산' },
+                  { id: 'ai-recommend', label: 'AI추천', mobileLabel: 'AI' },
+                ].map(({ id, label, mobileLabel }) => (
                   <button
                     key={id}
                     onClick={() => setViewMode(id)}
-                    className={`px-3 py-2 rounded-lg transition text-sm ${viewMode === id ? 'bg-neutral-800 text-white' : `${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}`}
+                    className={`px-2 md:px-3 py-1.5 md:py-2 rounded-lg transition text-xs md:text-sm whitespace-nowrap flex-shrink-0 ${viewMode === id ? 'bg-neutral-800 text-white' : `${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}`}
                   >
-                    {label}
+                    <span className="hidden md:inline">{label}</span>
+                    <span className="md:hidden">{mobileLabel}</span>
                   </button>
                 ))}
               </div>
@@ -2552,21 +2553,21 @@ ${htmlPages.join('\n')}
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            {lastSaved && <span className="text-xs text-neutral-500">저장됨</span>}
-            {isSaving && <span className="text-xs text-gray-400">저장 중...</span>}
+          <div className="flex items-center gap-1.5 md:gap-3">
+            {lastSaved && <span className="hidden md:inline text-xs text-neutral-500">저장됨</span>}
+            {isSaving && <span className="hidden md:inline text-xs text-gray-400">저장 중...</span>}
             {activeProject && (
               <div className="flex gap-1">
                 <button
                   onClick={() => setShowPDFExportModal(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-neutral-800 text-white hover:bg-neutral-900"
+                  className="px-2 md:px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 md:gap-1.5 bg-neutral-800 text-white hover:bg-neutral-900"
                   title="PDF 내보내기"
                 >
-                  <Download size={14} /> PDF
+                  <Download size={14} /> <span className="hidden sm:inline">PDF</span>
                 </button>
                 <button
                   onClick={() => handleExportJSON()}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                   title="JSON 내보내기"
                 >
                   <FileJson size={14} /> JSON
@@ -2575,25 +2576,25 @@ ${htmlPages.join('\n')}
             )}
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
+              className={`p-1.5 md:p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-300" : "hover:bg-gray-100 text-gray-600"}`}
               title={darkMode ? "라이트 모드" : "다크 모드"}
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             {user?.email && isAdmin(user.email) && (
               <Link
                 href="/admin"
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                className={`hidden md:inline-block px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
               >
                 관리자
               </Link>
             )}
             <button
               onClick={onLogout}
-              className={`p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-400 hover:text-red-400" : "hover:bg-gray-100 text-gray-400 hover:text-red-500"}`}
+              className={`p-1.5 md:p-2 rounded-lg transition ${darkMode ? "hover:bg-neutral-700 text-neutral-400 hover:text-red-400" : "hover:bg-gray-100 text-gray-400 hover:text-red-500"}`}
               title="로그아웃"
             >
-              <LogOut size={20} />
+              <LogOut size={18} />
             </button>
           </div>
         </div>
@@ -2613,10 +2614,10 @@ ${htmlPages.join('\n')}
                 {/* 환영 + 새 프로젝트 */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h1 className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                    <h1 className={`text-2xl md:text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
                       {user?.displayName ? `${user.displayName}님, 환영합니다` : '환영합니다'}
                     </h1>
-                    <p className={`text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
+                    <p className={`text-xs md:text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
                   </div>
                   <button onClick={() => setShowNewProject(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
@@ -2801,7 +2802,7 @@ ${htmlPages.join('\n')}
                         <h4 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
                           <Keyboard size={14} /> 키보드 단축키
                         </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                           {[
                             { keys: 'Ctrl + Z', action: '실행 취소' },
                             { keys: 'Ctrl + Shift + Z', action: '다시 하기' },
@@ -2846,7 +2847,7 @@ ${htmlPages.join('\n')}
                             setCurrentPage('editor');
                             setViewMode('editor');
                           }}>
-                          <div className="h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-4xl">
+                          <div className="h-24 md:h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-3xl md:text-4xl">
                             {project.video_type ? '🎬' : '📽️'}
                           </div>
                           <div className="p-4">
@@ -2879,7 +2880,7 @@ ${htmlPages.join('\n')}
                 {/* 하단 기능 요약 */}
                 <div className={`rounded-2xl border p-6 ${darkMode ? "bg-neutral-800/50 border-neutral-700" : "bg-white border-gray-100"}`}>
                   <h3 className={`font-semibold text-sm mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>주요 기능</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
                     {[
                       { icon: '📋', title: '프로젝트 정보', desc: '브랜드, 담당자, 제작진' },
                       { icon: '📍', title: '촬영 정보', desc: '스튜디오, 주차, 콜타임' },
@@ -2913,9 +2914,9 @@ ${htmlPages.join('\n')}
               {viewMode === 'project-info' && <ProjectInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 overflow-hidden relative">
                   {slideViewMode && (
-                    <div className="w-80 border-r border-gray-200 flex-shrink-0">
+                    <div className="hidden md:block w-80 border-r border-gray-200 flex-shrink-0">
                       <SlideView
                         scenes={activeProject.scenes}
                         activeSceneId={activeSceneId}
@@ -2928,7 +2929,7 @@ ${htmlPages.join('\n')}
                   )}
                   <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenReferenceLibrary={() => setShowReferenceLibrary(true)} />
                   {activeScene && (
-                    <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
+                    <div className={`hidden lg:block w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
                       <div className={`border-t ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
                         <AssetLibraryPanel onApplyPreset={(preset: any) => {
@@ -2939,6 +2940,55 @@ ${htmlPages.join('\n')}
                       </div>
                     </div>
                   )}
+
+                  {/* Mobile Scene Navigation Bar */}
+                  <div className="md:hidden absolute bottom-0 left-0 right-0 z-10">
+                    <div className={`flex items-center gap-2 px-3 py-2 border-t ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-200"}`}>
+                      <button
+                        onClick={() => {
+                          const scenes = activeProject.scenes;
+                          const idx = scenes.findIndex(s => s.id === activeSceneId);
+                          if (idx > 0) setActiveSceneId(scenes[idx - 1].id);
+                        }}
+                        disabled={activeProject.scenes.findIndex(s => s.id === activeSceneId) <= 0}
+                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-neutral-700 text-neutral-300 disabled:opacity-30" : "bg-gray-100 text-gray-600 disabled:opacity-30"}`}
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+                      <div className="flex-1 overflow-x-auto no-scrollbar flex gap-1.5">
+                        {activeProject.scenes.map((scene, idx) => (
+                          <button
+                            key={scene.id}
+                            onClick={() => setActiveSceneId(scene.id)}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap flex-shrink-0 transition ${
+                              scene.id === activeSceneId
+                                ? 'bg-neutral-800 text-white'
+                                : darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-gray-100 text-gray-500'
+                            }`}
+                          >
+                            {idx + 1}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => {
+                          const scenes = activeProject.scenes;
+                          const idx = scenes.findIndex(s => s.id === activeSceneId);
+                          if (idx < scenes.length - 1) setActiveSceneId(scenes[idx + 1].id);
+                        }}
+                        disabled={activeProject.scenes.findIndex(s => s.id === activeSceneId) >= activeProject.scenes.length - 1}
+                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-neutral-700 text-neutral-300 disabled:opacity-30" : "bg-gray-100 text-gray-600 disabled:opacity-30"}`}
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                      <button
+                        onClick={handleAddScene}
+                        className="p-2 rounded-lg bg-neutral-800 text-white flex-shrink-0"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
               {viewMode === 'grid' && <StoryboardGrid scenes={activeProject.scenes} onSelectScene={(id: string) => { setActiveSceneId(id); setViewMode('editor'); }} />}

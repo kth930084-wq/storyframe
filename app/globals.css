@@ -103,6 +103,15 @@ input[type="checkbox"] {
   animation: slideInUp 0.3s ease-in-out;
 }
 
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Focus styling */
 *:focus-visible {
   outline: 1px solid #737373;
