@@ -90,15 +90,15 @@ export const FRAMERATE_OPTIONS = [
   { value: "타임랩스", desc: "시간 압축 촬영" },
 ];
 
-// 영상 비율
+// 영상 비율 (숏폼 중심으로 재정렬)
 export const ASPECT_RATIOS = [
-  { value: "16:9", label: "16:9 (가로 와이드)", desc: "유튜브, TV 표준", icon: "🖥️" },
-  { value: "9:16", label: "9:16 (세로)", desc: "릴스, 틱톡, 숏츠", icon: "📱" },
-  { value: "4:3", label: "4:3 (클래식)", desc: "클래식 TV 비율", icon: "📺" },
-  { value: "1:1", label: "1:1 (정사각형)", desc: "인스타그램 피드", icon: "⬜" },
-  { value: "2.35:1", label: "2.35:1 (시네마스코프)", desc: "영화 와이드스크린", icon: "🎬" },
-  { value: "4:5", label: "4:5 (세로 직사각형)", desc: "인스타그램 세로", icon: "📋" },
-  { value: "21:9", label: "21:9 (울트라와이드)", desc: "울트라와이드 모니터", icon: "🖥️" },
+  { value: "9:16", label: "9:16 (세로)", desc: "릴스/숏츠/틱톡", icon: "📱", badge: "인기" },
+  { value: "4:5", label: "4:5 (세로)", desc: "인스타그램 피드", icon: "📋", badge: null },
+  { value: "1:1", label: "1:1 (정사각형)", desc: "인스타그램 피드", icon: "⬜", badge: null },
+  { value: "16:9", label: "16:9 (가로)", desc: "유튜브/광고", icon: "🖥️", badge: null },
+  { value: "4:3", label: "4:3 (클래식)", desc: "클래식 TV 비율", icon: "📺", badge: null },
+  { value: "2.35:1", label: "2.35:1 (시네마스코프)", desc: "영화 와이드스크린", icon: "🎬", badge: null },
+  { value: "21:9", label: "21:9 (울트라와이드)", desc: "울트라와이드 모니터", icon: "🖥️", badge: null },
 ];
 
 // 영상 해상도

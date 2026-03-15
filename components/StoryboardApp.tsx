@@ -724,6 +724,14 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
                   className="absolute top-0 right-0 bottom-0 bg-black/40 backdrop-blur-sm"
                   style={{ width: `${maskingPercentage}%`, pointerEvents: 'none' }}
                 />
+                {/* 세이프존 레이블 */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs font-semibold bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg pointer-events-none whitespace-nowrap">
+                  세이프존 ({aspectRatio})
+                </div>
+                {/* 잘리는 영역 안내 텍스트 */}
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 text-white text-[10px] bg-black/50 backdrop-blur-sm px-2 py-1 rounded pointer-events-none whitespace-nowrap">
+                  어두운 영역은 숏폼에서 잘림
+                </div>
               </>
             )}
           </div>
@@ -1606,12 +1614,17 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
               <button
                 key={ratio.value}
                 onClick={() => setSelectedRatio(ratio.value)}
-                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
+                className={`relative flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
                   selectedRatio === ratio.value
                     ? darkMode ? "border-white bg-neutral-700" : "border-neutral-800 bg-neutral-50"
                     : darkMode ? "border-neutral-600 hover:border-neutral-500 bg-neutral-750" : "border-gray-100 hover:border-gray-300 bg-white"
                 }`}
               >
+                {ratio.badge && (
+                  <div className="absolute top-1 right-1 bg-orange-500 text-white text-[7px] font-bold px-1.5 py-0.5 rounded">
+                    {ratio.badge}
+                  </div>
+                )}
                 <div className={`border-2 flex items-center justify-center ${selectedRatio === ratio.value ? (darkMode ? "border-white" : "border-neutral-800") : (darkMode ? "border-neutral-500" : "border-gray-300")}`}
                   style={{ width: '36px', aspectRatio: ratioToAspect(ratio.value) }}>
                   <span className="text-[8px]">{ratio.icon}</span>
