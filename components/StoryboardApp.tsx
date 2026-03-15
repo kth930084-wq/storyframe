@@ -637,7 +637,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const [isEditing, setIsEditing] = useState(false);
 
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
-  const showMasking = !isPdfExport && maskingPercentage > 0;
+  const showMasking = maskingPercentage > 0;
 
   const handleFile = (file: any) => {
     if (file && file.type.startsWith("image/")) {
@@ -2111,6 +2111,8 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     const tone = p.tone || '';
     const dur = formatDuration(totalDuration);
     const sceneCnt = p.scenes.length;
+    // PDF 렌더링을 위한 마스킹 비율 계산
+    const maskingPercentage = calculateMaskingPercentage(p.aspect_ratio || '16:9');
 
     // 타임라인 바 비율 계산
     const tlSegs = p.scenes.map((s, i) => {
@@ -2131,8 +2133,9 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:8pt;font-weight:700;background:rgba(255,255,255,0.12);padding:2px 10px;border-radius:12px;">${String(i + 1).padStart(2, '0')}</span><span style="font-size:9pt;font-weight:700;">${s.title || '-'}</span></div>
           <span style="font-size:8pt;color:#888;">${s.duration || 0}초</span>
         </div>
-        <div style="width:100%;aspect-ratio:16/9;background:#f5f5f5;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;">
+        <div style="width:100%;aspect-ratio:16/9;background:#f5f5f5;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;position:relative;overflow:hidden;">
           ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#ccc;font-size:9pt;text-align:center;"><div style="font-size:20pt;margin-bottom:4px;">🎞️</div></div>`}
+          ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div>` : ''}
         </div>
         <div style="padding:12px 14px;">
           <div style="font-size:8pt;color:#555;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${s.description || ''}</div>
@@ -2167,8 +2170,9 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             <span style="font-size:10pt;color:#888;">${s.duration || 0}초</span>
           </div>
           <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-            <div style="border-radius:10px;overflow:hidden;background:#f5f5f5;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;">
+            <div style="border-radius:10px;overflow:hidden;background:#f5f5f5;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;">
               ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#bbb;font-size:10pt;text-align:center;"><div style="font-size:28pt;margin-bottom:6px;">🎞️</div><div>이미지 미등록</div></div>`}
+              ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div>` : ''}
             </div>
             <div>
               <div style="font-size:10pt;color:#444;line-height:1.8;margin-bottom:16px;">${s.description || ''}</div>
