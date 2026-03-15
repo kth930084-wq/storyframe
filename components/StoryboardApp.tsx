@@ -679,6 +679,7 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
               src={image}
               alt="씬"
               className="w-full h-full object-cover select-none"
+              crossOrigin="anonymous"
               draggable={false}
               style={{
                 transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
@@ -825,7 +826,7 @@ const SceneProgressRing = ({ completion }: any) => {
   );
 };
 
-const SceneEditor = ({ scene, onUpdate }: any) => {
+const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
   const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
@@ -872,6 +873,13 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
         <div className="lg:col-span-3 space-y-5">
           <div className="relative">
             <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
+            <button
+              onClick={() => onOpenReferenceLibrary?.()}
+              className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all text-sm font-medium"
+            >
+              <Image className="w-4 h-4" />
+              레퍼런스 라이브러리에서 선택 (514)
+            </button>
           </div>
           <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
           <div>
@@ -2391,13 +2399,6 @@ ${(p.timetable && p.timetable.length > 0) ? `
               슬라이드 뷰
             </button>
             <button
-              onClick={() => setShowReferenceLibrary(true)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-blue-900/50 text-blue-300 hover:bg-blue-800/50 border border-blue-700/50" : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"}`}
-            >
-              <Image size={14} />
-              레퍼런스 라이브러리 (514)
-            </button>
-            <button
               onClick={() => setViewMode('search')}
               className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
             >
@@ -2856,7 +2857,7 @@ ${(p.timetable && p.timetable.length > 0) ? `
                       />
                     </div>
                   )}
-                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />
+                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenReferenceLibrary={() => setShowReferenceLibrary(true)} />
                   {activeScene && (
                     <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
@@ -2926,7 +2927,7 @@ ${(p.timetable && p.timetable.length > 0) ? `
                     ...p,
                     scenes: p.scenes.map(s => {
                       if (s.id === activeSceneId) {
-                        return { ...s, image_url: template.fullImage, shot_size: template.shotSize, camera_angle: template.angle };
+                        return { ...s, image: template.fullImage, shot_size: template.shotSize, camera_angle: template.angle };
                       }
                       return s;
                     })
