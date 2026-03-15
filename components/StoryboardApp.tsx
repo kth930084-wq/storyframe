@@ -606,7 +606,27 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
   );
 };
 
-const ImageUploadArea = ({ image, onImageChange }: any) => {
+// 화면비율에 따른 마스킹 계산 함수
+const calculateMaskingPercentage = (aspectRatio: string): number => {
+  // aspectRatio는 "16:9", "9:16", "1:1", "4:5" 등의 형식
+  if (!aspectRatio || aspectRatio === "16:9") return 0; // 16:9는 마스킹 없음
+
+  const [w, h] = aspectRatio.split(':').map(Number);
+  if (!w || !h) return 0;
+
+  // 이미지의 기본 비율은 16:9 (너비를 1로 정규화하면 높이는 9/16)
+  const imageHeight = 9 / 16;
+
+  // 표시할 영역의 너비 계산: height * (targetW/targetH)
+  const visibleWidth = imageHeight * (w / h);
+
+  // 양쪽에 마스킹할 너비 계산
+  const maskingPercentage = (1 - visibleWidth) / 2 * 100;
+
+  return Math.max(0, maskingPercentage);
+};
+
+const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExport = false }: any) => {
   const fileRef = useRef(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -615,6 +635,9 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
+
+  const maskingPercentage = calculateMaskingPercentage(aspectRatio);
+  const showMasking = !isPdfExport && maskingPercentage > 0;
 
   const handleFile = (file: any) => {
     if (file && file.type.startsWith("image/")) {
@@ -668,7 +691,7 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
       {image ? (
         <div className="relative group" ref={containerRef}>
           <div
-            className="w-full overflow-hidden rounded-2xl"
+            className="w-full overflow-hidden rounded-2xl relative"
             style={{ aspectRatio: "16/9", cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
@@ -687,6 +710,22 @@ const ImageUploadArea = ({ image, onImageChange }: any) => {
                 transition: isDragging ? 'none' : 'transform 0.2s ease',
               }}
             />
+
+            {/* 화면비율 마스킹 오버레이 */}
+            {showMasking && (
+              <>
+                {/* 좌측 마스킹 */}
+                <div
+                  className="absolute top-0 left-0 bottom-0 bg-black/40 backdrop-blur-sm"
+                  style={{ width: `${maskingPercentage}%`, pointerEvents: 'none' }}
+                />
+                {/* 우측 마스킹 */}
+                <div
+                  className="absolute top-0 right-0 bottom-0 bg-black/40 backdrop-blur-sm"
+                  style={{ width: `${maskingPercentage}%`, pointerEvents: 'none' }}
+                />
+              </>
+            )}
           </div>
 
           {/* 편집 모드 컨트롤 */}
@@ -827,7 +866,7 @@ const SceneProgressRing = ({ completion }: any) => {
   );
 };
 
-const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary }: any) => {
+const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "16:9" }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
   const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
@@ -873,7 +912,7 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary }: any) => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6">
         <div className="lg:col-span-3 space-y-5">
           <div className="relative">
-            <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} />
+            <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} aspectRatio={aspectRatio} />
             <button
               onClick={() => onOpenReferenceLibrary?.()}
               className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all text-sm font-medium"
@@ -2932,7 +2971,7 @@ ${htmlPages.join('\n')}
                       />
                     </div>
                   )}
-                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenReferenceLibrary={() => setShowReferenceLibrary(true)} />
+                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenReferenceLibrary={() => setShowReferenceLibrary(true)} aspectRatio={activeProject.aspect_ratio || "16:9"} />
                   {activeScene && (
                     <div className={`hidden lg:block w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
