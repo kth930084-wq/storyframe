@@ -24,6 +24,7 @@ import { PortfolioProposalBuilder } from './PortfolioProposal';
 import { SlideView } from './SlideView';
 import { BlankPageEditor, BlankPageContent } from './BlankPageEditor';
 import { CanvasEditor, type CanvasElement } from './CanvasEditor';
+import ReferenceLibrary from './ReferenceLibrary';
 
 interface StoryboardAppProps {
   user: any;
@@ -1663,6 +1664,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', type: 'info' as 'info' | 'update' | 'important' });
   const [showBlankPageEditor, setShowBlankPageEditor] = useState(false);
+  const [showReferenceLibrary, setShowReferenceLibrary] = useState(false);
   const [slideViewMode, setSlideViewMode] = useState(false);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -2389,6 +2391,13 @@ ${(p.timetable && p.timetable.length > 0) ? `
               슬라이드 뷰
             </button>
             <button
+              onClick={() => setShowReferenceLibrary(true)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-blue-900/50 text-blue-300 hover:bg-blue-800/50 border border-blue-700/50" : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"}`}
+            >
+              <Image size={14} />
+              레퍼런스 라이브러리 (514)
+            </button>
+            <button
               onClick={() => setViewMode('search')}
               className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
             >
@@ -2904,6 +2913,34 @@ ${(p.timetable && p.timetable.length > 0) ? `
         onClose={() => setShowBlankPageEditor(false)}
         onSelectType={handleAddBlankPage}
       />
+
+      {/* Reference Library Modal */}
+      {showReferenceLibrary && (
+        <ReferenceLibrary
+          onClose={() => setShowReferenceLibrary(false)}
+          onSelectImage={(template) => {
+            if (activeScene) {
+              const updatedProjects = projects.map(p => {
+                if (p.id === activeProjectId) {
+                  return {
+                    ...p,
+                    scenes: p.scenes.map(s => {
+                      if (s.id === activeSceneId) {
+                        return { ...s, image_url: template.fullImage, shot_size: template.shotSize, camera_angle: template.angle };
+                      }
+                      return s;
+                    })
+                  };
+                }
+                return p;
+              });
+              setProjects(updatedProjects);
+              addToHistory(updatedProjects);
+            }
+            setShowReferenceLibrary(false);
+          }}
+        />
+      )}
 
     </div>
   );
