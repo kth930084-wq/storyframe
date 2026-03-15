@@ -2148,7 +2148,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
         </div>
         <div style="width:100%;aspect-ratio:16/9;background:#f5f5f5;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;position:relative;overflow:hidden;">
           ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#ccc;font-size:9pt;text-align:center;"><div style="font-size:20pt;margin-bottom:4px;">🎞️</div></div>`}
-          ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div>` : ''}
+          ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div>` : ''}
         </div>
         <div style="padding:12px 14px;">
           <div style="font-size:8pt;color:#555;line-height:1.6;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${s.description || ''}</div>
@@ -2185,7 +2185,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
           <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;">
             <div style="border-radius:10px;overflow:hidden;background:#f5f5f5;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;">
               ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#bbb;font-size:10pt;text-align:center;"><div style="font-size:28pt;margin-bottom:6px;">🎞️</div><div>이미지 미등록</div></div>`}
-              ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:rgba(0,0,0,0.4);pointer-events:none;"></div>` : ''}
+              ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div>` : ''}
             </div>
             <div>
               <div style="font-size:10pt;color:#444;line-height:1.8;margin-bottom:16px;">${s.description || ''}</div>
