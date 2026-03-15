@@ -21,6 +21,9 @@ import Link from 'next/link';
 import { SceneCommentPanel, AssetLibraryPanel, AnimaticPreview, ShotListView, VersionManager } from './Features1';
 import { BudgetEstimator, CalendarView, SceneSearchFilter, MobileResponsiveWrapper, useMobileDetect, AISceneRecommender } from './Features2';
 import { PortfolioProposalBuilder } from './PortfolioProposal';
+import { SlideView } from './SlideView';
+import { BlankPageEditor, BlankPageContent } from './BlankPageEditor';
+import { CanvasEditor, type CanvasElement } from './CanvasEditor';
 
 interface StoryboardAppProps {
   user: any;
@@ -52,6 +55,15 @@ interface Scene {
   transition?: string;
   shooting_completed?: boolean;
   comments?: SceneComment[];
+  // New fields for blank pages and layouts
+  blank_page_type?: string;
+  blank_page_content?: {
+    text?: string;
+    imageUrl?: string;
+    memo?: string;
+  };
+  layout_type?: string;
+  canvas_elements?: CanvasElement[];
   [key: string]: any;
 }
 
@@ -833,6 +845,25 @@ const SceneEditor = ({ scene, onUpdate }: any) => {
   if (!scene) return (
     <div className="flex-1 flex items-center justify-center text-gray-400"><div className="text-center"><Film className="w-12 h-12 mx-auto mb-3 opacity-50" /><p className="font-medium">편집할 씬을 선택하세요</p></div></div>
   );
+
+  // Handle blank pages
+  if (scene.blank_page_type) {
+    return (
+      <div className="flex-1 overflow-y-auto flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">{scene.title}</h2>
+          <p className="text-sm text-gray-600">빈 페이지 - {scene.blank_page_type}</p>
+        </div>
+        <div className="flex-1 p-6">
+          <BlankPageContent
+            type={scene.blank_page_type}
+            content={scene.blank_page_content || {}}
+            onChange={(content) => onUpdate({ ...scene, blank_page_content: content })}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -1631,6 +1662,8 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [showAnnouncementEditor, setShowAnnouncementEditor] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [announcementForm, setAnnouncementForm] = useState({ title: '', content: '', type: 'info' as 'info' | 'update' | 'important' });
+  const [showBlankPageEditor, setShowBlankPageEditor] = useState(false);
+  const [slideViewMode, setSlideViewMode] = useState(false);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeScene = activeProject?.scenes?.find(s => s.id === activeSceneId);
@@ -1851,6 +1884,43 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     setActiveSceneId(newScene.id);
   }, [projects, activeProjectId, activeProject, addToHistory]);
 
+  const handleAddBlankPage = useCallback((typeId: string) => {
+    if (!activeProjectId) return;
+
+    const typeLabels: { [key: string]: string } = {
+      'scene-divider': '씬 구분',
+      'free-memo': '자유 메모',
+      'sketch-canvas': '직접 그리기',
+      'image-upload': '이미지 업로드',
+    };
+
+    const newScene: Scene = {
+      id: generateId(),
+      scene_number: (activeProject?.scenes.length || 0) + 1,
+      title: typeLabels[typeId] || '빈 페이지',
+      duration: 0,
+      blank_page_type: typeId,
+      blank_page_content: {
+        text: '',
+        imageUrl: '',
+        memo: '',
+      },
+      canvas_elements: [],
+      shooting_completed: false,
+    };
+
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, scenes: [...p.scenes, newScene] };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+    setActiveSceneId(newScene.id);
+    setShowBlankPageEditor(false);
+  }, [projects, activeProjectId, activeProject, addToHistory]);
+
   const handleDuplicateScene = useCallback((sceneId: string) => {
     if (!activeProjectId || !activeProject) return;
     const source = activeProject.scenes.find(s => s.id === sceneId);
@@ -1926,6 +1996,18 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     setProjects(newProjects);
     addToHistory(newProjects);
   }, [projects, activeProjectId, activeProject, addToHistory]);
+
+  const handleReorderScenes = useCallback((reorderedScenes: Scene[]) => {
+    if (!activeProjectId) return;
+    const newProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, scenes: reorderedScenes };
+      }
+      return p;
+    });
+    setProjects(newProjects);
+    addToHistory(newProjects);
+  }, [projects, activeProjectId, addToHistory]);
 
   const handleDuplicateProject = useCallback((projectId: string) => {
     const source = projects.find(p => p.id === projectId);
@@ -2291,6 +2373,20 @@ ${(p.timetable && p.timetable.length > 0) ? `
             >
               <Plus size={18} />
               씬 추가
+            </button>
+            <button
+              onClick={() => setShowBlankPageEditor(true)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+            >
+              <Plus size={14} />
+              빈 페이지
+            </button>
+            <button
+              onClick={() => setSlideViewMode(!slideViewMode)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${slideViewMode ? (darkMode ? "bg-neutral-600 text-white" : "bg-blue-100 text-blue-700") : (darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200")}`}
+            >
+              <Grid size={14} />
+              슬라이드 뷰
             </button>
             <button
               onClick={() => setViewMode('search')}
@@ -2739,6 +2835,18 @@ ${(p.timetable && p.timetable.length > 0) ? `
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
                 <div className="flex flex-1 overflow-hidden">
+                  {slideViewMode && (
+                    <div className="w-80 border-r border-gray-200 flex-shrink-0">
+                      <SlideView
+                        scenes={activeProject.scenes}
+                        activeSceneId={activeSceneId}
+                        onSceneSelect={setActiveSceneId}
+                        onAddScene={handleAddScene}
+                        onDeleteScene={handleDeleteScene}
+                        onReorderScenes={handleReorderScenes}
+                      />
+                    </div>
+                  )}
                   <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} />
                   {activeScene && (
                     <div className={`w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-neutral-700 bg-neutral-800" : "border-gray-200 bg-gray-50"}`}>
@@ -2789,6 +2897,13 @@ ${(p.timetable && p.timetable.length > 0) ? `
           onCreate={handleCreateProject}
         />
       )}
+
+      {/* Blank Page Editor Modal */}
+      <BlankPageEditor
+        isOpen={showBlankPageEditor}
+        onClose={() => setShowBlankPageEditor(false)}
+        onSelectType={handleAddBlankPage}
+      />
 
     </div>
   );
