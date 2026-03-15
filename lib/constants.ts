@@ -13,13 +13,18 @@ export const CAMERA_ANGLES = [
 
 // 샷 크기
 export const SHOT_SIZES = [
-  { value: "익스트림 클로즈업", short: "ECU", desc: "눈, 입 등 극도로 가까운 샷", color: "from-neutral-900 to-neutral-800" },
-  { value: "클로즈업", short: "CU", desc: "얼굴 또는 제품 전체", color: "from-neutral-800 to-neutral-700" },
-  { value: "미디엄 샷", short: "MS", desc: "허리 위부터 촬영", color: "from-neutral-700 to-neutral-600" },
-  { value: "와이드 샷", short: "WS", desc: "전신 + 배경 포함", color: "from-neutral-600 to-neutral-500" },
-  { value: "전체 장소 샷", short: "ES", desc: "장소 전체를 보여줌", color: "from-neutral-500 to-neutral-400" },
-  { value: "버스트 샷", short: "BS", desc: "가슴 위부터 촬영", color: "from-neutral-700 to-neutral-500" },
-  { value: "풀 샷", short: "FS", desc: "머리부터 발끝까지 전신", color: "from-neutral-800 to-neutral-600" },
+  { value: "익스트림 클로즈업 (ECU)", short: "ECU", desc: "눈, 입 등 극도로 가까운 샷", color: "from-neutral-900 to-neutral-800" },
+  { value: "빅 클로즈업 (BCU)", short: "BCU", desc: "얼굴의 주요 부분만 촬영", color: "from-neutral-800 to-neutral-700" },
+  { value: "클로즈업 (CU)", short: "CU", desc: "얼굴 또는 제품 전체", color: "from-neutral-800 to-neutral-700" },
+  { value: "미디엄 클로즈업 (MCU)", short: "MCU", desc: "어깨부터 머리까지", color: "from-neutral-700 to-neutral-600" },
+  { value: "미디엄샷 (MS)", short: "MS", desc: "허리 위부터 촬영", color: "from-neutral-700 to-neutral-600" },
+  { value: "와이드샷 (WS)", short: "WS", desc: "전신 + 배경 포함", color: "from-neutral-600 to-neutral-500" },
+  { value: "풀샷 (FS)", short: "FS", desc: "머리부터 발끝까지 전신", color: "from-neutral-800 to-neutral-600" },
+  { value: "익스트림 와이드샷 (EWS)", short: "EWS", desc: "극도로 넓은 배경 샷", color: "from-neutral-500 to-neutral-400" },
+  { value: "미디엄 롱샷 (MLS)", short: "MLS", desc: "전신과 주변 배경", color: "from-neutral-600 to-neutral-500" },
+  { value: "오버더숄더 (OTS)", short: "OTS", desc: "어깨 너머로 촬영, 대화 씬 필수", color: "from-neutral-700 to-neutral-500" },
+  { value: "1인칭시점 (POV)", short: "POV", desc: "카메라가 인물의 시점으로 촬영", color: "from-neutral-800 to-neutral-600" },
+  { value: "인서트 (Insert)", short: "Insert", desc: "손, 물건 등 세부 요소 촬영", color: "from-neutral-700 to-neutral-600" },
 ];
 
 // 카메라 움직임
@@ -118,13 +123,13 @@ export const TEMPLATES = [
     description: "핵심 기능을 보여주는 30초 제품 쇼케이스",
     videoType: "광고",
     scenes: [
-      { title: "시선 끄는 오프닝", duration: 3, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "달리 인", lighting: "스튜디오 조명", description: "브랜드 로고 애니메이션과 함께 드라마틱한 제품 공개." },
-      { title: "제품 클로즈업", duration: 4, camera_angle: "45도", shot_size: "클로즈업", camera_movement: "줌 인", lighting: "소프트 라이트", description: "제품의 질감과 디자인을 상세하게 보여주는 클로즈업." },
-      { title: "특징 하이라이트 1", duration: 5, camera_angle: "측면", shot_size: "미디엄 샷", camera_movement: "팬 우", lighting: "자연광", description: "라이프스타일 세팅에서 첫 번째 핵심 기능 시연." },
-      { title: "특징 하이라이트 2", duration: 5, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "팬 좌", lighting: "자연광", description: "핸즈온 인터랙션과 함께 두 번째 핵심 기능 시연." },
-      { title: "라이프스타일 샷", duration: 5, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "고정", lighting: "자연광", description: "실제 사용 환경에서의 제품 모습." },
-      { title: "행동 유도 (구매/구독)", duration: 4, camera_angle: "정면", shot_size: "미디엄 샷", camera_movement: "줌 인", lighting: "스튜디오 조명", description: "브랜드 로고, 가격, 구매 정보 표시." },
-      { title: "마무리 화면", duration: 4, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "고정", lighting: "스튜디오 조명", description: "웹사이트와 SNS 핸들이 포함된 마지막 브랜딩." },
+      { title: "시선 끄는 오프닝", duration: 3, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "달리 인", lighting: "스튜디오 조명", description: "브랜드 로고 애니메이션과 함께 드라마틱한 제품 공개." },
+      { title: "제품 클로즈업", duration: 4, camera_angle: "45도", shot_size: "클로즈업 (CU)", camera_movement: "줌 인", lighting: "소프트 라이트", description: "제품의 질감과 디자인을 상세하게 보여주는 클로즈업." },
+      { title: "특징 하이라이트 1", duration: 5, camera_angle: "측면", shot_size: "미디엄샷 (MS)", camera_movement: "팬 우", lighting: "자연광", description: "라이프스타일 세팅에서 첫 번째 핵심 기능 시연." },
+      { title: "특징 하이라이트 2", duration: 5, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "팬 좌", lighting: "자연광", description: "핸즈온 인터랙션과 함께 두 번째 핵심 기능 시연." },
+      { title: "라이프스타일 샷", duration: 5, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "고정", lighting: "자연광", description: "실제 사용 환경에서의 제품 모습." },
+      { title: "행동 유도 (구매/구독)", duration: 4, camera_angle: "정면", shot_size: "미디엄샷 (MS)", camera_movement: "줌 인", lighting: "스튜디오 조명", description: "브랜드 로고, 가격, 구매 정보 표시." },
+      { title: "마무리 화면", duration: 4, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "고정", lighting: "스튜디오 조명", description: "웹사이트와 SNS 핸들이 포함된 마지막 브랜딩." },
     ]
   },
   {
@@ -134,12 +139,12 @@ export const TEMPLATES = [
     description: "우아한 뷰티 제품 쇼케이스",
     videoType: "제품 커머셜",
     scenes: [
-      { title: "추상적 오프닝", duration: 3, camera_angle: "탑뷰", shot_size: "익스트림 클로즈업", camera_movement: "줌 아웃", lighting: "소프트 라이트", description: "크림, 파우더 또는 리퀴드의 매크로 질감 샷." },
-      { title: "모델 소개", duration: 4, camera_angle: "정면", shot_size: "클로즈업", camera_movement: "고정", lighting: "소프트 라이트", description: "완벽한 피부와 조명으로 모델 얼굴 공개." },
-      { title: "사용 장면", duration: 6, camera_angle: "45도", shot_size: "클로즈업", camera_movement: "팬 우", lighting: "스튜디오 조명", description: "슬로우 모션으로 제품 사용 장면." },
-      { title: "비포 & 애프터", duration: 5, camera_angle: "정면", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "변화를 보여주는 분할 또는 트랜지션." },
-      { title: "제품 뷰티 샷", duration: 4, camera_angle: "45도", shot_size: "클로즈업", camera_movement: "달리 인", lighting: "역광", description: "우아한 스타일링의 히어로 제품 샷." },
-      { title: "브랜드 클로징", duration: 3, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "고정", lighting: "스튜디오 조명", description: "태그라인과 함께 로고 공개." },
+      { title: "추상적 오프닝", duration: 3, camera_angle: "탑뷰", shot_size: "익스트림 클로즈업 (ECU)", camera_movement: "줌 아웃", lighting: "소프트 라이트", description: "크림, 파우더 또는 리퀴드의 매크로 질감 샷." },
+      { title: "모델 소개", duration: 4, camera_angle: "정면", shot_size: "클로즈업 (CU)", camera_movement: "고정", lighting: "소프트 라이트", description: "완벽한 피부와 조명으로 모델 얼굴 공개." },
+      { title: "사용 장면", duration: 6, camera_angle: "45도", shot_size: "클로즈업 (CU)", camera_movement: "팬 우", lighting: "스튜디오 조명", description: "슬로우 모션으로 제품 사용 장면." },
+      { title: "비포 & 애프터", duration: 5, camera_angle: "정면", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "변화를 보여주는 분할 또는 트랜지션." },
+      { title: "제품 뷰티 샷", duration: 4, camera_angle: "45도", shot_size: "클로즈업 (CU)", camera_movement: "달리 인", lighting: "역광", description: "우아한 스타일링의 히어로 제품 샷." },
+      { title: "브랜드 클로징", duration: 3, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "고정", lighting: "스튜디오 조명", description: "태그라인과 함께 로고 공개." },
     ]
   },
   {
@@ -149,12 +154,12 @@ export const TEMPLATES = [
     description: "식욕을 자극하는 푸드 쇼케이스 또는 레시피 영상",
     videoType: "소셜미디어 숏폼",
     scenes: [
-      { title: "재료 배치", duration: 4, camera_angle: "탑뷰", shot_size: "와이드 샷", camera_movement: "고정", lighting: "자연광", description: "모든 재료를 아름답게 펼쳐놓은 버즈아이 뷰." },
-      { title: "조리 액션", duration: 6, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "팬 우", lighting: "자연광", description: "셰프가 역동적인 움직임으로 요리하는 장면." },
-      { title: "생생한 조리 장면", duration: 3, camera_angle: "측면", shot_size: "클로즈업", camera_movement: "줌 인", lighting: "하드 라이트", description: "지글거리고, 붓고, 뒤집는 조리 액션 클로즈업." },
-      { title: "플레이팅", duration: 4, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "가니시 디테일과 함께 정성스러운 플레이팅." },
-      { title: "메인 완성 샷", duration: 5, camera_angle: "로우앵글", shot_size: "클로즈업", camera_movement: "달리 인", lighting: "자연광", description: "완성된 요리의 최종 뷰티 샷." },
-      { title: "시식", duration: 3, camera_angle: "정면", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "첫 한입을 맛보며 리액션하는 모습." },
+      { title: "재료 배치", duration: 4, camera_angle: "탑뷰", shot_size: "와이드샷 (WS)", camera_movement: "고정", lighting: "자연광", description: "모든 재료를 아름답게 펼쳐놓은 버즈아이 뷰." },
+      { title: "조리 액션", duration: 6, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "팬 우", lighting: "자연광", description: "셰프가 역동적인 움직임으로 요리하는 장면." },
+      { title: "생생한 조리 장면", duration: 3, camera_angle: "측면", shot_size: "클로즈업 (CU)", camera_movement: "줌 인", lighting: "하드 라이트", description: "지글거리고, 붓고, 뒤집는 조리 액션 클로즈업." },
+      { title: "플레이팅", duration: 4, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "가니시 디테일과 함께 정성스러운 플레이팅." },
+      { title: "메인 완성 샷", duration: 5, camera_angle: "로우앵글", shot_size: "클로즈업 (CU)", camera_movement: "달리 인", lighting: "자연광", description: "완성된 요리의 최종 뷰티 샷." },
+      { title: "시식", duration: 3, camera_angle: "정면", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "첫 한입을 맛보며 리액션하는 모습." },
     ]
   },
   {
@@ -164,12 +169,12 @@ export const TEMPLATES = [
     description: "B-롤이 포함된 프로페셔널 인터뷰 세팅",
     videoType: "인터뷰 영상",
     scenes: [
-      { title: "장소 이스태블리싱", duration: 4, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "팬 우", lighting: "자연광", description: "인터뷰 장소와 세팅의 와이드 샷." },
-      { title: "게스트 소개", duration: 6, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "하단 자막에 이름과 직함이 표시된 게스트 착석 모습." },
-      { title: "인터뷰 A카메라", duration: 30, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "게스트를 향한 메인 인터뷰 앵글." },
-      { title: "인터뷰어 리액션 컷", duration: 5, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "고개를 끄덕이며 경청하는 인터뷰어 리액션 샷." },
-      { title: "보조 영상 모음", duration: 10, camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "달리 인", lighting: "자연광", description: "인터뷰 주제와 관련된 보조 영상." },
-      { title: "클로징", duration: 5, camera_angle: "정면", shot_size: "미디엄 샷", camera_movement: "줌 아웃", lighting: "소프트 라이트", description: "감사 인사와 브랜딩이 포함된 아웃트로." },
+      { title: "장소 이스태블리싱", duration: 4, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "팬 우", lighting: "자연광", description: "인터뷰 장소와 세팅의 와이드 샷." },
+      { title: "게스트 소개", duration: 6, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "하단 자막에 이름과 직함이 표시된 게스트 착석 모습." },
+      { title: "인터뷰 A카메라", duration: 30, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "게스트를 향한 메인 인터뷰 앵글." },
+      { title: "인터뷰어 리액션 컷", duration: 5, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "고개를 끄덕이며 경청하는 인터뷰어 리액션 샷." },
+      { title: "보조 영상 모음", duration: 10, camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "달리 인", lighting: "자연광", description: "인터뷰 주제와 관련된 보조 영상." },
+      { title: "클로징", duration: 5, camera_angle: "정면", shot_size: "미디엄샷 (MS)", camera_movement: "줌 아웃", lighting: "소프트 라이트", description: "감사 인사와 브랜딩이 포함된 아웃트로." },
     ]
   },
   {
@@ -179,11 +184,11 @@ export const TEMPLATES = [
     description: "릴스/틱톡용 15초 세로 영상",
     videoType: "소셜미디어 숏폼",
     scenes: [
-      { title: "시선 끌기", duration: 2, camera_angle: "정면", shot_size: "클로즈업", camera_movement: "줌 인", lighting: "자연광", description: "시선을 사로잡는 오프닝 프레임." },
-      { title: "메인 콘텐츠", duration: 5, camera_angle: "45도", shot_size: "미디엄 샷", camera_movement: "팬 좌", lighting: "자연광", description: "핵심 메시지 또는 제품 쇼케이스." },
-      { title: "트랜지션", duration: 2, camera_angle: "탑뷰", shot_size: "클로즈업", camera_movement: "줌 아웃", lighting: "스튜디오 조명", description: "다음 세그먼트로의 크리에이티브 전환." },
-      { title: "하이라이트", duration: 3, camera_angle: "로우앵글", shot_size: "와이드 샷", camera_movement: "달리 인", lighting: "하드 라이트", description: "핵심 순간 또는 리빌." },
-      { title: "행동 유도", duration: 3, camera_angle: "정면", shot_size: "미디엄 샷", camera_movement: "고정", lighting: "소프트 라이트", description: "텍스트 오버레이가 포함된 행동 유도 (구매/구독)." },
+      { title: "시선 끌기", duration: 2, camera_angle: "정면", shot_size: "클로즈업 (CU)", camera_movement: "줌 인", lighting: "자연광", description: "시선을 사로잡는 오프닝 프레임." },
+      { title: "메인 콘텐츠", duration: 5, camera_angle: "45도", shot_size: "미디엄샷 (MS)", camera_movement: "팬 좌", lighting: "자연광", description: "핵심 메시지 또는 제품 쇼케이스." },
+      { title: "트랜지션", duration: 2, camera_angle: "탑뷰", shot_size: "클로즈업 (CU)", camera_movement: "줌 아웃", lighting: "스튜디오 조명", description: "다음 세그먼트로의 크리에이티브 전환." },
+      { title: "하이라이트", duration: 3, camera_angle: "로우앵글", shot_size: "와이드샷 (WS)", camera_movement: "달리 인", lighting: "하드 라이트", description: "핵심 순간 또는 리빌." },
+      { title: "행동 유도", duration: 3, camera_angle: "정면", shot_size: "미디엄샷 (MS)", camera_movement: "고정", lighting: "소프트 라이트", description: "텍스트 오버레이가 포함된 행동 유도 (구매/구독)." },
     ]
   }
 ];

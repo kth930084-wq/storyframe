@@ -29,18 +29,27 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase (prevent duplicate initialization)
+// Only initialize if we have valid config (skip during build/SSR with missing env vars)
 let app: FirebaseApp;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+let auth: Auth;
+let db: Firestore;
+
+try {
+  if (getApps().length === 0 && firebaseConfig.apiKey) {
+    app = initializeApp(firebaseConfig);
+  } else if (getApps().length > 0) {
+    app = getApps()[0];
+  }
+
+  // Only initialize auth and db if app was successfully initialized
+  if (app) {
+    auth = getAuth(app);
+    db = getFirestore(app);
+  }
+} catch (error) {
+  // Silently fail during SSR/build time
+  console.warn('Firebase initialization skipped (running on server or missing config)');
 }
-
-// Initialize Auth
-const auth: Auth = getAuth(app);
-
-// Initialize Firestore
-const db: Firestore = getFirestore(app);
 
 // ========== 공지사항 (Announcements) ==========
 export interface Announcement {
@@ -57,6 +66,7 @@ export interface Announcement {
 const ANNOUNCEMENTS_COLLECTION = 'announcements';
 
 export const getAnnouncements = async (): Promise<Announcement[]> => {
+  if (!db) return [];
   try {
     const q = query(collection(db, ANNOUNCEMENTS_COLLECTION), orderBy('created_at', 'desc'));
     const snapshot = await getDocs(q);
@@ -68,6 +78,7 @@ export const getAnnouncements = async (): Promise<Announcement[]> => {
 };
 
 export const addAnnouncement = async (announcement: Omit<Announcement, 'id'>): Promise<string | null> => {
+  if (!db) return null;
   try {
     const docRef = await addDoc(collection(db, ANNOUNCEMENTS_COLLECTION), {
       ...announcement,
@@ -82,6 +93,7 @@ export const addAnnouncement = async (announcement: Omit<Announcement, 'id'>): P
 };
 
 export const updateAnnouncement = async (id: string, data: Partial<Announcement>): Promise<boolean> => {
+  if (!db) return false;
   try {
     await updateDoc(doc(db, ANNOUNCEMENTS_COLLECTION, id), {
       ...data,
@@ -95,6 +107,7 @@ export const updateAnnouncement = async (id: string, data: Partial<Announcement>
 };
 
 export const deleteAnnouncement = async (id: string): Promise<boolean> => {
+  if (!db) return false;
   try {
     await deleteDoc(doc(db, ANNOUNCEMENTS_COLLECTION, id));
     return true;

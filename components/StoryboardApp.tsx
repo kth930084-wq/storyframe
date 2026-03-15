@@ -209,9 +209,9 @@ const createSampleProject = () => ({
   description: "2026 여름 컬렉션을 보여주는 30초 럭셔리 패션 광고입니다.",
   created_at: new Date().toISOString(),
   scenes: [
-    { id: generateId(), scene_number: 1, title: "브랜드 로고 인트로", duration: 3, description: "블랙 배경 위 은은한 파티클 이펙트와 함께 우아한 골드 로고 애니메이션.", camera_angle: "정면", shot_size: "와이드 샷", camera_movement: "줌 인", lighting: "스튜디오 조명", transition: "컷", shooting_completed: false, notes: "브랜드 가이드라인에 맞춰 로고 애니메이션 적용", image: null },
-    { id: generateId(), scene_number: 2, title: "모델 워킹", duration: 5, description: "모델이 컬렉션의 히어로 의상을 입고 햇살 가득한 복도를 걸어갑니다.", camera_angle: "측면", shot_size: "와이드 샷", camera_movement: "달리 인", lighting: "자연광", transition: "컷", shooting_completed: false, notes: "골든아워 조명 선호", image: null },
-    { id: generateId(), scene_number: 3, title: "제품 디테일", duration: 4, description: "메인 의상의 원단 질감과 스티칭 디테일 클로즈업.", camera_angle: "45도", shot_size: "익스트림 클로즈업", camera_movement: "팬 우", lighting: "소프트 라이트", transition: "컷", shooting_completed: false, notes: "질감 디테일을 위한 매크로 렌즈 사용", image: null },
+    { id: generateId(), scene_number: 1, title: "브랜드 로고 인트로", duration: 3, description: "블랙 배경 위 은은한 파티클 이펙트와 함께 우아한 골드 로고 애니메이션.", camera_angle: "정면", shot_size: "와이드샷 (WS)", camera_movement: "줌 인", lighting: "스튜디오 조명", transition: "컷", shooting_completed: false, notes: "브랜드 가이드라인에 맞춰 로고 애니메이션 적용", image: null },
+    { id: generateId(), scene_number: 2, title: "모델 워킹", duration: 5, description: "모델이 컬렉션의 히어로 의상을 입고 햇살 가득한 복도를 걸어갑니다.", camera_angle: "측면", shot_size: "와이드샷 (WS)", camera_movement: "달리 인", lighting: "자연광", transition: "컷", shooting_completed: false, notes: "골든아워 조명 선호", image: null },
+    { id: generateId(), scene_number: 3, title: "제품 디테일", duration: 4, description: "메인 의상의 원단 질감과 스티칭 디테일 클로즈업.", camera_angle: "45도", shot_size: "익스트림 클로즈업 (ECU)", camera_movement: "팬 우", lighting: "소프트 라이트", transition: "컷", shooting_completed: false, notes: "질감 디테일을 위한 매크로 렌즈 사용", image: null },
   ]
 });
 
@@ -473,7 +473,6 @@ const VisualShotSelector = ({ value, onChange }: any) => {
             </div>
             <div className="flex-1 text-left">
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r ${s.color} text-white`}>{s.short}</span>
                 <span className={`text-xs font-semibold ${value === s.value ? "text-neutral-800" : "text-gray-700"}`}>{s.value}</span>
               </div>
               <span className="text-[10px] text-gray-400 leading-tight">{s.desc}</span>
@@ -1815,7 +1814,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
             duration: 3,
             description: "",
             camera_angle: "정면",
-            shot_size: "미디엄 샷",
+            shot_size: "미디엄샷 (MS)",
             camera_movement: "고정",
             lighting: "자연광",
             notes: "",
