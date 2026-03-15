@@ -51,6 +51,7 @@ interface Scene {
   lighting?: string;
   description?: string;
   dialogue?: string;
+  subtitle?: string;
   sound?: string;
   notes?: string;
   image?: string;
@@ -897,6 +898,10 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary }: any) => {
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">대사 / 나레이션</label>
             <textarea value={scene.dialogue || ""} onChange={(e: any) => onUpdate({ ...scene, dialogue: e.target.value })} rows={2} placeholder="이 씬의 대사나 나레이션을 입력하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-gray-900 bg-white" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">자막</label>
+            <textarea value={scene.subtitle || ""} onChange={(e: any) => onUpdate({ ...scene, subtitle: e.target.value })} rows={2} placeholder="이 씬의 자막을 입력하세요..." className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-gray-900 bg-white" />
           </div>
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">사운드 / BGM</label>
@@ -2130,8 +2135,9 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
               <div style="font-size:10pt;color:#444;line-height:1.8;margin-bottom:16px;">${s.description || ''}</div>
               <table style="width:100%;border-collapse:collapse;">${settings}</table>
             </div>
-            ${(s.dialogue || s.sound || s.notes) ? `<div style="grid-column:1/-1;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:14px 18px;">
+            ${(s.dialogue || s.subtitle || s.sound || s.notes) ? `<div style="grid-column:1/-1;background:#fafafa;border:1px solid #eee;border-radius:8px;padding:14px 18px;">
               ${s.dialogue ? `<div style="margin-bottom:8px;"><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">대사 / 나레이션</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.dialogue}</div></div>` : ''}
+              ${s.subtitle ? `<div style="margin-bottom:8px;"><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">자막</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.subtitle}</div></div>` : ''}
               ${s.sound ? `<div style="margin-bottom:8px;"><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">사운드 / BGM</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.sound}</div></div>` : ''}
               ${s.notes ? `<div><div style="font-size:7pt;color:#999;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;">감독 메모</div><div style="font-size:9pt;color:#555;line-height:1.6;">${s.notes}</div></div>` : ''}
             </div>` : ''}
