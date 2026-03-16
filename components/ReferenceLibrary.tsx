@@ -92,18 +92,38 @@ interface ReferenceLibraryProps {
 }
 
 // ===== PEWPEW PORTFOLIO TAB =====
+// Frame manifest: maps portfolio index -> frame count
+type FrameManifest = Record<string, number>;
+
+function getFrameUrl(portfolioIndex: number, frameNum: number): string {
+  const folder = String(portfolioIndex + 1).padStart(4, '0');
+  const frame = `frame_${String(frameNum).padStart(3, '0')}.jpg`;
+  return `/pf_thumbs/${folder}/${frame}`;
+}
+
 function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLibraryProps['onSelectPortfolioImage']; onClose?: () => void }) {
   const [siteCategory, setSiteCategory] = useState<SiteCategory | 'ALL'>('ALL');
   const [productTypeFilter, setProductTypeFilter] = useState<string>('');
   const [brandFilter, setBrandFilter] = useState<string>('');
   const [showWideOnly, setShowWideOnly] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number>(-1);
   const [capturedFrames, setCapturedFrames] = useState<{ url: string; brand: string; title: string }[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showFrames, setShowFrames] = useState(false);
   const [visibleCount, setVisibleCount] = useState(30);
+  const [frameManifest, setFrameManifest] = useState<FrameManifest>({});
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Load frame manifest
+  useEffect(() => {
+    fetch('/portfolio_frames_manifest.json')
+      .then(res => res.json())
+      .then((data: FrameManifest) => setFrameManifest(data))
+      .catch(() => {});
+  }, []);
 
   const filteredItems = useMemo(() => {
     let items = PORTFOLIO_ITEMS;
@@ -113,6 +133,12 @@ function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLib
     if (showWideOnly) items = getWideOnly(items);
     return items;
   }, [siteCategory, productTypeFilter, brandFilter, showWideOnly]);
+
+  // Get frame count for a portfolio item
+  const getFrameCount = useCallback((item: PortfolioItem): number => {
+    const idx = PORTFOLIO_ITEMS.indexOf(item);
+    return frameManifest[String(idx)] || 0;
+  }, [frameManifest]);
 
   const captureFrame = useCallback(() => {
     const video = videoRef.current;
@@ -130,6 +156,12 @@ function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLib
       title: selectedItem?.filename || '캡처된 프레임',
     }]);
   }, [selectedItem]);
+
+  const handleSelectFrame = (imageUrl: string, brand: string, title: string) => {
+    if (onSelectImage) {
+      onSelectImage(imageUrl, { brand, title, category: 'portfolio' });
+    }
+  };
 
   const handleSelectCaptured = (frame: { url: string; brand: string; title: string }) => {
     if (onSelectImage) {
@@ -273,49 +305,107 @@ function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLib
           </div>
         </div>
 
-        {isCapturing ? (
-          /* Video Player with Frame Capture */
-          <div className="max-w-4xl mx-auto">
+        {showFrames && selectedItem ? (
+          /* Frame Gallery + Video Player */
+          <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-white text-base md:text-lg font-bold">{selectedItem ? selectedItem.brand : '영상 프레임 캡처'}</h3>
-                <p className="text-gray-400 text-xs md:text-sm">원하는 장면에서 일시정지 후 '프레임 캡처'를 눌러주세요</p>
+                <h3 className="text-white text-base md:text-lg font-bold">{selectedItem.brand}</h3>
+                <p className="text-gray-400 text-xs md:text-sm">장면을 클릭하면 스토리보드에 바로 넣을 수 있어요</p>
               </div>
-              <button onClick={() => setIsCapturing(false)} className="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600">← 목록</button>
+              <button onClick={() => { setShowFrames(false); setIsCapturing(false); }} className="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600">← 목록</button>
             </div>
 
-            <div className="bg-black rounded-xl overflow-hidden mb-4">
-              <video ref={videoRef} src={videoUrl || selectedItem?.videoUrl} controls className="w-full aspect-video" crossOrigin="anonymous" playsInline />
-            </div>
-
-            <div className="flex items-center gap-2 md:gap-3 mb-6">
-              <button onClick={captureFrame} className="flex-1 px-3 md:px-4 py-2.5 md:py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-500 text-xs md:text-sm font-bold flex items-center justify-center gap-2">
-                📸 프레임 캡처
-              </button>
-              <button onClick={() => { const v = videoRef.current; if (v) v.currentTime = Math.max(0, v.currentTime - 1/30); }} className="px-3 md:px-4 py-2.5 md:py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 text-xs md:text-sm">◀ 1프레임</button>
-              <button onClick={() => { const v = videoRef.current; if (v) v.currentTime = v.currentTime + 1/30; }} className="px-3 md:px-4 py-2.5 md:py-3 bg-gray-700 text-white rounded-xl hover:bg-gray-600 text-xs md:text-sm">1프레임 ▶</button>
-            </div>
-
-            {capturedFrames.length > 0 && (
-              <div>
-                <h4 className="text-white text-sm font-bold mb-3">캡처된 프레임들</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {capturedFrames.map((frame, i) => (
-                    <div key={i} className="cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all" onClick={() => handleSelectCaptured(frame)}>
-                      <img src={frame.url} alt={`캡처 ${i + 1}`} className="w-full aspect-video object-cover" />
-                      <div className="p-2 text-[10px] text-gray-400">{frame.brand} · 프레임 {i + 1}</div>
+            {/* Pre-extracted Frames Grid */}
+            {(() => {
+              const idx = PORTFOLIO_ITEMS.indexOf(selectedItem);
+              const frameCount = frameManifest[String(idx)] || 0;
+              if (frameCount > 0) {
+                return (
+                  <div className="mb-6">
+                    <h4 className="text-gray-300 text-sm font-semibold mb-3">장면 캡처 ({frameCount}컷) — 클릭하여 스토리보드에 추가</h4>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                      {Array.from({ length: frameCount }, (_, i) => {
+                        const frameUrl = getFrameUrl(idx, i + 1);
+                        return (
+                          <div
+                            key={i}
+                            className="group relative cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all"
+                            onClick={() => handleSelectFrame(frameUrl, selectedItem.brand, `${selectedItem.brand} 장면 ${i + 1}`)}
+                          >
+                            <img
+                              src={frameUrl}
+                              alt={`장면 ${i + 1}`}
+                              className="w-full aspect-video object-cover"
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                              <span className="text-white opacity-0 group-hover:opacity-100 text-[10px] font-medium bg-orange-600 px-2 py-1 rounded">스토리보드에 추가</span>
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-1.5 py-1">
+                              <span className="text-white text-[9px]">#{i + 1}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
+                );
+              }
+              return (
+                <div className="mb-6 p-4 bg-gray-800/50 rounded-xl border border-gray-700 text-center">
+                  <p className="text-gray-400 text-sm">이 영상은 아직 장면 캡처가 없습니다. 아래 영상에서 직접 캡처해주세요.</p>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
-            <canvas ref={canvasRef} className="hidden" />
+            {/* Video Player (collapsible) */}
+            <div className="border-t border-gray-700 pt-4">
+              <button
+                onClick={() => setIsCapturing(!isCapturing)}
+                className="flex items-center gap-2 text-gray-300 text-sm mb-3 hover:text-white transition-colors"
+              >
+                <span>{isCapturing ? '▼' : '▶'}</span>
+                <span>영상에서 직접 캡처하기</span>
+              </button>
 
-            <div className="mt-6 p-4 bg-gray-800/50 rounded-xl border border-gray-700">
-              <p className="text-yellow-500/70 text-xs">
-                * CORS 정책으로 일부 영상의 프레임 캡처가 안 될 수 있습니다. 이 경우 스크린샷으로 이미지를 직접 업로드해주세요.
-              </p>
+              {isCapturing && (
+                <>
+                  <div className="bg-black rounded-xl overflow-hidden mb-4">
+                    <video ref={videoRef} src={videoUrl || selectedItem?.videoUrl} controls className="w-full aspect-video" crossOrigin="anonymous" playsInline />
+                  </div>
+
+                  <div className="flex items-center gap-2 md:gap-3 mb-4">
+                    <button onClick={captureFrame} className="flex-1 px-3 md:px-4 py-2.5 bg-orange-600 text-white rounded-xl hover:bg-orange-500 text-xs md:text-sm font-bold">
+                      📸 프레임 캡처
+                    </button>
+                    <button onClick={() => { const v = videoRef.current; if (v) v.currentTime = Math.max(0, v.currentTime - 1/30); }} className="px-3 py-2.5 bg-gray-700 text-white rounded-xl hover:bg-gray-600 text-xs">◀ 1프레임</button>
+                    <button onClick={() => { const v = videoRef.current; if (v) v.currentTime = v.currentTime + 1/30; }} className="px-3 py-2.5 bg-gray-700 text-white rounded-xl hover:bg-gray-600 text-xs">1프레임 ▶</button>
+                  </div>
+
+                  {capturedFrames.length > 0 && (
+                    <div className="mb-4">
+                      <h4 className="text-white text-sm font-bold mb-3">직접 캡처한 프레임</h4>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                        {capturedFrames.map((frame, i) => (
+                          <div key={i} className="cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all" onClick={() => handleSelectCaptured(frame)}>
+                            <img src={frame.url} alt={`캡처 ${i + 1}`} className="w-full aspect-video object-cover" />
+                            <div className="p-1.5 text-[10px] text-gray-400">{frame.brand} · #{i + 1}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <canvas ref={canvasRef} className="hidden" />
+
+                  <div className="p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                    <p className="text-yellow-500/70 text-[10px]">
+                      * CORS 정책으로 일부 영상의 프레임 캡처가 안 될 수 있습니다.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -329,11 +419,12 @@ function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLib
               {filteredItems.slice(0, visibleCount).map(item => {
                 const siteCat = getSiteCategoryForItem(item);
                 const catInfo = SITE_CATEGORIES.find(c => c.value === siteCat);
+                const fCount = getFrameCount(item);
                 return (
                   <div
                     key={item.id}
                     className="group relative cursor-pointer rounded-xl overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all"
-                    onClick={() => { setSelectedItem(item); setIsCapturing(true); }}
+                    onClick={() => { setSelectedItem(item); setSelectedItemIndex(PORTFOLIO_ITEMS.indexOf(item)); setShowFrames(true); setIsCapturing(false); }}
                   >
                     <div className="aspect-video relative bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
                       <img
@@ -344,12 +435,17 @@ function PortfolioTab({ onSelectImage, onClose }: { onSelectImage?: ReferenceLib
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                        <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium">▶ 영상 열기</span>
+                        <span className="text-white opacity-0 group-hover:opacity-100 text-xs font-medium">
+                          {fCount > 0 ? `🎬 ${fCount}컷 보기` : '▶ 영상 열기'}
+                        </span>
                       </div>
                       {item.isWide && (
                         <span className="absolute top-1 left-1 bg-orange-600/80 text-white text-[8px] px-1 py-0.5 rounded">16:9</span>
                       )}
-                      {item.hasModel && (
+                      {fCount > 0 && (
+                        <span className="absolute top-1 right-1 bg-green-600/90 text-white text-[8px] px-1.5 py-0.5 rounded font-medium">{fCount}컷</span>
+                      )}
+                      {!fCount && item.hasModel && (
                         <span className="absolute top-1 right-1 bg-blue-600/80 text-white text-[8px] px-1 py-0.5 rounded">모델</span>
                       )}
                     </div>
