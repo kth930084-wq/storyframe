@@ -185,6 +185,7 @@ function VideoCaptureModal({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [captureSuccess, setCaptureSuccess] = useState(false);
   const [captureCount, setCaptureCount] = useState(0);
+  const [videoError, setVideoError] = useState(false);
 
   const doCapture = useCallback(() => {
     const video = videoRef.current;
@@ -263,7 +264,17 @@ function VideoCaptureModal({
             className="w-full aspect-video bg-black"
             crossOrigin="anonymous"
             playsInline
+            onError={() => setVideoError(true)}
           />
+          {videoError && (
+            <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
+              <span className="text-red-400 text-lg mb-2">영상을 재생할 수 없습니다</span>
+              <span className="text-gray-500 text-xs">이 영상 파일에 접근할 수 없어요</span>
+              <button onClick={onClose} className="mt-3 px-4 py-2 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600">
+                돌아가기
+              </button>
+            </div>
+          )}
           {captureSuccess && (
             <div className="absolute inset-0 bg-white/20 flex items-center justify-center pointer-events-none">
               <span className="text-white text-xl font-bold drop-shadow-lg">📸 캡처!</span>
@@ -340,8 +351,10 @@ function PortfolioTab({
     if (productTypeFilter) items = filterByProductType(items, productTypeFilter);
     if (brandFilter) items = filterByBrand(items, brandFilter);
     if (showWideOnly) items = getWideOnly(items);
+    // 썸네일 로드 실패한 영상은 숨기기 (재생도 안 될 가능성 높음)
+    items = items.filter(item => !thumbErrors.has(item.id));
     return items;
-  }, [siteCategory, productTypeFilter, brandFilter, showWideOnly]);
+  }, [siteCategory, productTypeFilter, brandFilter, showWideOnly, thumbErrors]);
 
   const clearFilters = () => {
     setSiteCategory('ALL');

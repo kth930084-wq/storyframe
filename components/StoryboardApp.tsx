@@ -2976,7 +2976,55 @@ ${htmlPages.join('\n')}
               {viewMode === 'project-info' && <ProjectInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
-                <div className="flex flex-1 overflow-hidden relative">
+                <div className="flex flex-col flex-1 overflow-hidden relative">
+                  {/* 캡처 보관함 바 - 편집기에서 항상 표시 */}
+                  {capturedFrames.length > 0 && (
+                    <div className="bg-gray-900 border-b border-orange-800/40 px-4 py-2 flex-shrink-0">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-orange-400 text-xs font-bold">📸 캡처 보관함</span>
+                          <span className="text-orange-300/60 text-[10px]">{capturedFrames.length}컷</span>
+                          <button onClick={() => setCapturedFrames([])} className="text-gray-500 hover:text-red-400 text-[10px] ml-1">전체삭제</button>
+                        </div>
+                        <div className="w-px h-5 bg-gray-700 flex-shrink-0" />
+                        <div className="flex-1 overflow-x-auto no-scrollbar">
+                          <div className="flex gap-2">
+                            {capturedFrames.map((frame, i) => (
+                              <div
+                                key={i}
+                                className="group relative flex-shrink-0 cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all"
+                                style={{ width: 100 }}
+                                onClick={() => {
+                                  if (activeScene) {
+                                    const updatedProjects = projects.map(p => {
+                                      if (p.id === activeProjectId) {
+                                        return { ...p, scenes: p.scenes.map(s => s.id === activeSceneId ? { ...s, image: frame.url } : s) };
+                                      }
+                                      return p;
+                                    });
+                                    setProjects(updatedProjects);
+                                    addToHistory(updatedProjects);
+                                  }
+                                }}
+                              >
+                                <img src={frame.url} alt={`캡처 ${i + 1}`} className="w-full aspect-video object-cover" />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center pointer-events-none">
+                                  <span className="text-white opacity-0 group-hover:opacity-100 text-[8px] font-bold bg-orange-600 px-1.5 py-0.5 rounded">씬에 적용</span>
+                                </div>
+                                <div className="absolute top-0.5 left-0.5 text-white text-[7px] font-bold bg-black/50 px-0.5 rounded">#{i + 1}</div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setCapturedFrames(prev => prev.filter((_, idx) => idx !== i)); }}
+                                  className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-red-600/80 text-white rounded-full text-[7px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >×</button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-gray-500 text-[9px] flex-shrink-0 hidden md:block">클릭 → 현재 씬에 적용</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-1 overflow-hidden">
                   {slideViewMode && (
                     <div className="hidden md:block w-80 border-r border-gray-200 flex-shrink-0">
                       <SlideView
@@ -3050,6 +3098,7 @@ ${htmlPages.join('\n')}
                         <Plus size={16} />
                       </button>
                     </div>
+                  </div>
                   </div>
                 </div>
               )}
