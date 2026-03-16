@@ -235,12 +235,10 @@ function VideoCaptureModal({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-gray-500 text-[10px] hidden md:block">ESC로 닫기</span>
-          <button onClick={onClose} className="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs hover:bg-gray-600">
-            ✕ 닫기
-          </button>
-        </div>
+        <button onClick={onClose} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-500 transition-colors shadow-lg">
+          ← 영상 목록으로 돌아가기
+          <span className="text-orange-200 text-[10px] font-normal">(ESC)</span>
+        </button>
       </div>
 
       {/* Video + Controls */}
@@ -709,8 +707,8 @@ export default function ReferenceLibrary({
             </>
           )}
           {onClose && (
-            <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none px-2">
-              ×
+            <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-medium hover:bg-gray-600 transition-colors">
+              ← 편집기로 돌아가기
             </button>
           )}
         </div>

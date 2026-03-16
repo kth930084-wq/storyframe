@@ -457,8 +457,33 @@ function parseRawData(raw: string): PortfolioItem {
   };
 }
 
-// 실제 데이터 변환
-export const PORTFOLIO_ITEMS: PortfolioItem[] = RAW_DATA.map(parseRawData);
+// 실제 데이터 변환 + wide/vert 중복 제거 (wide 우선, 없으면 vert)
+function deduplicateItems(items: PortfolioItem[]): PortfolioItem[] {
+  const seen = new Map<string, PortfolioItem>();
+  for (const item of items) {
+    // 기본 키: wide/vert/16x9/9x16 제거하여 같은 영상 식별
+    const baseKey = item.filename
+      .replace(/_wide_/g, '_FMT_')
+      .replace(/_vert_/g, '_FMT_')
+      .replace(/_16x9/g, '_RES')
+      .replace(/_9x16/g, '_RES');
+
+    const existing = seen.get(baseKey);
+    if (!existing) {
+      seen.set(baseKey, item);
+    } else {
+      // wide/16x9 버전 우선
+      const isWide = item.filename.includes('_wide_') || item.filename.includes('_16x9');
+      const existingIsWide = existing.filename.includes('_wide_') || existing.filename.includes('_16x9');
+      if (isWide && !existingIsWide) {
+        seen.set(baseKey, item);
+      }
+    }
+  }
+  return Array.from(seen.values());
+}
+
+export const PORTFOLIO_ITEMS: PortfolioItem[] = deduplicateItems(RAW_DATA.map(parseRawData));
 
 // 브랜드 목록 (고유)
 export const PORTFOLIO_BRANDS: string[] = [...new Set(PORTFOLIO_ITEMS.map(i => i.brand))].sort();
