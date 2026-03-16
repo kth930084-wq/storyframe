@@ -457,24 +457,31 @@ function parseRawData(raw: string): PortfolioItem {
   };
 }
 
-// 실제 데이터 변환 + wide/vert 중복 제거 (wide 우선, 없으면 vert)
+// 실제 데이터 변환 + 중복 제거
+// 1) wide/vert, 16x9/9x16 같은 포맷 차이 제거 (wide 우선)
+// 2) h264/fhd/hd 같은 코덱/해상도 표기 차이 제거
 function deduplicateItems(items: PortfolioItem[]): PortfolioItem[] {
   const seen = new Map<string, PortfolioItem>();
   for (const item of items) {
-    // 기본 키: wide/vert/16x9/9x16 제거하여 같은 영상 식별
+    // 포맷/해상도/코덱 관련 키워드를 모두 정규화하여 같은 영상 식별
     const baseKey = item.filename
-      .replace(/_wide_/g, '_FMT_')
-      .replace(/_vert_/g, '_FMT_')
-      .replace(/_16x9/g, '_RES')
-      .replace(/_9x16/g, '_RES');
+      .replace(/_wide/g, '_FMT')
+      .replace(/_vert/g, '_FMT')
+      .replace(/_16x9/g, '')
+      .replace(/_9x16/g, '')
+      .replace(/_h264/g, '')
+      .replace(/_fhd/g, '')
+      .replace(/_hd(?=_|$)/g, '')
+      .replace(/_+/g, '_')
+      .replace(/_$/g, '');
 
     const existing = seen.get(baseKey);
     if (!existing) {
       seen.set(baseKey, item);
     } else {
       // wide/16x9 버전 우선
-      const isWide = item.filename.includes('_wide_') || item.filename.includes('_16x9');
-      const existingIsWide = existing.filename.includes('_wide_') || existing.filename.includes('_16x9');
+      const isWide = item.filename.includes('_wide') || item.filename.includes('_16x9');
+      const existingIsWide = existing.filename.includes('_wide') || existing.filename.includes('_16x9');
       if (isWide && !existingIsWide) {
         seen.set(baseKey, item);
       }
