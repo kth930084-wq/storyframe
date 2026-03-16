@@ -29,6 +29,52 @@
       "product",
       "solo-female",
       "solo-male"
+    ],
+    "action": [
+      "conversation",
+      "detail",
+      "dramatic",
+      "eating",
+      "flatlay",
+      "gesture",
+      "hero",
+      "holding-product",
+      "lifestyle",
+      "neutral",
+      "phone",
+      "presenting",
+      "product-shot",
+      "reacting",
+      "showcase",
+      "sitting",
+      "splash",
+      "standing",
+      "talking",
+      "walking",
+      "working"
+    ],
+    "lighting": [
+      "3-point",
+      "backlight",
+      "backlit",
+      "dramatic",
+      "gradient",
+      "hard-light",
+      "moody",
+      "natural",
+      "natural-light",
+      "soft",
+      "soft-light",
+      "studio"
+    ],
+    "movement": [
+      "dolly",
+      "dynamic",
+      "handheld",
+      "pan",
+      "static",
+      "tilt",
+      "tracking"
     ]
   },
   "templates": [

@@ -543,7 +543,7 @@ export default function ReferenceLibrary({ onSelectImage, onSelectPortfolioImage
                   {FILTER_LABELS[category]}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {data.filters[category].map(value => {
+                  {(data.filters[category] || []).map(value => {
                     const isActive = selectedFilters[category] === value;
                     return (
                       <button
@@ -581,7 +581,7 @@ export default function ReferenceLibrary({ onSelectImage, onSelectPortfolioImage
             {data && (
               <div className="flex overflow-x-auto gap-1.5 px-3 py-2 border-b border-gray-700 bg-gray-900/50">
                 {(['shotSize', 'angle', 'character', 'action'] as const).map(category => (
-                  data.filters[category].slice(0, 4).map(value => {
+                  (data.filters[category] || []).slice(0, 4).map(value => {
                     const isActive = selectedFilters[category] === value;
                     return (
                       <button
