@@ -926,7 +926,7 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
               className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all text-sm font-medium"
             >
               <Image className="w-4 h-4" />
-              레퍼런스 라이브러리에서 선택 (514)
+              레퍼런스 라이브러리
             </button>
           </div>
           <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-gray-900 border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
@@ -1731,6 +1731,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [showBlankPageEditor, setShowBlankPageEditor] = useState(false);
   const [showReferenceLibrary, setShowReferenceLibrary] = useState(false);
   const [showPDFExportModal, setShowPDFExportModal] = useState(false);
+  const [capturedFrames, setCapturedFrames] = useState<{ url: string; brand: string; title: string }[]>([]);
   const [slideViewMode, setSlideViewMode] = useState(false);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -3099,6 +3100,8 @@ ${htmlPages.join('\n')}
       {showReferenceLibrary && (
         <ReferenceLibrary
           onClose={() => setShowReferenceLibrary(false)}
+          capturedFrames={capturedFrames}
+          onCapturedFramesChange={setCapturedFrames}
           onSelectImage={(template) => {
             if (activeScene) {
               const updatedProjects = projects.map(p => {
@@ -3108,6 +3111,27 @@ ${htmlPages.join('\n')}
                     scenes: p.scenes.map(s => {
                       if (s.id === activeSceneId) {
                         return { ...s, image: template.fullImage, shot_size: template.shotSize, camera_angle: template.angle };
+                      }
+                      return s;
+                    })
+                  };
+                }
+                return p;
+              });
+              setProjects(updatedProjects);
+              addToHistory(updatedProjects);
+            }
+            setShowReferenceLibrary(false);
+          }}
+          onSelectPortfolioImage={(imageUrl, info) => {
+            if (activeScene) {
+              const updatedProjects = projects.map(p => {
+                if (p.id === activeProjectId) {
+                  return {
+                    ...p,
+                    scenes: p.scenes.map(s => {
+                      if (s.id === activeSceneId) {
+                        return { ...s, image: imageUrl };
                       }
                       return s;
                     })
