@@ -37,3 +37,7 @@ yarn-error.log*
 
 # OS
 Thumbs.db
+
+# Large asset files (served locally or via CDN)
+public/portfolio_frames/
+public/templates_data_backup.json
