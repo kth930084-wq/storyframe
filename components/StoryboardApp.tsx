@@ -2671,16 +2671,10 @@ ${htmlPages.join('\n')}
                       {projects.length > 0 ? `${projects.length}개의 프로젝트 · 총 ${projects.reduce((sum, p) => sum + p.scenes.length, 0)}개 씬` : '새 프로젝트를 만들어 시작하세요'}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowReferenceLibrary(true)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition text-sm font-medium ${darkMode ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-neutral-700" : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"}`}>
-                      <Image size={16} /> 레퍼런스
-                    </button>
-                    <button onClick={() => setShowNewProject(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm">
-                      <Plus size={16} /> 새 프로젝트
-                    </button>
-                  </div>
+                  <button onClick={() => setShowNewProject(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm">
+                    <Plus size={16} /> 새 프로젝트
+                  </button>
                 </div>
 
                 {/* 공지사항 - 있을 때만 표시, 컴팩트하게 */}
