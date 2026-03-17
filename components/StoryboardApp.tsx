@@ -33,6 +33,7 @@ import BatchImageUpload from './BatchImageUpload';
 import KeyboardShortcutsModal from './KeyboardShortcutsModal';
 import { enableShareLink, disableShareLink, subscribeFeedbacks, type FeedbackItem } from '@/lib/share-utils';
 import { type BrandConfig, loadBrandConfig, saveBrandConfig, defaultBrandConfig } from '@/lib/brand-utils';
+import PPMSection, { type PPMData, defaultPPMData } from './PPMSection';
 
 interface StoryboardAppProps {
   user: any;
@@ -138,6 +139,8 @@ interface Project {
   timetable?: TimetableEntry[];
   scenes: Scene[];
   created_at?: string;
+  ppm_enabled?: boolean;
+  ppm_data?: PPMData;
   [key: string]: any;
 }
 
@@ -1260,6 +1263,32 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}><Edit3 className="w-4 h-4" /> 프로젝트 설명</h3>
           <InfoTextarea label="" value={project.description} placeholder="이 프로젝트에 대한 간단한 설명, 컨셉, 목표 등을 적어주세요..." rows={4} onChange={(v) => onUpdate({ description: v })} inputCls={inputCls} labelCls={labelCls} />
+        </div>
+
+        {/* PPM 모드 토글 */}
+        <div className={`rounded-2xl border p-6 ${cardCls}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${project.ppm_enabled ? 'bg-orange-500/10' : darkMode ? 'bg-neutral-700' : 'bg-gray-100'}`}>
+                <Palette className={`w-4 h-4 ${project.ppm_enabled ? 'text-orange-500' : darkMode ? 'text-neutral-400' : 'text-gray-500'}`} />
+              </div>
+              <div>
+                <h3 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>PPM 모드</h3>
+                <p className={`text-xs mt-0.5 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>톤앤매너, 키컬러, 시놉시스 등 사전 제작 미팅 자료</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onUpdate({ ppm_enabled: !project.ppm_enabled })}
+              className={`relative w-11 h-6 rounded-full transition-colors ${project.ppm_enabled ? 'bg-orange-500' : darkMode ? 'bg-neutral-600' : 'bg-gray-300'}`}
+            >
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${project.ppm_enabled ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          {project.ppm_enabled && (
+            <p className={`text-xs mt-3 pl-11 ${darkMode ? "text-orange-400/70" : "text-orange-600/70"}`}>
+              상단 탭에 &apos;PPM&apos; 탭이 활성화되었습니다
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -2670,6 +2699,7 @@ ${htmlPages.join('\n')}
               <div className="flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar min-w-0">
                 {[
                   { id: 'project-info', label: '프로젝트 정보', mobileLabel: '정보' },
+                  ...(activeProject.ppm_enabled ? [{ id: 'ppm', label: 'PPM', mobileLabel: 'PPM' }] : []),
                   { id: 'shooting-info', label: '촬영 정보', mobileLabel: '촬영' },
                   { id: 'editor', label: '편집기', mobileLabel: '편집' },
                   { id: 'grid', label: '그리드', mobileLabel: '그리드' },
@@ -3052,6 +3082,14 @@ ${htmlPages.join('\n')}
           ) : activeProject ? (
             <>
               {viewMode === 'project-info' && <ProjectInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
+              {viewMode === 'ppm' && activeProject.ppm_enabled && (
+                <PPMSection
+                  ppmData={activeProject.ppm_data || defaultPPMData}
+                  onUpdate={(ppmData) => handleUpdateProjectMeta({ ppm_data: ppmData })}
+                  darkMode={darkMode}
+                  projectTitle={activeProject.title}
+                />
+              )}
               {viewMode === 'shooting-info' && <ShootingInfoView project={activeProject} onUpdate={handleUpdateProjectMeta} darkMode={darkMode} />}
               {viewMode === 'editor' && (
                 <div className="flex flex-col flex-1 overflow-hidden relative">
