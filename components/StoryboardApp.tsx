@@ -616,13 +616,16 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
   );
 };
 
-// 화면비율에 따른 마스킹 계산 함수
+// 화면비율에 따른 마스킹 계산 함수 (세로 영상일 때만 표시)
 const calculateMaskingPercentage = (aspectRatio: string): number => {
   // aspectRatio는 "16:9", "9:16", "1:1", "4:5" 등의 형식
-  if (!aspectRatio || aspectRatio === "16:9") return 0; // 16:9는 마스킹 없음
+  if (!aspectRatio || aspectRatio === "16:9") return 0;
 
   const [w, h] = aspectRatio.split(':').map(Number);
   if (!w || !h) return 0;
+
+  // 세로 영상(높이가 너비보다 큰 경우)일 때만 마스킹 표시
+  if (w >= h) return 0;
 
   // 이미지의 기본 비율은 16:9 (너비를 1로 정규화하면 높이는 9/16)
   const imageHeight = 9 / 16;
