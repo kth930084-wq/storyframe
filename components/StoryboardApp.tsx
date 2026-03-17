@@ -26,6 +26,14 @@ import { BlankPageEditor, BlankPageContent } from './BlankPageEditor';
 import { CanvasEditor, type CanvasElement } from './CanvasEditor';
 import ReferenceLibrary from './ReferenceLibrary';
 import PDFExportModal from './PDFExportModal';
+import AIScriptSplitter from './AIScriptSplitter';
+import NLEExportModal from './NLEExportModal';
+import QRShareModal from './QRShareModal';
+import BrandSettings from './BrandSettings';
+import BatchImageUpload from './BatchImageUpload';
+import KeyboardShortcutsModal from './KeyboardShortcutsModal';
+import { enableShareLink, disableShareLink, subscribeFeedbacks, type FeedbackItem } from '@/lib/share-utils';
+import { type BrandConfig, loadBrandConfig, saveBrandConfig, defaultBrandConfig } from '@/lib/brand-utils';
 
 interface StoryboardAppProps {
   user: any;
@@ -1733,6 +1741,24 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [showPDFExportModal, setShowPDFExportModal] = useState(false);
   const [capturedFrames, setCapturedFrames] = useState<{ url: string; brand: string; title: string }[]>([]);
   const [slideViewMode, setSlideViewMode] = useState(false);
+  // New feature states
+  const [showAIScriptSplitter, setShowAIScriptSplitter] = useState(false);
+  const [showNLEExport, setShowNLEExport] = useState(false);
+  const [showQRShare, setShowQRShare] = useState(false);
+  const [showBrandSettings, setShowBrandSettings] = useState(false);
+  const [showBatchUpload, setShowBatchUpload] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [isShareLoading, setIsShareLoading] = useState(false);
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  const [brandConfig, setBrandConfig] = useState<BrandConfig>(defaultBrandConfig);
+
+  // Load brand config on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBrandConfig(loadBrandConfig());
+    }
+  }, []);
 
   const activeProject = projects.find(p => p.id === activeProjectId);
   const activeScene = activeProject?.scenes?.find(s => s.id === activeSceneId);
@@ -1809,6 +1835,68 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex]);
+
+  // Handle share link toggle
+  const handleToggleShare = useCallback(async () => {
+    if (!activeProject || !user?.uid) return;
+    setIsShareLoading(true);
+    try {
+      if (shareToken) {
+        await disableShareLink(user.uid, activeProjectId!);
+        setShareToken(null);
+      } else {
+        const token = await enableShareLink(user.uid, activeProjectId!);
+        setShareToken(token);
+      }
+    } catch (e) { console.error('Share toggle failed:', e); }
+    setIsShareLoading(false);
+  }, [activeProject, user, activeProjectId, shareToken]);
+
+  // Handle AI script splitter apply
+  const handleAIScriptsApply = useCallback((newScenes: Scene[]) => {
+    if (!activeProject) return;
+    const updatedProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, scenes: [...p.scenes, ...newScenes] };
+      }
+      return p;
+    });
+    setProjects(updatedProjects);
+    addToHistory(updatedProjects);
+    setShowAIScriptSplitter(false);
+  }, [activeProject, activeProjectId, projects, addToHistory]);
+
+  // Handle batch image upload
+  const handleBatchScenesCreate = useCallback((newScenes: Array<{id: string; title: string; duration: number; image: string}>) => {
+    if (!activeProject) return;
+    const scenesWithDefaults: Scene[] = newScenes.map(s => ({
+      ...s,
+      camera_angle: '정면',
+      shot_size: 'MS',
+      camera_movement: '고정',
+      lighting: '자연광',
+      description: '',
+      dialogue: '',
+      notes: '',
+      transition: '컷',
+    }));
+    const updatedProjects = projects.map(p => {
+      if (p.id === activeProjectId) {
+        return { ...p, scenes: [...p.scenes, ...scenesWithDefaults] };
+      }
+      return p;
+    });
+    setProjects(updatedProjects);
+    addToHistory(updatedProjects);
+    setShowBatchUpload(false);
+  }, [activeProject, activeProjectId, projects, addToHistory]);
+
+  // Handle brand config save
+  const handleBrandSave = useCallback((config: BrandConfig) => {
+    setBrandConfig(config);
+    saveBrandConfig(config);
+    setShowBrandSettings(false);
+  }, []);
 
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) {
@@ -2543,6 +2631,38 @@ ${htmlPages.join('\n')}
               <Save size={14} />
               버전 관리
             </button>
+            {/* New Features */}
+            <div className={`border-t pt-3 mt-3 ${darkMode ? "border-neutral-600" : "border-gray-200"}`}>
+              <p className={`text-xs font-semibold mb-2 px-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>도구</p>
+              <button
+                onClick={() => setShowAIScriptSplitter(true)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-gradient-to-r from-purple-900/50 to-blue-900/50 text-purple-300 hover:from-purple-800/60 hover:to-blue-800/60" : "bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 hover:from-purple-100 hover:to-blue-100"}`}
+              >
+                <Sparkles size={14} />
+                AI 씬 분할
+              </button>
+              <button
+                onClick={() => setShowBatchUpload(true)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              >
+                <Upload size={14} />
+                이미지 일괄 업로드
+              </button>
+              <button
+                onClick={() => setShowBrandSettings(true)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              >
+                <Palette size={14} />
+                브랜드 설정
+              </button>
+              <button
+                onClick={() => setShowKeyboardShortcuts(true)}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              >
+                <Keyboard size={14} />
+                단축키
+              </button>
+            </div>
             <button
               onClick={() => { setActiveProjectId(null); setActiveSceneId(null); setCurrentPage('dashboard'); }}
               className={`w-full px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-200 text-gray-700 hover:bg-gray-300"}`}
@@ -2634,6 +2754,30 @@ ${htmlPages.join('\n')}
                 >
                   <FileJson size={14} /> JSON
                 </button>
+                <button
+                  onClick={() => setShowNLEExport(true)}
+                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  title="NLE 내보내기 (XML/EDL)"
+                >
+                  <Monitor size={14} /> NLE
+                </button>
+                <button
+                  onClick={handleToggleShare}
+                  disabled={isShareLoading}
+                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${shareToken ? "bg-green-600 text-white hover:bg-green-700" : (darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}`}
+                  title={shareToken ? "공유 중 (클릭하여 해제)" : "클라이언트 공유 링크 생성"}
+                >
+                  <Share2 size={14} /> {isShareLoading ? "..." : shareToken ? "공유중" : "공유"}
+                </button>
+                {shareToken && (
+                  <button
+                    onClick={() => setShowQRShare(true)}
+                    className="hidden sm:flex px-2 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1 bg-blue-600 text-white hover:bg-blue-700"
+                    title="QR 코드"
+                  >
+                    QR
+                  </button>
+                )}
               </div>
             )}
             <button
@@ -3162,6 +3306,70 @@ ${htmlPages.join('\n')}
             handleExportPDF(enabledPages);
             setShowPDFExportModal(false);
           }}
+        />
+      )}
+
+      {/* AI Script Splitter Modal */}
+      {showAIScriptSplitter && (
+        <AIScriptSplitter
+          isOpen={showAIScriptSplitter}
+          onClose={() => setShowAIScriptSplitter(false)}
+          onApply={handleAIScriptsApply}
+          darkMode={darkMode}
+          existingSceneCount={activeProject?.scenes?.length || 0}
+        />
+      )}
+
+      {/* NLE Export Modal */}
+      {showNLEExport && activeProject && (
+        <NLEExportModal
+          isOpen={showNLEExport}
+          onClose={() => setShowNLEExport(false)}
+          scenes={activeProject.scenes}
+          projectTitle={activeProject.title}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* QR Share Modal */}
+      {showQRShare && shareToken && (
+        <QRShareModal
+          isOpen={showQRShare}
+          onClose={() => setShowQRShare(false)}
+          shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${shareToken}`}
+          projectTitle={activeProject?.title || ''}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* Brand Settings Modal */}
+      {showBrandSettings && (
+        <BrandSettings
+          isOpen={showBrandSettings}
+          onClose={() => setShowBrandSettings(false)}
+          darkMode={darkMode}
+          brandConfig={brandConfig}
+          onSave={handleBrandSave}
+        />
+      )}
+
+      {/* Batch Image Upload Modal */}
+      {showBatchUpload && (
+        <BatchImageUpload
+          isOpen={showBatchUpload}
+          onClose={() => setShowBatchUpload(false)}
+          onCreateScenes={handleBatchScenesCreate}
+          darkMode={darkMode}
+          existingSceneCount={activeProject?.scenes?.length || 0}
+        />
+      )}
+
+      {/* Keyboard Shortcuts Modal */}
+      {showKeyboardShortcuts && (
+        <KeyboardShortcutsModal
+          isOpen={showKeyboardShortcuts}
+          onClose={() => setShowKeyboardShortcuts(false)}
+          darkMode={darkMode}
         />
       )}
 
