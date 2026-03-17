@@ -1723,7 +1723,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(false);
-  const [showGuide, setShowGuide] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [showAnnouncementEditor, setShowAnnouncementEditor] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
@@ -2413,8 +2413,8 @@ ${htmlPages.join('\n')}
     URL.revokeObjectURL(url);
   }, [activeProject]);
 
-  const isDashboard = !activeProject && currentPage !== 'proposal';
-  const isProposalPage = currentPage === 'proposal';
+  const isDashboard = !activeProject;
+  const isProposalPage = false; // proposal feature removed
 
   // 포트폴리오 기획안에서 스토리보드 프로젝트 생성
   const handleCreateFromProposal = useCallback((projectData: any) => {
@@ -2596,20 +2596,14 @@ ${htmlPages.join('\n')}
               </div>
             )}
 
-            {/* 대시보드/기획안 페이지일 때 로고 표시 */}
-            {(isDashboard || isProposalPage) && (
+            {/* 대시보드일 때 로고 표시 */}
+            {isDashboard && (
               <div className="flex items-center gap-2.5">
-                {isProposalPage && (
-                  <button onClick={() => setCurrentPage('dashboard')}
-                    className={`p-1.5 rounded-lg transition mr-1 ${darkMode ? "hover:bg-neutral-700 text-neutral-400" : "hover:bg-gray-100 text-gray-500"}`}>
-                    <ChevronLeft size={20} />
-                  </button>
-                )}
                 <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
                   <Film className="w-4 h-4 text-white" />
                 </div>
                 <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>
-                  {isProposalPage ? '포트폴리오 기획안' : 'PEWPEW 스토리보드'}
+                  PEWPEW 스토리보드
                 </span>
               </div>
             )}
@@ -2663,311 +2657,274 @@ ${htmlPages.join('\n')}
 
         {/* Content Area */}
         <div className="flex-1 overflow-auto">
-          {isProposalPage ? (
-            <PortfolioProposalBuilder
-              darkMode={darkMode}
-              userEmail={user?.email}
-              onCreateProject={handleCreateFromProposal}
-            />
-          ) : isDashboard ? (
-            <div className={`min-h-full p-6 md:p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
-              <div className="max-w-6xl mx-auto space-y-8">
+          {isDashboard ? (
+            <div className={`min-h-full p-4 md:p-8 ${darkMode ? "bg-neutral-900" : "bg-gray-50"}`}>
+              <div className="max-w-5xl mx-auto space-y-6">
 
-                {/* 환영 + 새 프로젝트 */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                {/* 헤더 영역 */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                   <div>
-                    <h1 className={`text-2xl md:text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
-                      {user?.displayName ? `${user.displayName}님, 환영합니다` : '환영합니다'}
+                    <h1 className={`text-xl md:text-2xl font-bold tracking-tight ${darkMode ? "text-white" : "text-gray-900"}`}>
+                      {user?.displayName ? `${user.displayName}님의 프로젝트` : '내 프로젝트'}
                     </h1>
-                    <p className={`text-xs md:text-sm mt-1 ${darkMode ? "text-neutral-500" : "text-gray-500"}`}>PEWPEW 스토리보드에서 영상을 기획하세요</p>
+                    <p className={`text-xs mt-1 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>
+                      {projects.length > 0 ? `${projects.length}개의 프로젝트 · 총 ${projects.reduce((sum, p) => sum + p.scenes.length, 0)}개 씬` : '새 프로젝트를 만들어 시작하세요'}
+                    </p>
                   </div>
-                  <button onClick={() => setShowNewProject(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm shadow-sm">
-                    <Plus size={18} /> 새 프로젝트
-                  </button>
-                </div>
-
-                {/* 공지사항 배너 */}
-                <div className={`rounded-2xl border p-5 ${darkMode ? "bg-gradient-to-r from-neutral-800 to-neutral-800/50 border-neutral-700" : "bg-gradient-to-r from-white to-gray-50 border-gray-100"}`}>
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-neutral-700" : "bg-neutral-100"}`}>
-                      <Bell size={18} className={darkMode ? "text-neutral-300" : "text-neutral-600"} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>공지사항</h3>
-                        {announcements.length > 0 && (
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${darkMode ? "bg-neutral-600 text-neutral-300" : "bg-neutral-200 text-neutral-600"}`}>
-                            {announcements.length}건
-                          </span>
-                        )}
-                        {isAdmin(user?.email) && (
-                          <button onClick={() => {
-                            setAnnouncementForm({ title: '', content: '', type: 'info' });
-                            setEditingAnnouncement(null);
-                            setShowAnnouncementEditor(true);
-                          }}
-                            className={`ml-auto text-[11px] px-3 py-1 rounded-lg font-medium transition ${darkMode ? "bg-neutral-600 text-neutral-200 hover:bg-neutral-500" : "bg-neutral-800 text-white hover:bg-neutral-700"}`}>
-                            + 공지 작성
-                          </button>
-                        )}
-                      </div>
-
-                      {/* 공지사항 에디터 (어드민 전용) */}
-                      {showAnnouncementEditor && isAdmin(user?.email) && (
-                        <div className={`mt-3 p-4 rounded-xl border space-y-3 ${darkMode ? "bg-neutral-700 border-neutral-600" : "bg-gray-50 border-gray-200"}`}>
-                          <input type="text" value={announcementForm.title}
-                            onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
-                            placeholder="공지 제목 (예: v2.1 업데이트)"
-                            className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
-                          <textarea value={announcementForm.content}
-                            onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
-                            rows={3} placeholder="공지 내용을 입력하세요..."
-                            className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none resize-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
-                          <div className="flex items-center gap-2">
-                            <select value={announcementForm.type}
-                              onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
-                              className={`px-3 py-1.5 rounded-lg text-xs border ${darkMode ? "bg-neutral-600 text-white border-neutral-500" : "bg-white text-gray-700 border-gray-300"}`}>
-                              <option value="info">일반</option>
-                              <option value="update">업데이트</option>
-                              <option value="important">중요</option>
-                            </select>
-                            <div className="flex-1" />
-                            <button onClick={() => { setShowAnnouncementEditor(false); setEditingAnnouncement(null); }}
-                              className={`px-3 py-1.5 text-xs rounded-lg ${darkMode ? "text-neutral-400 hover:text-neutral-200" : "text-gray-500 hover:text-gray-700"}`}>
-                              취소
-                            </button>
-                            <button onClick={handleSaveAnnouncement}
-                              className="px-4 py-1.5 text-xs bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 font-medium">
-                              {editingAnnouncement ? '수정' : '등록'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 공지 목록 */}
-                      <div className={`text-sm space-y-2 mt-2 ${darkMode ? "text-neutral-400" : "text-gray-600"}`}>
-                        {announcements.length > 0 ? (
-                          announcements.filter(a => a.active !== false).map(a => (
-                            <div key={a.id} className="flex items-start gap-2 group">
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0 mt-0.5 ${
-                                a.type === 'important' ? (darkMode ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-600') :
-                                a.type === 'update' ? (darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-600') :
-                                (darkMode ? 'bg-neutral-600 text-neutral-300' : 'bg-gray-200 text-gray-600')
-                              }`}>
-                                {a.type === 'important' ? '중요' : a.type === 'update' ? '업데이트' : '안내'}
-                              </span>
-                              <div className="flex-1 min-w-0">
-                                <p className={`font-medium text-xs ${darkMode ? "text-neutral-200" : "text-gray-800"}`}>{a.title}</p>
-                                {a.content && <p className="text-xs mt-0.5">{a.content}</p>}
-                              </div>
-                              {isAdmin(user?.email) && (
-                                <div className="opacity-0 group-hover:opacity-100 flex gap-1 flex-shrink-0 transition">
-                                  <button onClick={() => {
-                                    setAnnouncementForm({ title: a.title, content: a.content, type: a.type });
-                                    setEditingAnnouncement(a);
-                                    setShowAnnouncementEditor(true);
-                                  }} className={`text-[10px] px-2 py-0.5 rounded ${darkMode ? "hover:bg-neutral-600 text-neutral-400" : "hover:bg-gray-200 text-gray-400"}`}>
-                                    수정
-                                  </button>
-                                  <button onClick={() => a.id && handleDeleteAnnouncement(a.id)}
-                                    className={`text-[10px] px-2 py-0.5 rounded ${darkMode ? "hover:bg-red-900/30 text-neutral-400 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`}>
-                                    삭제
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-xs">아직 공지사항이 없습니다.</p>
-                        )}
-                      </div>
-                    </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowReferenceLibrary(true)}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition text-sm font-medium ${darkMode ? "bg-neutral-800 text-neutral-300 hover:bg-neutral-700 border border-neutral-700" : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"}`}>
+                      <Image size={16} /> 레퍼런스
+                    </button>
+                    <button onClick={() => setShowNewProject(true)}
+                      className="flex items-center gap-2 px-5 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition font-medium text-sm">
+                      <Plus size={16} /> 새 프로젝트
+                    </button>
                   </div>
                 </div>
 
-                {/* 영상 기획안 의뢰 CTA 카드 */}
-                <button
-                  onClick={() => setCurrentPage('proposal')}
-                  className={`w-full rounded-2xl border p-5 text-left transition group ${darkMode ? "bg-gradient-to-r from-neutral-800 via-neutral-800 to-neutral-700 border-neutral-700 hover:border-neutral-500" : "bg-gradient-to-r from-neutral-50 via-white to-neutral-50 border-gray-200 hover:border-neutral-400 hover:shadow-md"}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${darkMode ? "bg-neutral-700 group-hover:bg-neutral-600" : "bg-neutral-100 group-hover:bg-neutral-200"} transition`}>
-                      <Star size={22} className={darkMode ? "text-yellow-400" : "text-yellow-500"} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`font-bold text-sm mb-0.5 ${darkMode ? "text-white" : "text-gray-900"}`}>
-                        우리 포트폴리오 보고 영상 의뢰하기
-                      </h3>
-                      <p className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
-                        PEWPEW Studio가 만든 영상을 둘러보고, 마음에 드는 스타일을 골라 간단하게 기획안을 작성해보세요
-                      </p>
-                    </div>
-                    <ChevronRight size={20} className={`flex-shrink-0 transition-transform group-hover:translate-x-1 ${darkMode ? "text-neutral-500" : "text-gray-400"}`} />
-                  </div>
-                </button>
-
-                {/* 빠른 시작 가이드 (접기/펼치기) */}
-                <div className={`rounded-2xl border overflow-hidden ${darkMode ? "bg-neutral-800 border-neutral-700" : "bg-white border-gray-100"}`}>
-                  <button
-                    onClick={() => setShowGuide && setShowGuide(!showGuide)}
-                    className={`w-full px-5 py-4 flex items-center justify-between text-left ${darkMode ? "hover:bg-neutral-750" : "hover:bg-gray-50"} transition`}
-                  >
+                {/* 공지사항 - 있을 때만 표시, 컴팩트하게 */}
+                {(announcements.filter(a => a.active !== false).length > 0 || isAdmin(user?.email)) && (
+                  <div className={`rounded-xl border px-4 py-3 ${darkMode ? "bg-neutral-800/60 border-neutral-700/50" : "bg-white border-gray-100"}`}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? "bg-neutral-700" : "bg-neutral-100"}`}>
-                        <HelpCircle size={16} className={darkMode ? "text-neutral-300" : "text-neutral-600"} />
-                      </div>
-                      <span className={`font-semibold text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>사용법 가이드</span>
-                    </div>
-                    <ChevronDown size={16} className={`transition-transform ${showGuide ? "rotate-180" : ""} ${darkMode ? "text-neutral-500" : "text-gray-400"}`} />
-                  </button>
-                  {showGuide && (
-                    <div className={`px-5 pb-5 ${darkMode ? "border-t border-neutral-700" : "border-t border-gray-100"}`}>
-                      <div className="space-y-3 pt-4">
-                        {[
-                          { step: '1', title: '시작하기', desc: '"새 프로젝트" 버튼을 눌러 프로젝트 이름, 영상 비율, 해상도를 선택하고 시작하세요. 샘플 프로젝트로 빠르게 시작할 수도 있습니다.', icon: '🚀' },
-                          { step: '2', title: '프로젝트 정보 (1페이지)', desc: '"프로젝트 정보" 탭에서 브랜드명, 담당자, 감독, DP(촬영감독), PD(프로듀서) 정보를 입력하세요. 이 정보는 PDF 표지와 촬영 자료에 자동으로 포함됩니다.', icon: '📋' },
-                          { step: '3', title: '촬영 정보 (2페이지)', desc: '"촬영 정보" 탭에서 촬영 일정(촬영일), 콜타임, 촬영 장소, 스튜디오 정보, 주차 안내, 병원 정보, 날씨 등을 기록하세요.', icon: '📍' },
-                          { step: '4', title: '씬 편집기', desc: '"편집기"에서 각 씬별로 이미지 업로드/편집, 카메라 앵글, 샷 사이즈, 무브먼트, 조명, 렌즈, 프레임레이트, 전환효과, 대사/나레이션, 사운드/BGM, 감독 메모를 설정할 수 있습니다.', icon: '🎥' },
-                          { step: '5', title: '씬 코멘트', desc: '각 씬에 대해 피드백이나 메모를 작성하고, 논의 사항을 관리할 수 있습니다. "해결" 표시로 완료된 항목을 체계적으로 관리하세요.', icon: '💬' },
-                          { step: '6', title: '에셋 라이브러리', desc: '미리 만들어진 프리셋을 적용하여 씬을 빠르게 설정할 수 있습니다. 자주 사용하는 설정을 저장하고 재사용하세요.', icon: '📦' },
-                          { step: '7', title: '그리드 뷰', desc: '"그리드 뷰"에서 전체 씬을 한눈에 썸네일로 확인할 수 있습니다. 전체 구성을 빠르게 파악하고 씬 순서를 드래그로 조정하세요.', icon: '⊞' },
-                          { step: '8', title: '타임라인 뷰', desc: '"타임라인 뷰"에서 씬의 시간 흐름을 시각적으로 확인할 수 있습니다. 각 씬의 소요 시간을 한눈에 보고 전체 영상 길이를 계산하세요.', icon: '📊' },
-                          { step: '9', title: '애니매틱 프리뷰', desc: '"프리뷰" 버튼을 눌러 씬을 자동으로 재생하는 슬라이드쇼를 볼 수 있습니다. 각 씬을 순서대로 자동 전환하며 전체 흐름을 확인하세요.', icon: '▶️' },
-                          { step: '10', title: '타임테이블', desc: '"타임테이블" 탭에서 촬영 일정을 시간 단위로 표 형식으로 관리하세요. "씬에서 자동 생성" 버튼으로 씬 정보를 기반으로 일정을 자동 생성할 수 있습니다.', icon: '⏰' },
-                          { step: '11', title: '샷 리스트', desc: '"샷 리스트"는 촬영팀용 샷 목록을 자동으로 생성합니다. 각 씬의 샷 정보를 테이블 형식으로 정리하고 "복사" 버튼으로 다른 도구에 붙여넣으세요.', icon: '📹' },
-                          { step: '12', title: '캘린더 뷰', desc: '"캘린더 뷰"에서 월간 촬영 일정을 시각적으로 확인할 수 있습니다. 촬영 날짜를 캘린더에 표시하고 전체 일정을 한눈에 파악하세요.', icon: '📅' },
-                          { step: '13', title: '예산 추정', desc: '"예산" 탭에서 씬 기반으로 제작비를 자동 계산할 수 있습니다. 각 씬의 복잡도, 소요 시간 등을 입력하면 총 예산을 추정합니다.', icon: '💰' },
-                          { step: '14', title: 'AI 씬 추천', desc: '"AI 추천" 기능으로 영상 유형별(광고, 뮤직비디오, 다큐멘터리 등) 추천 씬을 자동으로 구성받을 수 있습니다. 빠른 기획에 도움이 됩니다.', icon: '✨' },
-                          { step: '15', title: '버전 관리', desc: '"버전 관리"에서 프로젝트 스냅샷을 저장하고 복원할 수 있습니다. 이전 버전으로 돌아가거나 여러 버전을 비교하세요.', icon: '🔄' },
-                          { step: '16', title: '스마트 검색', desc: '"검색" 기능으로 씬 제목, 설명, 대사로 빠르게 검색할 수 있습니다. 다양한 필터를 사용하여 원하는 씬을 찾으세요.', icon: '🔍' },
-                          { step: '17', title: 'PDF 내보내기', desc: '상단의 "PDF" 버튼을 눌러 표지+프로젝트 정보+촬영 정보+씬테이블+타임테이블을 한 번에 PDF로 출력하세요. 외부 공유에 최적화되어 있습니다.', icon: '📄' },
-                          { step: '18', title: 'JSON 내보내기', desc: '"내보내기" 메뉴에서 프로젝트 데이터를 JSON 형식으로 내보낼 수 있습니다. 다른 시스템과의 연동이나 백업 용도로 사용하세요.', icon: '💾' },
-                          { step: '19', title: '키보드 단축키', desc: 'Ctrl+Z(실행 취소), Ctrl+Shift+Z(다시 하기), 마우스 휠(이미지 확대/축소), 마우스 드래그(이미지 이동) 등의 단축키로 빠르게 작업하세요.', icon: '⌨️' },
-                          { step: '20', title: '관리자 기능', desc: '"설정" > "공지사항"에서 팀 전체에 공지사항을 작성, 수정, 삭제할 수 있습니다. 어드민 권한이 필요합니다.', icon: '👨‍💼' },
-                        ].map(item => (
-                          <div key={item.step} className={`flex gap-3 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
-                            <div className="text-2xl flex-shrink-0">{item.icon}</div>
-                            <div className="flex-1">
-                              <div className={`font-semibold text-sm mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>
-                                <span className={`inline-flex w-6 h-6 items-center justify-center rounded-full text-[11px] mr-2 font-bold ${darkMode ? "bg-neutral-600 text-white" : "bg-neutral-800 text-white"}`}>{item.step}</span>
-                                {item.title}
+                      <Bell size={14} className={darkMode ? "text-neutral-500" : "text-gray-400"} />
+                      <div className="flex-1 min-w-0">
+                        {announcements.filter(a => a.active !== false).length > 0 ? (
+                          <div className="space-y-1">
+                            {announcements.filter(a => a.active !== false).slice(0, 3).map(a => (
+                              <div key={a.id} className="flex items-center gap-2 group">
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0 ${
+                                  a.type === 'important' ? (darkMode ? 'bg-red-900/50 text-red-400' : 'bg-red-50 text-red-500') :
+                                  a.type === 'update' ? (darkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-50 text-blue-500') :
+                                  (darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-gray-100 text-gray-500')
+                                }`}>
+                                  {a.type === 'important' ? '!' : a.type === 'update' ? 'UP' : 'i'}
+                                </span>
+                                <p className={`text-xs truncate ${darkMode ? "text-neutral-300" : "text-gray-700"}`}>{a.title}</p>
+                                {a.content && <p className={`text-[11px] truncate hidden md:block ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>- {a.content}</p>}
+                                {isAdmin(user?.email) && (
+                                  <div className="opacity-0 group-hover:opacity-100 flex gap-1 flex-shrink-0 ml-auto transition">
+                                    <button onClick={() => {
+                                      setAnnouncementForm({ title: a.title, content: a.content, type: a.type });
+                                      setEditingAnnouncement(a);
+                                      setShowAnnouncementEditor(true);
+                                    }} className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-neutral-600 text-neutral-500" : "hover:bg-gray-200 text-gray-400"}`}>
+                                      수정
+                                    </button>
+                                    <button onClick={() => a.id && handleDeleteAnnouncement(a.id)}
+                                      className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-red-900/30 text-neutral-500 hover:text-red-400" : "hover:bg-red-50 text-gray-400 hover:text-red-500"}`}>
+                                      삭제
+                                    </button>
+                                  </div>
+                                )}
                               </div>
-                              <p className={`text-xs leading-relaxed ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{item.desc}</p>
-                            </div>
+                            ))}
                           </div>
-                        ))}
+                        ) : (
+                          <p className={`text-xs ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>공지사항 없음</p>
+                        )}
                       </div>
+                      {isAdmin(user?.email) && (
+                        <button onClick={() => {
+                          setAnnouncementForm({ title: '', content: '', type: 'info' });
+                          setEditingAnnouncement(null);
+                          setShowAnnouncementEditor(true);
+                        }}
+                          className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition flex-shrink-0 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                          + 작성
+                        </button>
+                      )}
+                    </div>
 
-                      {/* 키보드 단축키 상세 */}
-                      <div className={`mt-4 p-4 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
-                        <h4 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
-                          <Keyboard size={14} /> 키보드 단축키
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                          {[
-                            { keys: 'Ctrl + Z', action: '실행 취소' },
-                            { keys: 'Ctrl + Shift + Z', action: '다시 하기' },
-                            { keys: '마우스 휠', action: '이미지 확대/축소' },
-                            { keys: '마우스 드래그', action: '이미지 이동' },
-                          ].map(s => (
-                            <div key={s.keys} className="flex items-center gap-2">
-                              <kbd className={`px-2 py-1 rounded text-[10px] font-mono font-bold ${darkMode ? "bg-neutral-600 text-neutral-200" : "bg-neutral-200 text-neutral-700"}`}>{s.keys}</kbd>
-                              <span className={`text-xs ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{s.action}</span>
-                            </div>
-                          ))}
+                    {/* 공지사항 에디터 (어드민 전용) */}
+                    {showAnnouncementEditor && isAdmin(user?.email) && (
+                      <div className={`mt-3 p-4 rounded-xl border space-y-3 ${darkMode ? "bg-neutral-700 border-neutral-600" : "bg-gray-50 border-gray-200"}`}>
+                        <input type="text" value={announcementForm.title}
+                          onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="공지 제목"
+                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
+                        <textarea value={announcementForm.content}
+                          onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
+                          rows={2} placeholder="내용 (선택)"
+                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none resize-none ${darkMode ? "bg-neutral-600 text-white border-neutral-500 placeholder-neutral-400" : "bg-white text-gray-900 border-gray-300 placeholder-gray-400"}`} />
+                        <div className="flex items-center gap-2">
+                          <select value={announcementForm.type}
+                            onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
+                            className={`px-3 py-1.5 rounded-lg text-xs border ${darkMode ? "bg-neutral-600 text-white border-neutral-500" : "bg-white text-gray-700 border-gray-300"}`}>
+                            <option value="info">일반</option>
+                            <option value="update">업데이트</option>
+                            <option value="important">중요</option>
+                          </select>
+                          <div className="flex-1" />
+                          <button onClick={() => { setShowAnnouncementEditor(false); setEditingAnnouncement(null); }}
+                            className={`px-3 py-1.5 text-xs rounded-lg ${darkMode ? "text-neutral-400 hover:text-neutral-200" : "text-gray-500 hover:text-gray-700"}`}>
+                            취소
+                          </button>
+                          <button onClick={handleSaveAnnouncement}
+                            className="px-4 py-1.5 text-xs bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 font-medium">
+                            {editingAnnouncement ? '수정' : '등록'}
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* 내 프로젝트 */}
-                <div>
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className={`text-lg font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>내 프로젝트 <span className={`text-sm font-normal ml-1 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{projects.length}개</span></h2>
+                    )}
                   </div>
+                )}
 
-                  {projects.length === 0 ? (
-                    <div className={`text-center py-16 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
-                      <Film size={48} className={`mx-auto mb-4 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
-                      <p className={`mb-2 font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>아직 프로젝트가 없어요</p>
-                      <p className={`text-sm mb-6 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>새 프로젝트를 만들어 스토리보드를 시작하세요</p>
+                {/* 프로젝트 목록 */}
+                {projects.length === 0 ? (
+                  <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${darkMode ? "border-neutral-700" : "border-gray-200"}`}>
+                    <div className={`w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center ${darkMode ? "bg-neutral-800" : "bg-gray-100"}`}>
+                      <Film size={28} className={darkMode ? "text-neutral-600" : "text-gray-300"} />
+                    </div>
+                    <p className={`mb-1 font-semibold text-sm ${darkMode ? "text-neutral-300" : "text-gray-600"}`}>아직 프로젝트가 없어요</p>
+                    <p className={`text-xs mb-6 ${darkMode ? "text-neutral-600" : "text-gray-400"}`}>영상 스토리보드를 만들어보세요</p>
+                    <div className="flex justify-center gap-3">
                       <button onClick={() => setShowNewProject(true)}
                         className="px-6 py-2.5 bg-neutral-800 text-white rounded-xl hover:bg-neutral-900 transition text-sm font-medium">
-                        첫 프로젝트 만들기
+                        <Plus size={16} className="inline mr-1.5 -mt-0.5" />첫 프로젝트 만들기
                       </button>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {projects.map(project => (
+
+                    {/* 간단한 3단계 안내 */}
+                    <div className={`mt-10 mx-auto max-w-lg grid grid-cols-3 gap-4 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
+                      {[
+                        { num: '1', label: '프로젝트 생성', sub: '이름, 비율, 해상도 설정' },
+                        { num: '2', label: '씬 편집', sub: '이미지, 앵글, 대사 입력' },
+                        { num: '3', label: 'PDF 출력', sub: '스토리보드 완성 후 공유' },
+                      ].map(s => (
+                        <div key={s.num} className="text-center">
+                          <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-200 text-gray-600"}`}>{s.num}</div>
+                          <p className={`text-xs font-medium ${darkMode ? "text-neutral-300" : "text-gray-700"}`}>{s.label}</p>
+                          <p className="text-[10px] mt-0.5">{s.sub}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {projects.map(project => {
+                      const firstSceneWithImage = project.scenes.find(s => s.image);
+                      const totalDuration = project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0);
+                      const completedScenes = project.scenes.filter(s => s.shooting_completed).length;
+                      return (
                         <div key={project.id}
-                          className={`rounded-xl overflow-hidden transition cursor-pointer group ${darkMode ? "bg-neutral-800 hover:bg-neutral-750 border border-neutral-700" : "bg-white border border-gray-100 hover:shadow-lg"}`}
+                          className={`rounded-xl overflow-hidden transition cursor-pointer group ${darkMode ? "bg-neutral-800 border border-neutral-700 hover:border-neutral-500" : "bg-white border border-gray-100 hover:shadow-lg hover:border-gray-200"}`}
                           onClick={() => {
                             setActiveProjectId(project.id);
                             if (project.scenes.length > 0) setActiveSceneId(project.scenes[0].id);
                             setCurrentPage('editor');
                             setViewMode('editor');
                           }}>
-                          <div className="h-24 md:h-32 bg-gradient-to-br from-neutral-600 to-neutral-800 flex items-center justify-center text-3xl md:text-4xl">
-                            {project.video_type ? '🎬' : '📽️'}
-                          </div>
-                          <div className="p-4">
-                            <h3 className={`font-bold mb-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
-                            <p className={`text-sm mb-2 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>
-                              {project.scenes.length} 씬 · {formatDuration(project.scenes.reduce((s, sc) => s + (sc.duration || 0), 0))}
-                            </p>
-                            {project.aspect_ratio && (
-                              <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded mb-3 ${darkMode ? "bg-neutral-700 text-neutral-300" : "bg-gray-100 text-gray-600"}`}>
-                                {project.aspect_ratio} {project.resolution && `· ${project.resolution}`}
-                              </span>
+                          {/* 썸네일 - 첫 씬 이미지 또는 그라데이션 */}
+                          <div className="relative h-28 md:h-36 overflow-hidden">
+                            {firstSceneWithImage ? (
+                              <img src={firstSceneWithImage.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center ${darkMode ? "bg-gradient-to-br from-neutral-700 to-neutral-800" : "bg-gradient-to-br from-gray-100 to-gray-200"}`}>
+                                <Film size={32} className={darkMode ? "text-neutral-600" : "text-gray-300"} />
+                              </div>
                             )}
-                            <div className="flex gap-2">
+                            {/* 오버레이 배지 */}
+                            <div className="absolute top-2 left-2 flex gap-1.5">
+                              {project.aspect_ratio && (
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
+                                  {project.aspect_ratio}
+                                </span>
+                              )}
+                              {project.video_type && (
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
+                                  {project.video_type}
+                                </span>
+                              )}
+                            </div>
+                            <div className="absolute bottom-2 right-2">
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
+                                {project.scenes.length}씬 · {formatDuration(totalDuration)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5">
+                            <h3 className={`font-bold text-sm mb-1 truncate ${darkMode ? "text-white" : "text-gray-900"}`}>{project.title}</h3>
+
+                            {/* 진행률 바 */}
+                            {project.scenes.length > 0 && (
+                              <div className="mb-3">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className={`text-[10px] ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>촬영 진행률</span>
+                                  <span className={`text-[10px] font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>{completedScenes}/{project.scenes.length}</span>
+                                </div>
+                                <div className={`h-1 rounded-full overflow-hidden ${darkMode ? "bg-neutral-700" : "bg-gray-100"}`}>
+                                  <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${(completedScenes / project.scenes.length) * 100}%` }} />
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex gap-1.5">
                               <button onClick={(e) => { e.stopPropagation(); handleDuplicateProject(project.id); }}
-                                className={`px-3 py-1.5 text-xs rounded-lg transition flex items-center gap-1 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
-                                <Copy size={12} /> 복제
+                                className={`flex-1 px-2 py-1.5 text-[11px] rounded-lg transition flex items-center justify-center gap-1 ${darkMode ? "bg-neutral-700 text-neutral-400 hover:bg-neutral-600 hover:text-neutral-200" : "bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700"}`}>
+                                <Copy size={11} /> 복제
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); if(confirm('프로젝트를 삭제할까요?')) handleDeleteProject(project.id); }}
-                                className={`px-3 py-1.5 text-xs rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-400 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}>
-                                삭제
+                                className={`px-2 py-1.5 text-[11px] rounded-lg transition ${darkMode ? "bg-neutral-700 text-neutral-500 hover:text-red-400 hover:bg-neutral-600" : "bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50"}`}>
+                                <Trash2 size={11} />
                               </button>
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                      );
+                    })}
 
-                {/* 하단 기능 요약 */}
-                <div className={`rounded-2xl border p-6 ${darkMode ? "bg-neutral-800/50 border-neutral-700" : "bg-white border-gray-100"}`}>
-                  <h3 className={`font-semibold text-sm mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>주요 기능</h3>
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-4">
-                    {[
-                      { icon: '📋', title: '프로젝트 정보', desc: '브랜드, 담당자, 제작진' },
-                      { icon: '📍', title: '촬영 정보', desc: '스튜디오, 주차, 콜타임' },
-                      { icon: '🎥', title: '씬 편집기', desc: '앵글, 조명, 대사, 사운드' },
-                      { icon: '💬', title: '씬 코멘트', desc: '씬별 피드백/메모' },
-                      { icon: '🗂️', title: '에셋 라이브러리', desc: '프리셋으로 빠른 설정' },
-                      { icon: '▶️', title: '애니매틱 프리뷰', desc: '씬 자동 재생 슬라이드' },
-                      { icon: '📝', title: '샷 리스트', desc: '촬영팀용 샷 목록 생성' },
-                      { icon: '💾', title: '버전 관리', desc: '스냅샷 저장/복원' },
-                      { icon: '💰', title: '예산 추정', desc: '씬 기반 제작비 계산' },
-                      { icon: '📅', title: '촬영 캘린더', desc: '월간 일정 시각화' },
-                      { icon: '🔍', title: '스마트 검색', desc: '씬 필터/검색' },
-                      { icon: '📱', title: '반응형 UI', desc: '모바일/태블릿 지원' },
-                      { icon: '🤖', title: 'AI 씬 추천', desc: '영상 유형별 자동 구성' },
-                      { icon: '📄', title: 'PDF 내보내기', desc: '표지+씬+일정 한번에' },
-                      { icon: '⏰', title: '타임테이블', desc: '촬영 일정 표 관리' },
-                    ].map(f => (
-                      <div key={f.title} className={`p-3 rounded-xl ${darkMode ? "bg-neutral-700/50" : "bg-gray-50"}`}>
-                        <div className="text-xl mb-2">{f.icon}</div>
-                        <div className={`text-xs font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{f.title}</div>
-                        <div className={`text-[10px] mt-0.5 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{f.desc}</div>
+                    {/* 새 프로젝트 추가 카드 */}
+                    <button
+                      onClick={() => setShowNewProject(true)}
+                      className={`rounded-xl border-2 border-dashed flex flex-col items-center justify-center min-h-[200px] transition group ${darkMode ? "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800/50" : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"}`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition ${darkMode ? "bg-neutral-800 group-hover:bg-neutral-700" : "bg-gray-100 group-hover:bg-gray-200"}`}>
+                        <Plus size={20} className={darkMode ? "text-neutral-500" : "text-gray-400"} />
                       </div>
-                    ))}
+                      <span className={`text-sm font-medium ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>새 프로젝트</span>
+                    </button>
                   </div>
-                </div>
+                )}
+
+                {/* 빠른 시작 가이드 - 접혀있고 간결하게 */}
+                {projects.length > 0 && (
+                  <div className={`rounded-xl border overflow-hidden ${darkMode ? "bg-neutral-800/40 border-neutral-700/50" : "bg-white/60 border-gray-100"}`}>
+                    <button
+                      onClick={() => setShowGuide && setShowGuide(!showGuide)}
+                      className={`w-full px-4 py-3 flex items-center justify-between text-left ${darkMode ? "hover:bg-neutral-800" : "hover:bg-gray-50"} transition`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <HelpCircle size={14} className={darkMode ? "text-neutral-500" : "text-gray-400"} />
+                        <span className={`text-xs font-medium ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>사용 가이드</span>
+                      </div>
+                      <ChevronDown size={14} className={`transition-transform ${showGuide ? "rotate-180" : ""} ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
+                    </button>
+                    {showGuide && (
+                      <div className={`px-4 pb-4 ${darkMode ? "border-t border-neutral-700/50" : "border-t border-gray-100"}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-3">
+                          {[
+                            { title: '프로젝트 정보', desc: '브랜드, 담당자, 감독 등 제작진 정보 입력', icon: <Users size={14} /> },
+                            { title: '씬 편집기', desc: '이미지, 앵글, 조명, 대사, 사운드 설정', icon: <Camera size={14} /> },
+                            { title: '그리드/타임라인', desc: '전체 씬을 한눈에 보고 순서 조정', icon: <Grid size={14} /> },
+                            { title: '프리뷰', desc: '씬을 자동 재생하며 전체 흐름 확인', icon: <Play size={14} /> },
+                            { title: 'PDF 내보내기', desc: '표지+씬+일정을 PDF로 한번에 출력', icon: <Download size={14} /> },
+                            { title: 'AI 씬 추천', desc: '영상 유형별 자동 씬 구성', icon: <Sparkles size={14} /> },
+                          ].map(item => (
+                            <div key={item.title} className={`flex items-start gap-3 p-3 rounded-lg ${darkMode ? "bg-neutral-700/30" : "bg-gray-50"}`}>
+                              <div className={`mt-0.5 ${darkMode ? "text-neutral-400" : "text-gray-400"}`}>{item.icon}</div>
+                              <div>
+                                <p className={`text-xs font-semibold ${darkMode ? "text-neutral-200" : "text-gray-800"}`}>{item.title}</p>
+                                <p className={`text-[11px] mt-0.5 ${darkMode ? "text-neutral-500" : "text-gray-400"}`}>{item.desc}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
               </div>
             </div>
