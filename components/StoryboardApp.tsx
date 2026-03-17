@@ -2596,15 +2596,21 @@ ${htmlPages.join('\n')}
               </div>
             )}
 
-            {/* 대시보드일 때 로고 표시 */}
+            {/* 대시보드일 때 로고 + 홈 버튼 */}
             {isDashboard && (
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
-                  <Film className="w-4 h-4 text-white" />
-                </div>
-                <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>
-                  PEWPEW 스토리보드
-                </span>
+              <div className="flex items-center gap-3">
+                <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition">
+                  <div className="w-8 h-8 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
+                    <Film className="w-4 h-4 text-white" />
+                  </div>
+                  <span className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>
+                    PEWPEW 스토리보드
+                  </span>
+                </Link>
+                <Link href="/"
+                  className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                  <ArrowLeft size={13} /> 메인페이지
+                </Link>
               </div>
             )}
           </div>
