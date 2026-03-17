@@ -26,7 +26,6 @@ import { BlankPageEditor, BlankPageContent } from './BlankPageEditor';
 import { CanvasEditor, type CanvasElement } from './CanvasEditor';
 import ReferenceLibrary from './ReferenceLibrary';
 import PDFExportModal from './PDFExportModal';
-import AIScriptSplitter from './AIScriptSplitter';
 import NLEExportModal from './NLEExportModal';
 import QRShareModal from './QRShareModal';
 import BrandSettings from './BrandSettings';
@@ -1742,7 +1741,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [capturedFrames, setCapturedFrames] = useState<{ url: string; brand: string; title: string }[]>([]);
   const [slideViewMode, setSlideViewMode] = useState(false);
   // New feature states
-  const [showAIScriptSplitter, setShowAIScriptSplitter] = useState(false);
   const [showNLEExport, setShowNLEExport] = useState(false);
   const [showQRShare, setShowQRShare] = useState(false);
   const [showBrandSettings, setShowBrandSettings] = useState(false);
@@ -1851,20 +1849,6 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     } catch (e) { console.error('Share toggle failed:', e); }
     setIsShareLoading(false);
   }, [activeProject, user, activeProjectId, shareToken]);
-
-  // Handle AI script splitter apply
-  const handleAIScriptsApply = useCallback((newScenes: Scene[]) => {
-    if (!activeProject) return;
-    const updatedProjects = projects.map(p => {
-      if (p.id === activeProjectId) {
-        return { ...p, scenes: [...p.scenes, ...newScenes] };
-      }
-      return p;
-    });
-    setProjects(updatedProjects);
-    addToHistory(updatedProjects);
-    setShowAIScriptSplitter(false);
-  }, [activeProject, activeProjectId, projects, addToHistory]);
 
   // Handle batch image upload
   const handleBatchScenesCreate = useCallback((newScenes: Array<{id: string; title: string; duration: number; image: string}>) => {
@@ -2635,13 +2619,6 @@ ${htmlPages.join('\n')}
             <div className={`border-t pt-3 mt-3 ${darkMode ? "border-neutral-600" : "border-gray-200"}`}>
               <p className={`text-xs font-semibold mb-2 px-1 ${darkMode ? "text-neutral-400" : "text-gray-500"}`}>도구</p>
               <button
-                onClick={() => setShowAIScriptSplitter(true)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-gradient-to-r from-purple-900/50 to-blue-900/50 text-purple-300 hover:from-purple-800/60 hover:to-blue-800/60" : "bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 hover:from-purple-100 hover:to-blue-100"}`}
-              >
-                <Sparkles size={14} />
-                AI 씬 분할
-              </button>
-              <button
                 onClick={() => setShowBatchUpload(true)}
                 className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-neutral-700 text-neutral-300 hover:bg-neutral-600" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
               >
@@ -3306,17 +3283,6 @@ ${htmlPages.join('\n')}
             handleExportPDF(enabledPages);
             setShowPDFExportModal(false);
           }}
-        />
-      )}
-
-      {/* AI Script Splitter Modal */}
-      {showAIScriptSplitter && (
-        <AIScriptSplitter
-          isOpen={showAIScriptSplitter}
-          onClose={() => setShowAIScriptSplitter(false)}
-          onApply={handleAIScriptsApply}
-          darkMode={darkMode}
-          existingSceneCount={activeProject?.scenes?.length || 0}
         />
       )}
 
