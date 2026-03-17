@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/components/AuthProvider';
+import MobileGuard from '@/components/MobileGuard';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <AuthProvider>
+          <MobileGuard />
           {children}
         </AuthProvider>
       </body>
