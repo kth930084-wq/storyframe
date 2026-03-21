@@ -2563,116 +2563,94 @@ ${htmlPages.join('\n')}
     <div className={`h-screen flex overflow-hidden ${darkMode ? "bg-md-surface-container-low" : "bg-white"}`}>
       {/* Sidebar - 프로젝트 편집 중일 때만 표시 */}
       {activeProject && !isProposalPage && (
-        <aside className={`border-r flex flex-col transition-all duration-300 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden"} hidden md:flex ${darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20"}`}>
-          <div className={`p-4 border-b ${darkMode ? "border-white/5" : "border-md-light-outline-variant/20"}`}>
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl font-bold tracking-tighter text-white uppercase font-headline">PEWPEW 스토리보드</span>
+        <aside className={`border-r flex flex-col transition-all duration-300 ${sidebarOpen ? "w-72" : "w-0 overflow-hidden"} hidden md:flex ${darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20"}`}>
+          {/* 사이드바 헤더 */}
+          <div className={`px-4 py-3 border-b flex items-center justify-between ${darkMode ? "border-white/5" : "border-md-light-outline-variant/20"}`}>
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px] text-md-outline" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>movie_filter</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant">씬 목록</span>
             </div>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full ${darkMode ? "bg-white/5 text-md-outline" : "bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}>
+              {activeProject.scenes.length}
+            </span>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            {activeProject.scenes.map((scene, index) => (
-              <div key={scene.id} className={`flex items-center gap-1 rounded-lg transition ${
-                activeSceneId === scene.id
-                  ? `${darkMode ? "bg-md-surface-container-high border-md-outline" : "bg-neutral-200 border-md-outline"} border-2`
-                  : `${darkMode ? "bg-md-surface-container hover:bg-md-surface-container-high" : "bg-md-light-surface-container-high hover:bg-md-light-surface-container-highest"} border-2 border-transparent`
-              }`}>
-                {/* 순서 변경 버튼 */}
-                <div className="flex flex-col pl-1">
-                  <button onClick={(e) => { e.stopPropagation(); handleMoveScene(scene.id, -1); }} disabled={index === 0}
-                    className={`p-0.5 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-outline-variant" : "hover:bg-md-light-outline-variant text-md-light-outline-variant disabled:text-gray-200"}`}>
-                    <ArrowUp size={10} />
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleMoveScene(scene.id, 1); }} disabled={index === activeProject.scenes.length - 1}
-                    className={`p-0.5 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-outline-variant" : "hover:bg-md-light-outline-variant text-md-light-outline-variant disabled:text-gray-200"}`}>
-                    <ArrowDown size={10} />
-                  </button>
-                </div>
-                <button
+
+          {/* 씬 리스트 - 썸네일 + 타임코드 스타일 */}
+          <div className="flex-1 overflow-y-auto py-2">
+            {activeProject.scenes.map((scene, index) => {
+              const totalSeconds = activeProject.scenes.slice(0, index).reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0);
+              const minutes = Math.floor(totalSeconds / 60);
+              const seconds = totalSeconds % 60;
+              const timecode = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+              return (
+                <div
+                  key={scene.id}
                   onClick={() => { setActiveSceneId(scene.id); setViewMode('editor'); }}
-                  className="flex-1 text-left p-3 min-w-0"
+                  className={`group flex items-center gap-2 px-3 py-2 mx-2 rounded-lg cursor-pointer transition-all ${
+                    activeSceneId === scene.id
+                      ? `${darkMode ? "bg-white/[0.08] border border-white/10" : "bg-blue-50 border border-blue-200"}`
+                      : `border border-transparent ${darkMode ? "hover:bg-white/[0.04]" : "hover:bg-md-light-surface-container-high"}`
+                  }`}
                 >
-                  <div className={`font-semibold text-sm truncate ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>{index + 1}. {scene.title}</div>
-                  <div className={`text-xs mt-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>{scene.duration}초</div>
-                </button>
-                {/* 복제/삭제 */}
-                <div className="flex flex-col pr-1.5 gap-0.5">
-                  <button onClick={(e) => { e.stopPropagation(); handleDuplicateScene(scene.id); }}
-                    className={`p-1 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline" : "hover:bg-md-light-outline-variant text-md-light-outline-variant"}`} title="씬 복제">
-                    <Copy size={10} />
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); if (confirm('이 씬을 삭제할까요?')) handleDeleteScene(scene.id); }}
-                    className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/40 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-light-outline-variant hover:text-red-500"}`} title="씬 삭제">
-                    <Trash2 size={10} />
-                  </button>
+                  {/* 드래그 인디케이터 */}
+                  <div className={`flex-shrink-0 opacity-0 group-hover:opacity-50 transition cursor-grab ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>
+                    <span className="material-symbols-outlined text-[16px]">drag_indicator</span>
+                  </div>
+
+                  {/* 썸네일 */}
+                  <div className={`flex-shrink-0 w-16 h-10 rounded overflow-hidden ${darkMode ? "bg-md-surface-container-high" : "bg-md-light-surface-container-high"}`}>
+                    {scene.image ? (
+                      <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[14px] text-md-outline/50">image</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 씬 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[10px] font-bold ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-blue-700") : (darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant")}`}>
+                        S{String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span className={`text-[11px] font-medium truncate ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-md-light-on-surface") : (darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface")}`}>
+                        {scene.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[9px] font-mono ${darkMode ? "text-md-outline/60" : "text-md-light-outline-variant"}`}>{timecode}</span>
+                      <span className={`text-[9px] ${darkMode ? "text-md-outline/40" : "text-md-light-outline-variant/60"}`}>{scene.duration}s</span>
+                      {scene.shooting_completed && (
+                        <span className="material-symbols-outlined text-[10px] text-green-500" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 액션 버튼 (호버 시 표시) */}
+                  <div className="flex-shrink-0 flex gap-0.5 opacity-0 group-hover:opacity-100 transition">
+                    <button onClick={(e) => { e.stopPropagation(); handleDuplicateScene(scene.id); }}
+                      className={`p-1 rounded transition ${darkMode ? "hover:bg-white/10 text-md-outline" : "hover:bg-md-light-outline-variant text-md-light-outline-variant"}`} title="씬 복제">
+                      <Copy size={10} />
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); if (confirm('이 씬을 삭제할까요?')) handleDeleteScene(scene.id); }}
+                      className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/40 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-light-outline-variant hover:text-red-500"}`} title="씬 삭제">
+                      <Trash2 size={10} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <div className={`p-4 border-t ${darkMode ? "border-white/5" : "border-md-light-outline-variant/20"} space-y-2`}>
-            <button
-              onClick={handleAddScene}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-md-surface-container text-white rounded-lg hover:bg-md-surface-container-low transition"
-            >
-              <Plus size={18} />
-              씬 추가
-            </button>
-            <button
-              onClick={() => setShowBlankPageEditor(true)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-            >
-              <Plus size={14} />
-              빈 페이지
-            </button>
-            <button
-              onClick={() => setSlideViewMode(!slideViewMode)}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${slideViewMode ? (darkMode ? "bg-md-surface-bright text-white" : "bg-blue-100 text-blue-700") : (darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest")}`}
-            >
-              <Grid size={14} />
-              슬라이드 뷰
-            </button>
-            <button
-              onClick={() => setViewMode('search')}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-            >
-              <Search size={14} />
-              씬 검색
-            </button>
-            <button
-              onClick={() => setViewMode('versions')}
-              className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-            >
-              <Save size={14} />
-              버전 관리
-            </button>
-            {/* New Features */}
-            <div className={`border-t pt-3 mt-3 ${darkMode ? "border-white/10" : "border-md-light-outline-variant/30"}`}>
-              <p className={`text-xs font-semibold mb-2 px-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>도구</p>
-              <button
-                onClick={() => setShowBatchUpload(true)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-              >
-                <Upload size={14} />
-                이미지 일괄 업로드
-              </button>
-              <button
-                onClick={() => setShowBrandSettings(true)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-              >
-                <Palette size={14} />
-                브랜드 설정
-              </button>
-              <button
-                onClick={() => setShowKeyboardShortcuts(true)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition text-sm mb-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-              >
-                <Keyboard size={14} />
-                단축키
-              </button>
-            </div>
+
+          {/* 사이드바 하단 - 프로젝트 목록으로 돌아가기 */}
+          <div className={`px-3 py-3 border-t ${darkMode ? "border-white/5" : "border-md-light-outline-variant/20"}`}>
             <button
               onClick={() => { setActiveProjectId(null); setActiveSceneId(null); setCurrentPage('dashboard'); }}
-              className={`w-full px-4 py-2 rounded-lg transition text-sm ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:bg-md-light-outline-variant"}`}
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:bg-md-light-outline-variant"}`}
             >
+              <span className="material-symbols-outlined text-[14px]">arrow_back</span>
               프로젝트 목록
             </button>
           </div>
@@ -2681,47 +2659,30 @@ ${htmlPages.join('\n')}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className={`border-b px-3 md:px-6 py-2 md:py-4 flex items-center justify-between ${darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20"}`}>
-          <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-            {/* 사이드바 토글 - 프로젝트 편집 중일 때만 */}
-            {activeProject && (
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "hover:bg-md-surface-container-high text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
-              >
-                {sidebarOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
-              </button>
-            )}
-
-            {/* 뷰모드 버튼 - 프로젝트 편집 중일 때만 */}
-            {activeProject && (
-              <div className="flex gap-1 md:gap-1.5 overflow-x-auto no-scrollbar min-w-0">
-                {[
-                  { id: 'project-info', label: '프로젝트 정보', mobileLabel: '정보' },
-                  ...(activeProject.ppm_enabled ? [{ id: 'ppm', label: 'PPM', mobileLabel: 'PPM' }] : []),
-                  { id: 'shooting-info', label: '촬영 정보', mobileLabel: '촬영' },
-                  { id: 'editor', label: '편집기', mobileLabel: '편집' },
-                  { id: 'grid', label: '그리드', mobileLabel: '그리드' },
-                  { id: 'timeline', label: '타임라인', mobileLabel: '타임라인' },
-                  { id: 'timetable', label: '타임테이블', mobileLabel: '일정' },
-                  { id: 'animatic', label: '프리뷰', mobileLabel: '프리뷰' },
-                  { id: 'shotlist', label: '샷리스트', mobileLabel: '샷' },
-                  { id: 'calendar', label: '캘린더', mobileLabel: '캘린더' },
-                  { id: 'budget', label: '예산', mobileLabel: '예산' },
-                  { id: 'ai-recommend', label: 'AI추천', mobileLabel: 'AI' },
-                ].map(({ id, label, mobileLabel }) => (
-                  <button
-                    key={id}
-                    onClick={() => setViewMode(id)}
-                    className={`px-2 md:px-3 py-1.5 md:py-2 rounded-lg transition text-xs md:text-sm whitespace-nowrap flex-shrink-0 ${viewMode === id ? 'bg-md-surface-container text-white' : `${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}`}
-                  >
-                    <span className="hidden md:inline">{label}</span>
-                    <span className="md:hidden">{mobileLabel}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+        {/* Top Bar - Stitch 디자인 */}
+        <div className={`px-3 md:px-5 ${darkMode ? "bg-md-surface-container" : "bg-white"}`}>
+          {/* 상단: 로고 + 프로젝트명 + 액션 */}
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              {/* 사이드바 토글 */}
+              {activeProject && (
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className={`p-1.5 rounded-lg transition flex-shrink-0 ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{sidebarOpen ? 'menu_open' : 'menu'}</span>
+                </button>
+              )}
+              {/* 프로젝트 제목 */}
+              {activeProject && (
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`text-sm font-semibold truncate ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>
+                    {activeProject.title}
+                  </span>
+                  {lastSaved && <span className="text-[10px] text-md-outline/60 flex-shrink-0">저장됨</span>}
+                  {isSaving && <span className="text-[10px] text-md-outline/60 flex-shrink-0 animate-pulse">저장 중...</span>}
+                </div>
+              )}
 
             {/* 대시보드일 때 로고 + 홈 버튼 */}
             {isDashboard && (
@@ -2730,81 +2691,126 @@ ${htmlPages.join('\n')}
                   <span className="text-xl font-bold tracking-tighter text-white uppercase font-headline">PEWPEW 스토리보드</span>
                 </Link>
                 <Link href="/"
-                  className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}>
+                  className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}>
                   <ArrowLeft size={13} /> 메인페이지
                 </Link>
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 md:gap-3">
-            {lastSaved && <span className="hidden md:inline text-xs text-md-outline">저장됨</span>}
-            {isSaving && <span className="hidden md:inline text-xs text-md-light-outline-variant">저장 중...</span>}
+          {/* 우측 액션 버튼 */}
+          <div className="flex items-center gap-1.5 md:gap-2">
             {activeProject && (
-              <div className="flex gap-1">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowPDFExportModal(true)}
-                  className="px-2 md:px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 md:gap-1.5 bg-md-surface-container text-white hover:bg-md-surface-container-low"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-md-light-surface-container-high text-md-light-on-surface hover:bg-md-light-surface-container-highest"}`}
                   title="PDF 내보내기"
                 >
-                  <Download size={14} /> <span className="hidden sm:inline">PDF</span>
+                  <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
+                  <span className="hidden sm:inline">PDF</span>
                 </button>
                 <button
                   onClick={() => handleExportJSON()}
-                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
                   title="JSON 내보내기"
                 >
-                  <FileJson size={14} /> JSON
+                  <span className="material-symbols-outlined text-[14px]">data_object</span>
+                  JSON
                 </button>
                 <button
                   onClick={() => setShowNLEExport(true)}
-                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
-                  title="NLE 내보내기 (XML/EDL)"
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                  title="NLE 내보내기"
                 >
-                  <Monitor size={14} /> NLE
+                  <span className="material-symbols-outlined text-[14px]">movie_edit</span>
+                  NLE
                 </button>
+                <div className={`w-px h-4 mx-0.5 ${darkMode ? "bg-white/10" : "bg-md-light-outline-variant/30"}`} />
                 <button
                   onClick={handleToggleShare}
                   disabled={isShareLoading}
-                  className={`hidden sm:flex px-3 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1.5 ${shareToken ? "bg-green-600 text-white hover:bg-green-700" : (darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest")}`}
-                  title={shareToken ? "공유 중 (클릭하여 해제)" : "클라이언트 공유 링크 생성"}
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${
+                    shareToken
+                      ? "bg-green-600/20 text-green-400 hover:bg-green-600/30"
+                      : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high")
+                  }`}
+                  title={shareToken ? "공유 중" : "공유"}
                 >
-                  <Share2 size={14} /> {isShareLoading ? "..." : shareToken ? "공유중" : "공유"}
+                  <span className="material-symbols-outlined text-[14px]">{shareToken ? 'link' : 'share'}</span>
+                  {isShareLoading ? "..." : shareToken ? "공유중" : "공유"}
                 </button>
                 {shareToken && (
                   <button
                     onClick={() => setShowQRShare(true)}
-                    className="hidden sm:flex px-2 py-1.5 rounded-lg text-xs font-medium transition items-center gap-1 bg-blue-600 text-white hover:bg-blue-700"
+                    className="hidden sm:flex items-center px-2 py-1.5 rounded-lg text-[11px] font-medium transition bg-blue-600/20 text-blue-400 hover:bg-blue-600/30"
                     title="QR 코드"
                   >
-                    QR
+                    <span className="material-symbols-outlined text-[14px]">qr_code_2</span>
                   </button>
                 )}
               </div>
             )}
+            <div className={`w-px h-4 ${darkMode ? "bg-white/10" : "bg-md-light-outline-variant/30"}`} />
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-1.5 md:p-2 rounded-lg transition ${darkMode ? "hover:bg-md-surface-container-high text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
+              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
               title={darkMode ? "라이트 모드" : "다크 모드"}
             >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              <span className="material-symbols-outlined text-[18px]">{darkMode ? 'light_mode' : 'dark_mode'}</span>
             </button>
             {user?.email && isAdmin(user.email) && (
               <Link
                 href="/admin"
-                className={`hidden md:inline-block px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}
+                className={`hidden md:flex items-center px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
               >
+                <span className="material-symbols-outlined text-[14px] mr-1">admin_panel_settings</span>
                 관리자
               </Link>
             )}
             <button
               onClick={onLogout}
-              className={`p-1.5 md:p-2 rounded-lg transition ${darkMode ? "hover:bg-md-surface-container-high text-md-outline hover:text-red-400" : "hover:bg-md-light-surface-container-high text-md-light-outline-variant hover:text-red-500"}`}
+              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-outline hover:text-red-400" : "hover:bg-md-light-surface-container-high text-md-light-outline-variant hover:text-red-500"}`}
               title="로그아웃"
             >
-              <LogOut size={18} />
+              <span className="material-symbols-outlined text-[18px]">logout</span>
             </button>
           </div>
+        </div>
+
+          {/* 탭 네비게이션 바 - 두 번째 줄 */}
+          {activeProject && (
+            <div className="flex overflow-x-auto no-scrollbar">
+              {[
+                { id: 'project-info', label: '프로젝트 정보', mobileLabel: '정보', icon: 'info' },
+                ...(activeProject.ppm_enabled ? [{ id: 'ppm', label: 'PPM', mobileLabel: 'PPM', icon: 'assignment' }] : []),
+                { id: 'shooting-info', label: '촬영 정보', mobileLabel: '촬영', icon: 'videocam' },
+                { id: 'editor', label: '편집기', mobileLabel: '편집', icon: 'edit_square' },
+                { id: 'grid', label: '그리드', mobileLabel: '그리드', icon: 'grid_view' },
+                { id: 'timeline', label: '타임라인', mobileLabel: '타임라인', icon: 'timeline' },
+                { id: 'timetable', label: '타임테이블', mobileLabel: '일정', icon: 'calendar_month' },
+                { id: 'animatic', label: '프리뷰', mobileLabel: '프리뷰', icon: 'play_circle' },
+                { id: 'shotlist', label: '샷리스트', mobileLabel: '샷', icon: 'format_list_numbered' },
+                { id: 'calendar', label: '캘린더', mobileLabel: '캘린더', icon: 'event' },
+                { id: 'budget', label: '예산', mobileLabel: '예산', icon: 'account_balance_wallet' },
+                { id: 'ai-recommend', label: 'AI추천', mobileLabel: 'AI', icon: 'auto_awesome' },
+              ].map(({ id, label, mobileLabel, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setViewMode(id)}
+                  className={`relative px-3 md:px-4 py-2.5 transition text-[11px] md:text-[12px] font-medium tracking-wider whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 ${
+                    viewMode === id
+                      ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white'
+                      : `${darkMode ? "text-md-on-surface-variant/60 hover:text-white/70" : "text-md-light-on-surface-variant hover:text-md-light-on-surface"}`
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20" }}>{icon}</span>
+                  <span className="hidden md:inline">{label}</span>
+                  <span className="md:hidden">{mobileLabel}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Content Area */}
@@ -3238,6 +3244,77 @@ ${htmlPages.join('\n')}
             </>
           ) : null}
         </div>
+
+        {/* 고정 하단 툴바 - Stitch 디자인 */}
+        {activeProject && !isDashboard && (
+          <div className={`border-t px-4 py-2 flex items-center justify-between ${darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20"}`}>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleAddScene}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-md-light-surface-container-high text-md-light-on-surface hover:bg-md-light-surface-container-highest"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                씬 추가
+              </button>
+              <button
+                onClick={() => setShowBlankPageEditor(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">note_add</span>
+                빈 페이지
+              </button>
+              <div className={`w-px h-4 mx-1 ${darkMode ? "bg-white/10" : "bg-md-light-outline-variant/30"}`} />
+              <button
+                onClick={() => setSlideViewMode(!slideViewMode)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${
+                  slideViewMode
+                    ? (darkMode ? "bg-white/[0.12] text-white" : "bg-blue-100 text-blue-700")
+                    : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high")
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">view_carousel</span>
+                슬라이드 뷰
+              </button>
+              <button
+                onClick={() => setViewMode('search')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">search</span>
+                씬 검색
+              </button>
+              <button
+                onClick={() => setViewMode('versions')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">history</span>
+                버전 관리
+              </button>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowBatchUpload(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">upload</span>
+                일괄 업로드
+              </button>
+              <button
+                onClick={() => setShowBrandSettings(true)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+              >
+                <span className="material-symbols-outlined text-[16px]">palette</span>
+                브랜드
+              </button>
+              <button
+                onClick={() => setShowKeyboardShortcuts(true)}
+                className={`p-1.5 rounded-lg transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                title="단축키"
+              >
+                <span className="material-symbols-outlined text-[16px]">keyboard</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* New Project Modal */}
