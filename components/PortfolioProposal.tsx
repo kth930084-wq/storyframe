@@ -106,8 +106,8 @@ const Card = React.memo(({ item, on, toggle, dk }: { item: PortfolioItem; on: bo
         {/* 선택 오버레이 */}
         {on && (
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <div className={`w-9 h-9 rounded-full flex items-center justify-center ${dk ? 'bg-white' : 'bg-neutral-900'}`}>
-              <Check size={18} className={dk ? 'text-neutral-900' : 'text-white'} />
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center ${dk ? 'bg-white' : 'bg-md-surface-container-low'}`}>
+              <Check size={18} className={dk ? 'text-md-light-on-surface' : 'text-white'} />
             </div>
           </div>
         )}
@@ -118,18 +118,18 @@ const Card = React.memo(({ item, on, toggle, dk }: { item: PortfolioItem; on: bo
       </div>
     </button>
     {/* 정보 영역 */}
-    <div className={`p-2.5 ${dk ? 'bg-neutral-800' : 'bg-white'}`}>
-      <p className={`text-[9px] font-bold uppercase tracking-wider ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>{item.brand}</p>
-      <p className={`text-xs font-semibold line-clamp-1 mb-1 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>{item.title}</p>
+    <div className={`p-2.5 ${dk ? 'bg-md-surface-container' : 'bg-white'}`}>
+      <p className={`text-[9px] font-bold uppercase tracking-wider ${dk ? 'text-md-outline' : 'text-md-outline'}`}>{item.brand}</p>
+      <p className={`text-xs font-semibold line-clamp-1 mb-1 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>{item.title}</p>
       <div className="flex items-center justify-between">
         <div className="flex flex-wrap gap-0.5">
-          {item.platform.slice(0, 2).map(p => <span key={p} className={`text-[8px] px-1 py-0.5 rounded ${dk ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>{p}</span>)}
+          {item.platform.slice(0, 2).map(p => <span key={p} className={`text-[8px] px-1 py-0.5 rounded ${dk ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-high text-md-outline'}`}>{p}</span>)}
         </div>
         {/* 영상 보기 링크 */}
         {item.videoUrl && (
           <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
-            className={`inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded transition ${dk ? 'text-blue-400 hover:bg-neutral-700' : 'text-blue-600 hover:bg-blue-50'}`}>
+            className={`inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded transition ${dk ? 'text-blue-400 hover:bg-md-surface-container-high' : 'text-blue-600 hover:bg-blue-50'}`}>
             <Play size={9} fill="currentColor" /> 영상보기
           </a>
         )}
@@ -230,19 +230,19 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
   }, [proposal, onCreateProject]);
 
   /* 스타일 */
-  const crd = dk ? 'bg-neutral-900 border border-neutral-800 rounded-xl' : 'bg-white border border-neutral-200 rounded-xl';
-  const inp = `w-full px-3.5 py-2.5 rounded-lg text-sm outline-none border transition ${dk ? 'bg-neutral-800 border-neutral-700 text-neutral-100 placeholder-neutral-500 focus:border-neutral-500' : 'bg-white border-neutral-300 text-neutral-900 placeholder-neutral-400 focus:border-neutral-500'}`;
-  const lbl = `block text-xs font-semibold mb-1 ${dk ? 'text-neutral-400' : 'text-neutral-600'}`;
-  const chip = (on: boolean) => `px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${on ? (dk ? 'bg-neutral-600 text-white' : 'bg-neutral-800 text-white') : (dk ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-600')}`;
+  const crd = dk ? 'bg-md-surface-container-low border border-white/5 rounded-xl' : 'bg-white border border-md-light-outline-variant/20 rounded-xl';
+  const inp = `w-full px-3.5 py-2.5 rounded-lg text-sm outline-none border transition ${dk ? 'bg-md-surface-container border-white/5 text-white placeholder-md-outline focus:border-md-outline' : 'bg-white border-md-light-outline-variant/30 text-md-light-on-surface placeholder-md-light-on-surface-variant focus:border-md-outline'}`;
+  const lbl = `block text-xs font-semibold mb-1 ${dk ? 'text-md-outline' : 'text-md-outline'}`;
+  const chip = (on: boolean) => `px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${on ? (dk ? 'bg-md-surface-bright text-white' : 'bg-md-surface-container text-white') : (dk ? 'bg-md-surface-container text-md-outline' : 'bg-md-light-surface-container-high text-md-outline')}`;
   /* 도움말 힌트 컴포넌트 */
   const Hint = ({ text }: { text: string }) => (
-    <span className={`inline-flex items-center gap-1 text-[10px] mt-0.5 ${dk ? 'text-neutral-600' : 'text-neutral-400'}`}>
+    <span className={`inline-flex items-center gap-1 text-[10px] mt-0.5 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
       <Info size={10} className="flex-shrink-0" /> {text}
     </span>
   );
 
   return (
-    <div className={`min-h-full pb-16 ${dk ? 'bg-neutral-950' : 'bg-neutral-50'}`}>
+    <div className={`min-h-full pb-16 ${dk ? 'bg-md-surface-container-low' : 'bg-white'}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
         {/* ═══════════════════════════════════
@@ -250,20 +250,20 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             ═══════════════════════════════════ */}
         {page === 'intro' && (
           <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 ${dk ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-              <Film size={36} className={dk ? 'text-neutral-300' : 'text-neutral-700'} />
+            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 ${dk ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high'}`}>
+              <Film size={36} className={dk ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />
             </div>
 
-            <h1 className={`text-3xl font-bold mb-3 ${dk ? 'text-white' : 'text-neutral-900'}`}>
+            <h1 className={`text-3xl font-bold mb-3 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>
               영상 제작 의뢰하기
             </h1>
-            <p className={`text-base max-w-md mb-8 ${dk ? 'text-neutral-400' : 'text-neutral-600'}`}>
+            <p className={`text-base max-w-md mb-8 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
               PEWPEW Studio의 포트폴리오를 보고 마음에 드는 스타일을 고르면,<br />
               간단하게 기획안을 만들어 바로 의뢰할 수 있어요
             </p>
 
             {/* 3단계 설명 */}
-            <div className={`w-full max-w-lg rounded-2xl p-6 mb-8 ${dk ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200'}`}>
+            <div className={`w-full max-w-lg rounded-2xl p-6 mb-8 ${dk ? 'bg-md-surface-container-low border border-white/5' : 'bg-white border border-md-light-outline-variant/20'}`}>
               <div className="space-y-4">
                 {[
                   { n: '1', title: '영상 고르기', desc: '포트폴리오에서 마음에 드는 영상을 선택하세요' },
@@ -271,12 +271,12 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
                   { n: '3', title: '확인 & 제출', desc: '기획안을 확인하고 이메일로 보내세요' },
                 ].map((s, i) => (
                   <div key={s.n} className="flex items-start gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm ${dk ? 'bg-neutral-700 text-neutral-200' : 'bg-neutral-800 text-white'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm ${dk ? 'bg-md-surface-container-high text-white' : 'bg-md-surface-container text-white'}`}>
                       {s.n}
                     </div>
                     <div className="text-left">
-                      <p className={`font-semibold text-sm ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>{s.title}</p>
-                      <p className={`text-xs mt-0.5 ${dk ? 'text-neutral-500' : 'text-neutral-500'}`}>{s.desc}</p>
+                      <p className={`font-semibold text-sm ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>{s.title}</p>
+                      <p className={`text-xs mt-0.5 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>{s.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -285,13 +285,13 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             <button
               onClick={() => go('step1')}
-              className={`flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition shadow-sm ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900'}`}
+              className={`flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-sm transition shadow-sm ${dk ? 'bg-md-surface-container-high text-white hover:bg-md-surface-bright' : 'bg-md-surface-container text-white hover:bg-md-surface-container-low'}`}
             >
               시작하기 <ArrowRight size={18} />
             </button>
 
             <a href="https://www.pewpewstudio.com/video" target="_blank" rel="noopener noreferrer"
-              className={`inline-flex items-center gap-1 mt-4 text-xs ${dk ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'} transition`}>
+              className={`inline-flex items-center gap-1 mt-4 text-xs ${dk ? 'text-md-outline hover:text-md-on-surface-variant' : 'text-md-outline hover:text-md-light-on-surface-variant'} transition`}>
               PEWPEW Studio 홈페이지에서 전체 영상 보기 <ExternalLink size={12} />
             </a>
           </div>
@@ -306,23 +306,23 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             <div className="flex items-center gap-2 mb-2">
               {['영상 고르기', '정보 입력', '확인 & 제출'].map((t, i) => (
                 <React.Fragment key={t}>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 0 ? (dk ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white') : (dk ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400')}`}>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 0 ? (dk ? 'bg-md-surface-container-high text-white' : 'bg-md-surface-container text-white') : (dk ? 'bg-md-surface-container text-md-outline' : 'bg-md-light-surface-container-high text-md-outline')}`}>
                     {i + 1}. {t}
                   </span>
-                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-neutral-700' : 'text-neutral-300'} />}
+                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-md-light-on-surface-variant' : 'text-md-on-surface-variant'} />}
                 </React.Fragment>
               ))}
             </div>
 
             <div>
-              <h2 className={`text-2xl font-bold mb-1 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>
+              <h2 className={`text-2xl font-bold mb-1 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>
                 마음에 드는 영상을 골라주세요
               </h2>
-              <p className={`text-sm ${dk ? 'text-neutral-500' : 'text-neutral-500'}`}>
+              <p className={`text-sm ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
                 &ldquo;이런 느낌으로 만들어주세요!&rdquo; 하고 보여줄 참고 영상이에요. 최소 1개 선택해주세요.
               </p>
               {/* 초보자 팁 */}
-              <div className={`mt-3 p-3 rounded-lg text-xs ${dk ? 'bg-neutral-900 border border-neutral-800 text-neutral-400' : 'bg-amber-50 border border-amber-100 text-amber-700'}`}>
+              <div className={`mt-3 p-3 rounded-lg text-xs ${dk ? 'bg-md-surface-container-low border border-white/5 text-md-outline' : 'bg-amber-50 border border-amber-100 text-amber-700'}`}>
                 <span className="font-bold">처음이라 뭘 골라야 할지 모르겠다면?</span>{' '}
                 카테고리 필터로 업종을 먼저 고르고, 눈에 끌리는 영상을 1~3개만 선택하면 돼요. 정확하지 않아도 괜찮아요!
               </div>
@@ -330,11 +330,11 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* 검색 + 필터 */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className={`flex items-center gap-2 flex-1 px-3 py-2 rounded-lg border ${dk ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
-                <Search size={16} className={dk ? 'text-neutral-500' : 'text-neutral-400'} />
+              <div className={`flex items-center gap-2 flex-1 px-3 py-2 rounded-lg border ${dk ? 'bg-md-surface-container border-white/5' : 'bg-white border-md-light-outline-variant/20'}`}>
+                <Search size={16} className={dk ? 'text-md-outline' : 'text-md-outline'} />
                 <input type="text" placeholder="검색 (예: 아로셀, 숏폼, 럭셔리...)"
                   value={search} onChange={e => setSearch(e.target.value)}
-                  className={`flex-1 bg-transparent outline-none text-sm ${dk ? 'text-neutral-100 placeholder-neutral-600' : 'text-neutral-900 placeholder-neutral-400'}`} />
+                  className={`flex-1 bg-transparent outline-none text-sm ${dk ? 'text-white placeholder-neutral-600' : 'text-md-light-on-surface placeholder-md-light-on-surface-variant'}`} />
               </div>
               <div className="flex flex-wrap gap-1">
                 <button onClick={() => setCatFilter('')} className={chip(!catFilter)}>전체</button>
@@ -347,8 +347,8 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             </div>
 
             {/* 선택 카운트 */}
-            <p className={`text-center text-xs ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>
-              {filtered.length}개 중 <span className={`font-bold ${dk ? 'text-white' : 'text-neutral-900'}`}>{proposal.selectedPortfolios.length}개</span> 선택
+            <p className={`text-center text-xs ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
+              {filtered.length}개 중 <span className={`font-bold ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>{proposal.selectedPortfolios.length}개</span> 선택
             </p>
 
             {/* 포트폴리오 그리드 */}
@@ -361,14 +361,14 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* 하단 버튼 */}
             <div className="flex justify-between items-center pt-4">
-              <button onClick={() => go('intro')} className={`text-sm ${dk ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'}`}>
+              <button onClick={() => go('intro')} className={`text-sm ${dk ? 'text-md-outline hover:text-md-on-surface-variant' : 'text-md-outline hover:text-md-light-on-surface-variant'}`}>
                 <ChevronLeft size={16} className="inline" /> 돌아가기
               </button>
               <button
                 onClick={() => { if (!proposal.selectedPortfolios.length) { alert('최소 1개를 선택해주세요!'); return; } go('step2'); }}
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition ${
-                  proposal.selectedPortfolios.length ? (dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900')
-                    : (dk ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed' : 'bg-neutral-200 text-neutral-400 cursor-not-allowed')
+                  proposal.selectedPortfolios.length ? (dk ? 'bg-md-surface-container-high text-white hover:bg-md-surface-bright' : 'bg-md-surface-container text-white hover:bg-md-surface-container-low')
+                    : (dk ? 'bg-md-surface-container text-md-outline cursor-not-allowed' : 'bg-md-light-surface-container-highest text-md-outline cursor-not-allowed')
                 }`}
               >
                 다음으로 <ChevronRight size={16} />
@@ -386,28 +386,28 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             <div className="flex items-center gap-2 mb-2">
               {['영상 고르기', '정보 입력', '확인 & 제출'].map((t, i) => (
                 <React.Fragment key={t}>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 1 ? (dk ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white') : i < 1 ? (dk ? 'bg-green-900/40 text-green-400' : 'bg-green-100 text-green-700') : (dk ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400')}`}>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 1 ? (dk ? 'bg-md-surface-container-high text-white' : 'bg-md-surface-container text-white') : i < 1 ? (dk ? 'bg-green-900/40 text-green-400' : 'bg-green-100 text-green-700') : (dk ? 'bg-md-surface-container text-md-outline' : 'bg-md-light-surface-container-high text-md-outline')}`}>
                     {i < 1 ? <Check size={12} className="inline" /> : `${i + 1}.`} {t}
                   </span>
-                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-neutral-700' : 'text-neutral-300'} />}
+                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-md-light-on-surface-variant' : 'text-md-on-surface-variant'} />}
                 </React.Fragment>
               ))}
             </div>
 
             {/* 선택한 영상 미리보기 */}
-            <div className={`flex gap-2 p-3 rounded-xl overflow-x-auto ${dk ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200'}`}>
+            <div className={`flex gap-2 p-3 rounded-xl overflow-x-auto ${dk ? 'bg-md-surface-container-low border border-white/5' : 'bg-white border border-md-light-outline-variant/20'}`}>
               {sel.map(it => (
                 <div key={it.id} className={`flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br ${CP[it.color]} relative flex items-center justify-center`} title={`${it.brand}: ${it.title}`}>
                   <span className="text-lg">{CAT_EMOJI[it.category] || '🎬'}</span>
                 </div>
               ))}
-              <span className={`flex items-center text-xs ml-2 ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>선택한 참고영상 {sel.length}개</span>
+              <span className={`flex items-center text-xs ml-2 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>선택한 참고영상 {sel.length}개</span>
             </div>
 
             {/* ── 프로젝트 정보 ── */}
             <div className={`p-5 ${crd}`}>
-              <h3 className={`text-base font-bold mb-1 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>어떤 영상을 만들고 싶으세요?</h3>
-              <p className={`text-xs mb-4 ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>
+              <h3 className={`text-base font-bold mb-1 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>어떤 영상을 만들고 싶으세요?</h3>
+              <p className={`text-xs mb-4 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
                 잘 모르는 항목은 비워두셔도 괜찮아요. 필수(<span className="text-red-500">*</span>) 항목만 채워주세요!
               </p>
               <div className="space-y-3">
@@ -508,8 +508,8 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* ── 참고 영상 메모 ── */}
             <div className={`p-5 ${crd}`}>
-              <h3 className={`text-base font-bold mb-1 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>선택한 영상의 어떤 점이 좋았나요?</h3>
-              <p className={`text-xs mb-4 ${dk ? 'text-neutral-500' : 'text-neutral-400'}`}>안 적어도 괜찮아요! 적으시면 더 정확한 영상을 만들 수 있어요.</p>
+              <h3 className={`text-base font-bold mb-1 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>선택한 영상의 어떤 점이 좋았나요?</h3>
+              <p className={`text-xs mb-4 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>안 적어도 괜찮아요! 적으시면 더 정확한 영상을 만들 수 있어요.</p>
               <div className="space-y-3">
                 {sel.map(item => (
                   <div key={item.id} className="flex gap-3 items-start">
@@ -517,7 +517,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
                       <span className="text-lg">{CAT_EMOJI[item.category] || '🎬'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-bold mb-1 ${dk ? 'text-neutral-300' : 'text-neutral-700'}`}>{item.brand} - {item.title}</p>
+                      <p className={`text-xs font-bold mb-1 ${dk ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'}`}>{item.brand} - {item.title}</p>
                       <input type="text"
                         value={proposal.referenceItemNotes[item.id] || ''}
                         onChange={e => up({ referenceItemNotes: { ...proposal.referenceItemNotes, [item.id]: e.target.value } })}
@@ -531,7 +531,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* ── 연락처 & 일정 ── */}
             <div className={`p-5 ${crd}`}>
-              <h3 className={`text-base font-bold mb-4 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>연락처 & 일정</h3>
+              <h3 className={`text-base font-bold mb-4 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>연락처 & 일정</h3>
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -580,7 +580,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* 하단 버튼 */}
             <div className="flex justify-between items-center pt-2">
-              <button onClick={() => go('step1')} className={`flex items-center gap-1 text-sm ${dk ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-700'}`}>
+              <button onClick={() => go('step1')} className={`flex items-center gap-1 text-sm ${dk ? 'text-md-outline hover:text-md-on-surface-variant' : 'text-md-outline hover:text-md-light-on-surface-variant'}`}>
                 <ChevronLeft size={16} /> 영상 다시 고르기
               </button>
               <button
@@ -589,7 +589,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
                   if (!proposal.clientName.trim() || !proposal.clientEmail.trim()) { alert('이름과 이메일은 필수입니다!'); return; }
                   go('step3');
                 }}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900'}`}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition ${dk ? 'bg-md-surface-container-high text-white hover:bg-md-surface-bright' : 'bg-md-surface-container text-white hover:bg-md-surface-container-low'}`}
               >
                 미리보기 <ChevronRight size={16} />
               </button>
@@ -606,21 +606,21 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             <div className="flex items-center gap-2 mb-2">
               {['영상 고르기', '정보 입력', '확인 & 제출'].map((t, i) => (
                 <React.Fragment key={t}>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 2 ? (dk ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white') : (dk ? 'bg-green-900/40 text-green-400' : 'bg-green-100 text-green-700')}`}>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${i === 2 ? (dk ? 'bg-md-surface-container-high text-white' : 'bg-md-surface-container text-white') : (dk ? 'bg-green-900/40 text-green-400' : 'bg-green-100 text-green-700')}`}>
                     {i < 2 ? <Check size={12} className="inline" /> : '3.'} {t}
                   </span>
-                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-neutral-700' : 'text-neutral-300'} />}
+                  {i < 2 && <ChevronRight size={14} className={dk ? 'text-md-light-on-surface-variant' : 'text-md-on-surface-variant'} />}
                 </React.Fragment>
               ))}
             </div>
 
-            <h2 className={`text-2xl font-bold ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>기획안 확인</h2>
-            <p className={`text-sm ${dk ? 'text-neutral-500' : 'text-neutral-500'}`}>내용을 확인하고 제출해주세요. 수정이 필요하면 이전으로 돌아가시면 돼요!</p>
+            <h2 className={`text-2xl font-bold ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>기획안 확인</h2>
+            <p className={`text-sm ${dk ? 'text-md-outline' : 'text-md-outline'}`}>내용을 확인하고 제출해주세요. 수정이 필요하면 이전으로 돌아가시면 돼요!</p>
 
             {/* 프로젝트 요약 */}
             <div className={`p-5 ${crd}`}>
-              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-neutral-300' : 'text-neutral-800'}`}>프로젝트</h4>
-              <div className={`space-y-1.5 text-sm ${dk ? 'text-neutral-400' : 'text-neutral-600'}`}>
+              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-md-on-surface-variant' : 'text-md-light-on-surface'}`}>프로젝트</h4>
+              <div className={`space-y-1.5 text-sm ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
                 <p><span className="font-semibold">제목:</span> {proposal.projectTitle}</p>
                 {proposal.projectDescription && <p><span className="font-semibold">설명:</span> {proposal.projectDescription}</p>}
                 <p>
@@ -637,7 +637,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* 참고 영상 */}
             <div className={`p-5 ${crd}`}>
-              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-neutral-300' : 'text-neutral-800'}`}>참고 영상 ({sel.length}개)</h4>
+              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-md-on-surface-variant' : 'text-md-light-on-surface'}`}>참고 영상 ({sel.length}개)</h4>
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {sel.map(item => (
                   <div key={item.id} className="flex-shrink-0 w-28">
@@ -645,8 +645,8 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
                       <span className="text-2xl">{CAT_EMOJI[item.category] || '🎬'}</span>
                       <span className="absolute bottom-1 right-1 bg-black/50 text-white text-[7px] px-1 rounded">{CT_LABEL[item.contentType] || ''}</span>
                     </div>
-                    <p className={`text-[10px] font-bold ${dk ? 'text-neutral-400' : 'text-neutral-500'}`}>{item.brand}</p>
-                    <p className={`text-xs line-clamp-1 ${dk ? 'text-neutral-200' : 'text-neutral-800'}`}>{item.title}</p>
+                    <p className={`text-[10px] font-bold ${dk ? 'text-md-outline' : 'text-md-outline'}`}>{item.brand}</p>
+                    <p className={`text-xs line-clamp-1 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>{item.title}</p>
                   </div>
                 ))}
               </div>
@@ -654,8 +654,8 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
 
             {/* 연락처 & 일정 */}
             <div className={`p-5 ${crd}`}>
-              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-neutral-300' : 'text-neutral-800'}`}>연락처 & 일정</h4>
-              <div className={`space-y-1.5 text-sm ${dk ? 'text-neutral-400' : 'text-neutral-600'}`}>
+              <h4 className={`text-sm font-bold mb-3 ${dk ? 'text-md-on-surface-variant' : 'text-md-light-on-surface'}`}>연락처 & 일정</h4>
+              <div className={`space-y-1.5 text-sm ${dk ? 'text-md-outline' : 'text-md-outline'}`}>
                 <p><span className="font-semibold">이름:</span> {proposal.clientName} {proposal.clientCompany && `(${proposal.clientCompany})`}</p>
                 <p><span className="font-semibold">이메일:</span> {proposal.clientEmail} {proposal.clientPhone && ` · ${proposal.clientPhone}`}</p>
                 <p>
@@ -676,11 +676,11 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
             {/* 제출 버튼 */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button onClick={() => go('step2')} disabled={sending}
-                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}>
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-md-surface-container text-md-on-surface-variant hover:bg-md-surface-container-high' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest'}`}>
                 <ChevronLeft size={16} /> 수정하기
               </button>
               <button onClick={submitEmail} disabled={sending}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition ${sending ? 'opacity-60 cursor-not-allowed' : ''} ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-800 text-white hover:bg-neutral-900'}`}>
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition ${sending ? 'opacity-60 cursor-not-allowed' : ''} ${dk ? 'bg-md-surface-container-high text-white hover:bg-md-surface-bright' : 'bg-md-surface-container text-white hover:bg-md-surface-container-low'}`}>
                 {sending ? (
                   <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> 전송 중...</>
                 ) : (
@@ -688,7 +688,7 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
                 )}
               </button>
               <button onClick={toStoryboard} disabled={sending}
-                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}>
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-md-surface-container text-md-on-surface-variant hover:bg-md-surface-container-high' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest'}`}>
                 <Sparkles size={16} /> 스토리보드로
               </button>
             </div>
@@ -704,10 +704,10 @@ export const PortfolioProposalBuilder: React.FC<Props> = ({ darkMode: dk, userEm
               <div className={`w-16 h-16 mx-auto mb-5 rounded-full flex items-center justify-center ${dk ? 'bg-green-900/30' : 'bg-green-50'}`}>
                 <Check size={32} className="text-green-500" />
               </div>
-              <h2 className={`text-xl font-bold mb-2 ${dk ? 'text-neutral-100' : 'text-neutral-900'}`}>기획안이 전송되었어요!</h2>
-              <p className={`text-sm mb-6 ${dk ? 'text-neutral-400' : 'text-neutral-500'}`}>PEWPEW Studio에서 검토 후 연락드릴게요.</p>
+              <h2 className={`text-xl font-bold mb-2 ${dk ? 'text-white' : 'text-md-light-on-surface'}`}>기획안이 전송되었어요!</h2>
+              <p className={`text-sm mb-6 ${dk ? 'text-md-outline' : 'text-md-outline'}`}>PEWPEW Studio에서 검토 후 연락드릴게요.</p>
               <button onClick={() => { setPage('intro'); setProposal(createEmptyProposal()); }}
-                className={`w-full py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-neutral-700 text-white hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'}`}>
+                className={`w-full py-3 rounded-xl font-semibold text-sm transition ${dk ? 'bg-md-surface-container-high text-white hover:bg-md-surface-bright' : 'bg-md-light-surface-container-high text-md-light-on-surface hover:bg-md-light-surface-container-highest'}`}>
                 새 기획안 작성하기
               </button>
             </div>

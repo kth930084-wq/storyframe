@@ -101,13 +101,13 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
     setShowAddItem(false);
   };
 
-  const bgColor = darkMode ? 'bg-neutral-900' : 'bg-neutral-50';
-  const borderColor = darkMode ? 'border-neutral-800' : 'border-neutral-200';
-  const textColor = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const secondaryText = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const cardBg = darkMode ? 'bg-neutral-800' : 'bg-white';
-  const inputBg = darkMode ? 'bg-neutral-700' : 'bg-neutral-100';
-  const inputBorder = darkMode ? 'border-neutral-600' : 'border-neutral-300';
+  const bgColor = darkMode ? 'bg-md-surface-container-low' : 'bg-white';
+  const borderColor = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textColor = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const secondaryText = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const cardBg = darkMode ? 'bg-md-surface-container' : 'bg-white';
+  const inputBg = darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high';
+  const inputBorder = darkMode ? 'border-white/10' : 'border-md-light-outline-variant/30';
 
   const EditableCell = ({ value, onChange, suffix, type = 'number', width = 'w-28' }: { value: number | string; onChange: (v: any) => void; suffix?: string; type?: string; width?: string }) => (
     <div className="flex items-center gap-1">
@@ -126,7 +126,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
     <div className={`${bgColor} rounded-lg border ${borderColor} p-6 space-y-6`}>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <DollarSign className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
+          <DollarSign className={`w-6 h-6 ${darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`} />
           <h3 className={`text-xl font-bold ${textColor}`}>예산 추정 계산기</h3>
         </div>
         <span className={`text-xs ${secondaryText}`}>모든 항목을 직접 수정할 수 있습니다</span>
@@ -137,7 +137,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
+              <tr className={`border-b ${borderColor} ${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'}`}>
                 <th className={`text-left px-4 py-3 font-semibold text-sm ${secondaryText}`}>항목</th>
                 <th className={`text-center px-4 py-3 font-semibold text-sm ${secondaryText} w-36`}>수량</th>
                 <th className={`text-center px-4 py-3 font-semibold text-sm ${secondaryText} w-44`}>단가</th>
@@ -149,7 +149,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
               {budgetItems.map((item) => {
                 const itemTotal = item.quantity * item.unitCost;
                 return (
-                  <tr key={item.id} className={`border-b ${borderColor} hover:${darkMode ? 'bg-neutral-750' : 'bg-neutral-50'} transition-colors`}>
+                  <tr key={item.id} className={`border-b ${borderColor} hover:${darkMode ? 'bg-md-surface-container-high' : 'bg-white'} transition-colors`}>
                     <td className={`px-4 py-3 ${textColor}`}>
                       {editingId === item.id && editingField === 'name' ? (
                         <input
@@ -232,7 +232,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
 
               {/* Add New Item Row */}
               {showAddItem ? (
-                <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-750' : 'bg-blue-50/50'}`}>
+                <tr className={`border-b ${borderColor} ${darkMode ? 'bg-md-surface-container-high' : 'bg-white'}`}>
                   <td className="px-4 py-3">
                     <input
                       type="text"
@@ -284,7 +284,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
                       </button>
                       <button
                         onClick={() => setShowAddItem(false)}
-                        className={`px-2.5 py-1 rounded text-xs font-medium ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'} hover:opacity-80 transition-colors`}
+                        className={`px-2.5 py-1 rounded text-xs font-medium ${darkMode ? 'bg-md-surface-container-high text-md-on-surface-variant' : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'} hover:opacity-80 transition-colors`}
                       >
                         취소
                       </button>
@@ -307,7 +307,7 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
               )}
 
               {/* Subtotal */}
-              <tr className={`border-b ${borderColor} ${darkMode ? 'bg-neutral-700' : 'bg-neutral-50'}`}>
+              <tr className={`border-b ${borderColor} ${darkMode ? 'bg-md-surface-container-high' : 'bg-white'}`}>
                 <td colSpan={3} className={`px-4 py-3 font-semibold ${textColor}`}>소계</td>
                 <td className={`px-4 py-3 text-right font-mono font-semibold ${textColor}`}>
                   {subtotal.toLocaleString()}원
@@ -342,9 +342,9 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
               </tr>
 
               {/* Total */}
-              <tr className={`${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
+              <tr className={`${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'}`}>
                 <td colSpan={3} className={`px-4 py-3 font-bold text-lg ${textColor}`}>총합계</td>
-                <td className={`px-4 py-3 text-right font-mono font-bold text-lg ${darkMode ? 'text-neutral-200' : 'text-neutral-800'}`}>
+                <td className={`px-4 py-3 text-right font-mono font-bold text-lg ${darkMode ? 'text-white' : 'text-md-light-on-surface'}`}>
                   {total.toLocaleString()}원
                 </td>
                 <td></td>
@@ -369,8 +369,8 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({
           onClick={() => onExportPDF?.()}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
             darkMode
-              ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100'
-              : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'
+              ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-white'
+              : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30 text-md-light-on-surface'
           }`}>
           <Download className="w-4 h-4" />
           PDF 내보내기
@@ -439,13 +439,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     setSelectedDay(null);
   };
 
-  const bgColor = darkMode ? 'bg-neutral-900' : 'bg-neutral-50';
-  const borderColor = darkMode ? 'border-neutral-800' : 'border-neutral-200';
-  const textColor = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const secondaryText = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const cardBg = darkMode ? 'bg-neutral-800' : 'bg-white';
-  const dayBg = darkMode ? 'bg-neutral-700 hover:bg-neutral-600' : 'bg-neutral-100 hover:bg-neutral-200';
-  const activeDayBg = darkMode ? 'bg-neutral-600' : 'bg-neutral-300';
+  const bgColor = darkMode ? 'bg-md-surface-container-low' : 'bg-white';
+  const borderColor = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textColor = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const secondaryText = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const cardBg = darkMode ? 'bg-md-surface-container' : 'bg-white';
+  const dayBg = darkMode ? 'bg-md-surface-container-high hover:bg-md-surface-bright' : 'bg-md-light-surface-container-high hover:bg-md-light-surface-container-highest';
+  const activeDayBg = darkMode ? 'bg-md-surface-bright' : 'bg-md-light-surface-container-highest';
 
   const koreanDays = ['일', '월', '화', '수', '목', '금', '토'];
   const monthNames = [
@@ -465,7 +465,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     <div className={`${bgColor} rounded-lg border ${borderColor} p-6 space-y-6`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
+          <Calendar className={`w-6 h-6 ${darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`} />
           <h3 className={`text-xl font-bold ${textColor}`}>촬영 캘린더</h3>
         </div>
         <div className="flex items-center gap-4">
@@ -546,7 +546,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                 <div
                   key={entry.id}
                   className={`p-3 rounded-lg ${
-                    darkMode ? 'bg-neutral-700' : 'bg-neutral-100'
+                    darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'
                   }`}
                 >
                   <div className={`font-medium ${textColor} mb-1`}>
@@ -635,17 +635,17 @@ export const SceneSearchFilter: React.FC<SceneSearchFilterProps> = ({
     searchQuery ||
     Object.values(filters).some((v) => v !== '');
 
-  const bgColor = darkMode ? 'bg-neutral-900' : 'bg-neutral-50';
-  const borderColor = darkMode ? 'border-neutral-800' : 'border-neutral-200';
-  const textColor = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const secondaryText = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const inputBg = darkMode ? 'bg-neutral-800 text-neutral-100' : 'bg-white text-neutral-900';
-  const cardBg = darkMode ? 'bg-neutral-800' : 'bg-white';
+  const bgColor = darkMode ? 'bg-md-surface-container-low' : 'bg-white';
+  const borderColor = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textColor = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const secondaryText = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const inputBg = darkMode ? 'bg-md-surface-container text-white' : 'bg-white text-md-light-on-surface';
+  const cardBg = darkMode ? 'bg-md-surface-container' : 'bg-white';
 
   return (
     <div className={`${bgColor} rounded-lg border ${borderColor} p-6 space-y-6`}>
       <div className="flex items-center gap-2 mb-6">
-        <Search className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
+        <Search className={`w-6 h-6 ${darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`} />
         <h3 className={`text-xl font-bold ${textColor}`}>스마트 검색 & 필터</h3>
       </div>
 
@@ -661,7 +661,7 @@ export const SceneSearchFilter: React.FC<SceneSearchFilterProps> = ({
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded ${secondaryText} hover:${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded ${secondaryText} hover:${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'}`}
           >
             <X className="w-4 h-4" />
           </button>
@@ -754,8 +754,8 @@ export const SceneSearchFilter: React.FC<SceneSearchFilterProps> = ({
           onClick={handleClearFilters}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             darkMode
-              ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
-              : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-700'
+              ? 'bg-md-surface-container hover:bg-md-surface-container-high text-md-on-surface-variant'
+              : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30 text-md-light-on-surface-variant'
           }`}
         >
           <X className="w-4 h-4" />
@@ -777,11 +777,11 @@ export const SceneSearchFilter: React.FC<SceneSearchFilterProps> = ({
               className={`p-4 rounded-lg border ${borderColor} ${cardBg} text-left hover:opacity-80 transition-opacity`}
             >
               {scene.image ? (
-                <div className={`w-full h-32 rounded-lg mb-3 bg-neutral-300 dark:bg-neutral-600 flex items-center justify-center`}>
+                <div className={`w-full h-32 rounded-lg mb-3 bg-md-light-surface-container-highest dark:bg-md-surface-bright flex items-center justify-center`}>
                   <img src={scene.image} alt={scene.title} className="w-full h-full object-cover rounded-lg" />
                 </div>
               ) : (
-                <div className={`w-full h-32 rounded-lg mb-3 ${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'} flex items-center justify-center`}>
+                <div className={`w-full h-32 rounded-lg mb-3 ${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest'} flex items-center justify-center`}>
                   <Eye className={`w-6 h-6 ${secondaryText}`} />
                 </div>
               )}
@@ -790,17 +790,17 @@ export const SceneSearchFilter: React.FC<SceneSearchFilterProps> = ({
               </h4>
               <div className="flex items-center gap-2 text-xs flex-wrap">
                 {scene.camera_angle && (
-                  <span className={`px-2 py-1 rounded ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'} ${secondaryText}`}>
+                  <span className={`px-2 py-1 rounded ${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'} ${secondaryText}`}>
                     {scene.camera_angle}
                   </span>
                 )}
                 {scene.shot_size && (
-                  <span className={`px-2 py-1 rounded ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'} ${secondaryText}`}>
+                  <span className={`px-2 py-1 rounded ${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'} ${secondaryText}`}>
                     {scene.shot_size}
                   </span>
                 )}
                 {scene.shooting_completed && (
-                  <span className={`px-2 py-1 rounded flex items-center gap-1 ${darkMode ? 'bg-neutral-600' : 'bg-neutral-200'} ${secondaryText}`}>
+                  <span className={`px-2 py-1 rounded flex items-center gap-1 ${darkMode ? 'bg-md-surface-bright' : 'bg-md-light-surface-container-highest'} ${secondaryText}`}>
                     <Check className="w-3 h-3" />
                     완료
                   </span>
@@ -865,7 +865,7 @@ export const MobileResponsiveWrapper: React.FC<MobileResponsiveWrapperProps> = (
       {/* Floating Menu Button */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className="fixed bottom-6 right-6 p-4 bg-neutral-800 text-neutral-100 rounded-full shadow-lg z-40 hover:bg-neutral-700 transition-colors"
+        className="fixed bottom-6 right-6 p-4 bg-md-surface-container text-white rounded-full shadow-lg z-40 hover:bg-md-surface-container-high transition-colors"
       >
         <Menu className="w-6 h-6" />
       </button>
@@ -878,23 +878,23 @@ export const MobileResponsiveWrapper: React.FC<MobileResponsiveWrapperProps> = (
         />
       )}
       <div
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-neutral-900 text-neutral-100 shadow-xl z-50 transform transition-transform ${
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-md-surface-container-low text-white shadow-xl z-50 transform transition-transform ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="p-4">
           <h2 className="font-bold text-lg mb-6">PEWPEW 스토리보드</h2>
           <nav className="space-y-4">
-            <a href="#" className="block py-2 px-4 rounded hover:bg-neutral-800 transition-colors">
+            <a href="#" className="block py-2 px-4 rounded hover:bg-md-surface-container transition-colors">
               대시보드
             </a>
-            <a href="#" className="block py-2 px-4 rounded hover:bg-neutral-800 transition-colors">
+            <a href="#" className="block py-2 px-4 rounded hover:bg-md-surface-container transition-colors">
               씬 관리
             </a>
-            <a href="#" className="block py-2 px-4 rounded hover:bg-neutral-800 transition-colors">
+            <a href="#" className="block py-2 px-4 rounded hover:bg-md-surface-container transition-colors">
               촬영 계획
             </a>
-            <a href="#" className="block py-2 px-4 rounded hover:bg-neutral-800 transition-colors">
+            <a href="#" className="block py-2 px-4 rounded hover:bg-md-surface-container transition-colors">
               예산 관리
             </a>
           </nav>
@@ -978,23 +978,23 @@ export const AISceneRecommender: React.FC<AISceneRecommenderProps> = ({
     setTyping({ ...typing, [sceneTitle]: false });
   };
 
-  const bgColor = darkMode ? 'bg-neutral-900' : 'bg-neutral-50';
-  const borderColor = darkMode ? 'border-neutral-800' : 'border-neutral-200';
-  const textColor = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const secondaryText = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const cardBg = darkMode ? 'bg-neutral-800' : 'bg-white';
-  const hoverBg = darkMode ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100';
+  const bgColor = darkMode ? 'bg-md-surface-container-low' : 'bg-white';
+  const borderColor = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textColor = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const secondaryText = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const cardBg = darkMode ? 'bg-md-surface-container' : 'bg-white';
+  const hoverBg = darkMode ? 'hover:bg-md-surface-container-high' : 'hover:bg-md-light-surface-container-high';
 
   return (
     <div className={`${bgColor} rounded-lg border ${borderColor} p-6 space-y-6`}>
       <div className="flex items-center gap-2 mb-6">
-        <Sparkles className={`w-6 h-6 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`} />
+        <Sparkles className={`w-6 h-6 ${darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`} />
         <h3 className={`text-xl font-bold ${textColor}`}>AI 씬 추천</h3>
       </div>
 
       <div className={`${cardBg} rounded-lg border ${borderColor} p-4`}>
         <p className={`text-sm ${secondaryText} mb-4`}>
-          비디오 타입: <span className="font-semibold text-neutral-300">{videoType}</span>
+          비디오 타입: <span className="font-semibold text-md-on-surface-variant">{videoType}</span>
         </p>
         <p className={`text-sm ${secondaryText}`}>
           프로젝트 구조에 맞는 씬을 추천합니다.
@@ -1019,17 +1019,17 @@ export const AISceneRecommender: React.FC<AISceneRecommenderProps> = ({
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     isAdded
                       ? darkMode
-                        ? 'bg-neutral-600 text-neutral-300'
-                        : 'bg-neutral-300 text-neutral-700'
+                        ? 'bg-md-surface-bright text-md-on-surface-variant'
+                        : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                       : darkMode
-                      ? 'bg-neutral-700 text-neutral-400'
-                      : 'bg-neutral-200 text-neutral-600'
+                      ? 'bg-md-surface-container-high text-md-outline'
+                      : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                   }`}>
                     {recommendations.indexOf(sceneTitle) + 1}
                   </div>
                   <span className={`font-semibold ${textColor}`}>{sceneTitle}</span>
                   {isAdded && (
-                    <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-neutral-600 text-neutral-200">
+                    <span className="flex items-center gap-1 text-xs px-2 py-1 rounded bg-md-surface-bright text-white">
                       <Check className="w-3 h-3" />
                       추가됨
                     </span>
@@ -1042,7 +1042,7 @@ export const AISceneRecommender: React.FC<AISceneRecommenderProps> = ({
 
               {/* Description (expanded) */}
               {expandedScene === sceneTitle && (
-                <div className="mt-4 pt-4 border-t border-neutral-700">
+                <div className="mt-4 pt-4 border-t border-white/5">
                   <p className={`text-sm ${secondaryText} mb-4`}>
                     {DESCRIPTION_TEMPLATES[videoType]?.[sceneTitle] ||
                       `${sceneTitle} 장면에 대한 설명입니다.`}
@@ -1056,8 +1056,8 @@ export const AISceneRecommender: React.FC<AISceneRecommenderProps> = ({
                     disabled={isAdded}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors w-full justify-center ${
                       isAdded
-                        ? `${darkMode ? 'bg-neutral-700 text-neutral-500' : 'bg-neutral-300 text-neutral-600'} cursor-not-allowed`
-                        : `${darkMode ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100' : 'bg-neutral-200 hover:bg-neutral-300 text-neutral-900'}`
+                        ? `${darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'} cursor-not-allowed`
+                        : `${darkMode ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-white' : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30 text-md-light-on-surface'}`
                     }`}
                   >
                     <Plus className="w-4 h-4" />

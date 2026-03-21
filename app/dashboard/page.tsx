@@ -11,10 +11,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-md-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">🎬</div>
-          <p className="text-gray-600">로딩 중...</p>
+          <div className="animate-pulse mb-4"><span className="material-symbols-outlined text-5xl text-md-outline">movie_filter</span></div>
+          <p className="text-md-on-surface-variant text-sm tracking-widest uppercase font-label">Loading</p>
         </div>
       </div>
     );

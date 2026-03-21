@@ -74,7 +74,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
       <div
         className={`${
-          darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+          darkMode ? 'bg-md-surface-container-low text-white' : 'bg-white text-md-light-on-surface'
         } rounded-lg shadow-xl w-full max-w-md mx-4 my-8 p-6`}
       >
         {/* Header */}
@@ -84,8 +84,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
             onClick={handleCancel}
             className={`p-2 rounded-lg transition ${
               darkMode
-                ? 'hover:bg-gray-800'
-                : 'hover:bg-gray-100'
+                ? 'hover:bg-md-surface-container'
+                : 'hover:bg-md-light-surface-container-high'
             }`}
           >
             <X size={20} />
@@ -97,7 +97,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div>
             <label
               className={`text-sm font-semibold block mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}
             >
               스튜디오 이름
@@ -108,8 +108,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
               onChange={(e) => handleChange('studioName', e.target.value)}
               className={`w-full px-3 py-2 rounded-lg border transition outline-none ${
                 darkMode
-                  ? 'bg-gray-800 border-gray-700 text-white focus:border-blue-500'
-                  : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                  ? 'bg-md-surface-container border-white/5 text-white focus:border-blue-500'
+                  : 'bg-white border-md-light-outline-variant/20 text-md-light-on-surface focus:border-blue-500'
               }`}
               placeholder="PEWPEW STUDIO"
             />
@@ -119,7 +119,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div>
             <label
               className={`text-sm font-semibold block mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}
             >
               로고
@@ -129,8 +129,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 onClick={() => logoInputRef.current?.click()}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg font-medium transition ${
                   darkMode
-                    ? 'bg-gray-800 hover:bg-gray-700 border border-gray-700'
-                    : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'
+                    ? 'bg-md-surface-container hover:bg-md-surface-container-high border border-white/5'
+                    : 'bg-md-light-surface-container-high hover:bg-md-light-surface-container-highest border border-md-light-outline-variant/20'
                 }`}
               >
                 <Upload size={16} />
@@ -155,7 +155,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
             {config.logoUrl && (
               <div
                 className={`mt-2 p-2 rounded-lg ${
-                  darkMode ? 'bg-gray-800' : 'bg-gray-100'
+                  darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high'
                 }`}
               >
                 <img
@@ -171,7 +171,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div>
             <label
               className={`text-sm font-semibold block mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}
             >
               주요 색상
@@ -181,7 +181,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 type="color"
                 value={config.primaryColor}
                 onChange={(e) => handleChange('primaryColor', e.target.value)}
-                className="w-16 h-10 rounded-lg cursor-pointer border border-gray-300"
+                className="w-16 h-10 rounded-lg cursor-pointer border border-md-light-outline-variant/30"
               />
               <input
                 type="text"
@@ -189,8 +189,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 onChange={(e) => handleChange('primaryColor', e.target.value)}
                 className={`flex-1 px-3 py-2 rounded-lg border transition outline-none text-sm ${
                   darkMode
-                    ? 'bg-gray-800 border-gray-700 text-white focus:border-blue-500'
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                    ? 'bg-md-surface-container border-white/5 text-white focus:border-blue-500'
+                    : 'bg-white border-md-light-outline-variant/20 text-md-light-on-surface focus:border-blue-500'
                 }`}
               />
             </div>
@@ -200,7 +200,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div>
             <label
               className={`text-sm font-semibold block mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}
             >
               보조 색상
@@ -210,7 +210,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 type="color"
                 value={config.secondaryColor}
                 onChange={(e) => handleChange('secondaryColor', e.target.value)}
-                className="w-16 h-10 rounded-lg cursor-pointer border border-gray-300"
+                className="w-16 h-10 rounded-lg cursor-pointer border border-md-light-outline-variant/30"
               />
               <input
                 type="text"
@@ -218,8 +218,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 onChange={(e) => handleChange('secondaryColor', e.target.value)}
                 className={`flex-1 px-3 py-2 rounded-lg border transition outline-none text-sm ${
                   darkMode
-                    ? 'bg-gray-800 border-gray-700 text-white focus:border-blue-500'
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                    ? 'bg-md-surface-container border-white/5 text-white focus:border-blue-500'
+                    : 'bg-white border-md-light-outline-variant/20 text-md-light-on-surface focus:border-blue-500'
                 }`}
               />
             </div>
@@ -229,7 +229,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div>
             <label
               className={`text-sm font-semibold block mb-2 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}
             >
               워터마크 텍스트
@@ -240,8 +240,8 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
               onChange={(e) => handleChange('watermarkText', e.target.value)}
               className={`w-full px-3 py-2 rounded-lg border transition outline-none text-sm ${
                 darkMode
-                  ? 'bg-gray-800 border-gray-700 text-white focus:border-blue-500'
-                  : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                  ? 'bg-md-surface-container border-white/5 text-white focus:border-blue-500'
+                  : 'bg-white border-md-light-outline-variant/20 text-md-light-on-surface focus:border-blue-500'
               }`}
               placeholder="PEWPEW STUDIO"
             />
@@ -252,14 +252,14 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
             <div className="flex items-center justify-between mb-2">
               <label
                 className={`text-sm font-semibold ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
+                  darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
                 }`}
               >
                 워터마크 투명도
               </label>
               <span
                 className={`text-sm font-medium ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
+                  darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'
                 }`}
               >
                 {config.watermarkOpacity}%
@@ -281,20 +281,20 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
           <div
             className={`p-4 rounded-lg border ${
               darkMode
-                ? 'bg-gray-800 border-gray-700'
-                : 'bg-gray-50 border-gray-300'
+                ? 'bg-md-surface-container border-white/5'
+                : 'bg-md-light-surface-container-high border-md-light-outline-variant/30'
             }`}
           >
             <p
               className={`text-xs font-semibold mb-2 ${
-                darkMode ? 'text-gray-400' : 'text-gray-600'
+                darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'
               }`}
             >
               워터마크 미리보기
             </p>
             <div
               className={`h-24 rounded flex items-center justify-center border-2 border-dashed ${
-                darkMode ? 'border-gray-600' : 'border-gray-300'
+                darkMode ? 'border-white/10' : 'border-md-light-outline-variant/30'
               }`}
               style={{
                 color: config.primaryColor,
@@ -326,7 +326,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 className="w-4 h-4 rounded"
               />
               <span className={`text-sm font-medium ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}>
                 PDF 내보내기에 워터마크 표시
               </span>
@@ -341,7 +341,7 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
                 className="w-4 h-4 rounded"
               />
               <span className={`text-sm font-medium ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
+                darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'
               }`}>
                 공유 링크에 워터마크 표시
               </span>
@@ -350,13 +350,13 @@ export const BrandSettings: React.FC<BrandSettingsProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex gap-3 mt-6 pt-6 border-t border-gray-700">
+        <div className="flex gap-3 mt-6 pt-6 border-t border-white/5">
           <button
             onClick={handleCancel}
             className={`flex-1 py-2 px-4 rounded-lg font-medium transition ${
               darkMode
-                ? 'bg-gray-800 hover:bg-gray-700'
-                : 'bg-gray-200 hover:bg-gray-300'
+                ? 'bg-md-surface-container hover:bg-md-surface-container-high'
+                : 'bg-md-light-surface-container-high hover:bg-md-light-surface-container-highest'
             }`}
           >
             취소

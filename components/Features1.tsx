@@ -113,11 +113,11 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
     return date.toLocaleDateString('ko-KR');
   };
 
-  const bgClass = darkMode ? 'bg-neutral-800' : 'bg-neutral-100';
-  const borderClass = darkMode ? 'border-neutral-700' : 'border-neutral-200';
-  const textClass = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const mutedClass = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const inputBgClass = darkMode ? 'bg-neutral-700' : 'bg-neutral-50';
+  const bgClass = darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high';
+  const borderClass = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textClass = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const mutedClass = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const inputBgClass = darkMode ? 'bg-md-surface-container-high' : 'bg-white';
 
   return (
     <div
@@ -125,13 +125,13 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
     >
       {/* Header */}
       <div
-        className={`flex items-center justify-between p-4 cursor-pointer hover:${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'} transition-colors`}
+        className={`flex items-center justify-between p-4 cursor-pointer hover:${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest'} transition-colors`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
           <MessageCircle
             size={20}
-            className={darkMode ? 'text-neutral-400' : 'text-neutral-600'}
+            className={darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}
           />
           <span className={`font-semibold ${textClass}`}>씬 코멘트</span>
           {unresolvedCount > 0 && (
@@ -163,11 +163,11 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
                   className={`p-3 rounded-lg ${
                     comment.resolved
                       ? darkMode
-                        ? 'bg-neutral-700 opacity-60'
-                        : 'bg-neutral-200 opacity-60'
+                        ? 'bg-md-surface-container-high opacity-60'
+                        : 'bg-md-light-surface-container-highest opacity-60'
                       : darkMode
-                      ? 'bg-neutral-700'
-                      : 'bg-neutral-200'
+                      ? 'bg-md-surface-container-high'
+                      : 'bg-md-light-surface-container-highest'
                   } transition-all`}
                 >
                   <div className="flex items-start justify-between">
@@ -185,8 +185,8 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
                           comment.resolved
                             ? mutedClass
                             : darkMode
-                            ? 'text-neutral-200'
-                            : 'text-neutral-800'
+                            ? 'text-white'
+                            : 'text-md-light-on-surface'
                         }`}
                       >
                         {comment.text}
@@ -199,8 +199,8 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
                           comment.resolved
                             ? 'bg-green-600 text-white'
                             : darkMode
-                            ? 'hover:bg-neutral-600'
-                            : 'hover:bg-neutral-300'
+                            ? 'hover:bg-md-surface-bright'
+                            : 'hover:bg-md-light-surface-container-highest'
                         }`}
                         title={
                           comment.resolved
@@ -214,8 +214,8 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
                         onClick={() => handleDeleteComment(comment.id)}
                         className={`p-1 rounded transition-colors ${
                           darkMode
-                            ? 'hover:bg-neutral-600 text-neutral-400 hover:text-red-400'
-                            : 'hover:bg-neutral-300 text-neutral-600 hover:text-red-600'
+                            ? 'hover:bg-md-surface-bright text-md-outline hover:text-red-400'
+                            : 'hover:bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:text-red-600'
                         }`}
                         title="삭제"
                       >
@@ -247,11 +247,11 @@ export const SceneCommentPanel: React.FC<SceneCommentPanelProps> = ({
               className={`p-2 rounded transition-colors ${
                 newComment.trim()
                   ? darkMode
-                    ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-200'
-                    : 'bg-neutral-300 hover:bg-neutral-400 text-neutral-800'
+                    ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-white'
+                    : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30 text-md-light-on-surface'
                   : darkMode
-                  ? 'bg-neutral-800 text-neutral-600'
-                  : 'bg-neutral-200 text-neutral-500'
+                  ? 'bg-md-surface-container text-md-outline'
+                  : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
               }`}
             >
               <Send size={18} />
@@ -431,17 +431,17 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
     return matchesSearch && matchesCategory;
   });
 
-  const bgClass = darkMode ? 'bg-neutral-800' : 'bg-neutral-100';
-  const borderClass = darkMode ? 'border-neutral-700' : 'border-neutral-200';
-  const textClass = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const mutedClass = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const inputBgClass = darkMode ? 'bg-neutral-700' : 'bg-neutral-50';
+  const bgClass = darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high';
+  const borderClass = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textClass = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const mutedClass = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const inputBgClass = darkMode ? 'bg-md-surface-container-high' : 'bg-white';
   const hoverClass = darkMode
-    ? 'hover:bg-neutral-700'
-    : 'hover:bg-neutral-200';
+    ? 'hover:bg-md-surface-container-high'
+    : 'hover:bg-md-light-surface-container-highest';
   const buttonClass = darkMode
-    ? 'bg-neutral-700 hover:bg-neutral-600'
-    : 'bg-neutral-300 hover:bg-neutral-400';
+    ? 'bg-md-surface-container-high hover:bg-md-surface-bright'
+    : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30';
 
   return (
     <div
@@ -455,7 +455,7 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
         <div className="flex items-center gap-3">
           <Settings
             size={20}
-            className={darkMode ? 'text-neutral-400' : 'text-neutral-600'}
+            className={darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}
           />
           <span className={`font-semibold ${textClass}`}>에셋 라이브러리</span>
         </div>
@@ -491,8 +491,8 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
               className={`px-3 py-1 rounded text-sm transition-colors ${
                 selectedCategory === null
                   ? darkMode
-                    ? 'bg-neutral-600 text-neutral-100'
-                    : 'bg-neutral-400 text-neutral-900'
+                    ? 'bg-md-surface-bright text-white'
+                    : 'bg-md-light-surface-container-highest text-md-light-on-surface'
                   : buttonClass
               } ${textClass}`}
             >
@@ -509,8 +509,8 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
                 className={`px-3 py-1 rounded text-sm transition-colors ${
                   selectedCategory === cat
                     ? darkMode
-                      ? 'bg-neutral-600 text-neutral-100'
-                      : 'bg-neutral-400 text-neutral-900'
+                      ? 'bg-md-surface-bright text-white'
+                      : 'bg-md-light-surface-container-highest text-md-light-on-surface'
                     : buttonClass
                 } ${textClass}`}
               >
@@ -552,8 +552,8 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
                         <span
                           className={`inline-block text-xs px-2 py-1 rounded ${
                             darkMode
-                              ? 'bg-neutral-700 text-neutral-300'
-                              : 'bg-neutral-200 text-neutral-700'
+                              ? 'bg-md-surface-container-high text-md-on-surface-variant'
+                              : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                           }`}
                         >
                           {preset.camera_angle}
@@ -561,8 +561,8 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
                         <span
                           className={`inline-block text-xs px-2 py-1 rounded ${
                             darkMode
-                              ? 'bg-neutral-700 text-neutral-300'
-                              : 'bg-neutral-200 text-neutral-700'
+                              ? 'bg-md-surface-container-high text-md-on-surface-variant'
+                              : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                           }`}
                         >
                           {preset.shot_size}
@@ -570,8 +570,8 @@ export const AssetLibraryPanel: React.FC<AssetLibraryPanelProps> = ({
                         <span
                           className={`inline-block text-xs px-2 py-1 rounded ${
                             darkMode
-                              ? 'bg-neutral-700 text-neutral-300'
-                              : 'bg-neutral-200 text-neutral-700'
+                              ? 'bg-md-surface-container-high text-md-on-surface-variant'
+                              : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                           }`}
                         >
                           {preset.duration}초
@@ -680,26 +680,26 @@ export const AnimaticPreview: React.FC<AnimaticPreviewProps> = ({
 
   const progressPercent = (elapsedMs / totalMs) * 100;
 
-  const bgClass = darkMode ? 'bg-neutral-900' : 'bg-neutral-100';
-  const textClass = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const mutedClass = darkMode ? 'text-neutral-400' : 'text-neutral-600';
+  const bgClass = darkMode ? 'bg-md-surface-container-low' : 'bg-md-light-surface-container-high';
+  const textClass = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const mutedClass = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
   const buttonClass = darkMode
-    ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-100'
-    : 'bg-neutral-300 hover:bg-neutral-400 text-neutral-900';
+    ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-white'
+    : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30 text-md-light-on-surface';
 
   return (
     <div className={`rounded-lg overflow-hidden ${bgClass} transition-colors`}>
       {/* Preview Area - Dark Background */}
       <div
         className={`relative w-full aspect-video ${
-          darkMode ? 'bg-neutral-950' : 'bg-black'
+          darkMode ? 'bg-md-surface-container-low' : 'bg-black'
         } flex items-center justify-center`}
       >
         {/* Content Overlay */}
         <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
           <div className="text-center max-w-2xl">
             {currentScene.image && (
-              <div className="mb-4 rounded-lg overflow-hidden border border-neutral-700">
+              <div className="mb-4 rounded-lg overflow-hidden border border-white/5">
                 <img
                   src={currentScene.image}
                   alt={currentScene.title}
@@ -711,7 +711,7 @@ export const AnimaticPreview: React.FC<AnimaticPreviewProps> = ({
               {currentScene.title || `장면 ${currentIndex + 1}`}
             </h2>
             {currentScene.description && (
-              <p className="text-neutral-300 text-lg mb-4">
+              <p className="text-md-on-surface-variant text-lg mb-4">
                 {currentScene.description}
               </p>
             )}
@@ -725,20 +725,20 @@ export const AnimaticPreview: React.FC<AnimaticPreviewProps> = ({
       </div>
 
       {/* Controls Section */}
-      <div className={`p-4 space-y-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
+      <div className={`p-4 space-y-3 ${darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-highest'}`}>
         {/* Progress Bar */}
         <div className="space-y-1">
           <div
             className={`w-full h-2 rounded-full ${
-              darkMode ? 'bg-neutral-700' : 'bg-neutral-300'
+              darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest'
             } overflow-hidden`}
           >
             <div
-              className="h-full bg-neutral-600 transition-all"
+              className="h-full bg-md-surface-bright transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-neutral-600">
+          <div className="flex justify-between text-xs text-md-outline">
             <span>
               {Math.floor(elapsedMs / 1000)} / {totalDuration}초
             </span>
@@ -861,13 +861,13 @@ export const ShotListView: React.FC<ShotListViewProps> = ({
     navigator.clipboard.writeText(tsvContent);
   };
 
-  const bgClass = darkMode ? 'bg-neutral-800' : 'bg-neutral-100';
-  const borderClass = darkMode ? 'border-neutral-700' : 'border-neutral-200';
-  const textClass = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const mutedClass = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const cellBgClass = darkMode ? 'bg-neutral-750' : 'bg-neutral-50';
-  const headerBgClass = darkMode ? 'bg-neutral-700' : 'bg-neutral-200';
-  const rowHoverClass = darkMode ? 'hover:bg-neutral-700' : 'hover:bg-neutral-200';
+  const bgClass = darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high';
+  const borderClass = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textClass = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const mutedClass = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const cellBgClass = darkMode ? 'bg-md-surface-container-high' : 'bg-white';
+  const headerBgClass = darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest';
+  const rowHoverClass = darkMode ? 'hover:bg-md-surface-container-high' : 'hover:bg-md-light-surface-container-highest';
 
   const SortIcon = ({ column }: { column: SortColumn }) => {
     if (sortColumn !== column) return null;
@@ -881,7 +881,7 @@ export const ShotListView: React.FC<ShotListViewProps> = ({
   return (
     <div className={`rounded-lg border ${borderClass} ${bgClass}`}>
       {/* Header */}
-      <div className="p-4 border-b border-neutral-700 flex items-center justify-between">
+      <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <h3 className={`font-semibold text-lg ${textClass}`}>샷 리스트</h3>
         <div className="flex gap-2">
           <label className="flex items-center gap-2 text-sm">
@@ -897,8 +897,8 @@ export const ShotListView: React.FC<ShotListViewProps> = ({
             onClick={handleCopy}
             className={`flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors ${
               darkMode
-                ? 'bg-neutral-700 hover:bg-neutral-600'
-                : 'bg-neutral-300 hover:bg-neutral-400'
+                ? 'bg-md-surface-container-high hover:bg-md-surface-bright'
+                : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30'
             } ${textClass}`}
             title="TSV로 복사 (엑셀 붙여넣기용)"
           >
@@ -907,8 +907,8 @@ export const ShotListView: React.FC<ShotListViewProps> = ({
           </button>
           <button className={`flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors ${
               darkMode
-                ? 'bg-neutral-700 hover:bg-neutral-600'
-                : 'bg-neutral-300 hover:bg-neutral-400'
+                ? 'bg-md-surface-container-high hover:bg-md-surface-bright'
+                : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30'
             } ${textClass}`}
             title="인쇄"
           >
@@ -1053,7 +1053,7 @@ export const ShotListView: React.FC<ShotListViewProps> = ({
       {/* Footer Stats */}
       <div
         className={`px-4 py-3 border-t ${borderClass} ${
-          darkMode ? 'bg-neutral-750' : 'bg-neutral-50'
+          darkMode ? 'bg-md-surface-container-high' : 'bg-white'
         } flex items-center justify-between text-sm`}
       >
         <span className={mutedClass}>
@@ -1186,17 +1186,17 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
     return date.toLocaleString('ko-KR');
   };
 
-  const bgClass = darkMode ? 'bg-neutral-800' : 'bg-neutral-100';
-  const borderClass = darkMode ? 'border-neutral-700' : 'border-neutral-200';
-  const textClass = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const mutedClass = darkMode ? 'text-neutral-400' : 'text-neutral-600';
-  const inputBgClass = darkMode ? 'bg-neutral-700' : 'bg-neutral-50';
+  const bgClass = darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high';
+  const borderClass = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const textClass = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const mutedClass = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const inputBgClass = darkMode ? 'bg-md-surface-container-high' : 'bg-white';
   const hoverClass = darkMode
-    ? 'hover:bg-neutral-700'
-    : 'hover:bg-neutral-200';
+    ? 'hover:bg-md-surface-container-high'
+    : 'hover:bg-md-light-surface-container-highest';
   const buttonClass = darkMode
-    ? 'bg-neutral-700 hover:bg-neutral-600'
-    : 'bg-neutral-300 hover:bg-neutral-400';
+    ? 'bg-md-surface-container-high hover:bg-md-surface-bright'
+    : 'bg-md-light-surface-container-highest hover:bg-md-light-outline-variant/30';
 
   return (
     <div
@@ -1210,7 +1210,7 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
         <div className="flex items-center gap-3">
           <RotateCcw
             size={20}
-            className={darkMode ? 'text-neutral-400' : 'text-neutral-600'}
+            className={darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}
           />
           <span className={`font-semibold ${textClass}`}>버전 관리</span>
           {autoSaveEnabled && (
@@ -1250,8 +1250,8 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
                   versionName.trim()
                     ? buttonClass
                     : darkMode
-                    ? 'bg-neutral-800 text-neutral-600'
-                    : 'bg-neutral-200 text-neutral-500'
+                    ? 'bg-md-surface-container text-md-outline'
+                    : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                 } ${textClass}`}
               >
                 저장
@@ -1285,8 +1285,8 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
                   className={`p-3 rounded border ${borderClass} ${
                     restoreConfirm === version.id
                       ? darkMode
-                        ? 'bg-neutral-700'
-                        : 'bg-neutral-200'
+                        ? 'bg-md-surface-container-high'
+                        : 'bg-md-light-surface-container-highest'
                       : ''
                   }`}
                 >
@@ -1329,8 +1329,8 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
                             <span
                               className={`inline-flex items-center gap-1 px-2 py-1 rounded ${
                                 darkMode
-                                  ? 'bg-neutral-700 text-neutral-300'
-                                  : 'bg-neutral-200 text-neutral-700'
+                                  ? 'bg-md-surface-container-high text-md-on-surface-variant'
+                                  : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
                               }`}
                             >
                               <Eye size={12} />
@@ -1354,8 +1354,8 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
                             }
                             className={`p-1 rounded transition-colors ${
                               darkMode
-                                ? 'hover:bg-neutral-600 text-neutral-400 hover:text-red-400'
-                                : 'hover:bg-neutral-300 text-neutral-600 hover:text-red-600'
+                                ? 'hover:bg-md-surface-bright text-md-outline hover:text-red-400'
+                                : 'hover:bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:text-red-600'
                             }`}
                             title="삭제"
                           >
@@ -1374,7 +1374,7 @@ export const VersionManager: React.FC<VersionManagerProps> = ({
           {versions.length > 0 && (
             <div
               className={`text-xs ${mutedClass} p-2 rounded ${
-                darkMode ? 'bg-neutral-700' : 'bg-neutral-200'
+                darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest'
               }`}
             >
               저장됨: {versions.length} / {MAX_VERSIONS} 버전

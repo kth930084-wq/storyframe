@@ -55,17 +55,17 @@ const CollapsibleSection = ({
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`rounded-2xl border transition-all ${darkMode ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-gray-100'}`}>
+    <div className={`rounded-2xl border transition-all ${darkMode ? 'bg-md-surface-container border-white/5' : 'bg-white border-md-light-outline-variant/20'}`}>
       <button onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between p-5 text-left ${darkMode ? 'hover:bg-neutral-750' : 'hover:bg-gray-50'} rounded-2xl transition`}>
+        className={`w-full flex items-center justify-between p-5 text-left ${darkMode ? 'hover:bg-neutral-750' : 'hover:bg-white'} rounded-2xl transition`}>
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? 'bg-neutral-700' : 'bg-gray-100'}`}>
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'}`}>
             {icon}
           </div>
-          <span className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{title}</span>
-          {badge && <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-gray-100 text-gray-500'}`}>{badge}</span>}
+          <span className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-md-light-on-surface'}`}>{title}</span>
+          {badge && <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant'}`}>{badge}</span>}
         </div>
-        {open ? <ChevronDown size={16} className={darkMode ? 'text-neutral-500' : 'text-gray-400'} /> : <ChevronRight size={16} className={darkMode ? 'text-neutral-500' : 'text-gray-400'} />}
+        {open ? <ChevronDown size={16} className={darkMode ? 'text-md-outline' : 'text-md-light-outline-variant'} /> : <ChevronRight size={16} className={darkMode ? 'text-md-outline' : 'text-md-light-outline-variant'} />}
       </button>
       {open && <div className="px-5 pb-5 pt-0">{children}</div>}
     </div>
@@ -84,9 +84,9 @@ export default function PPMSection({
   const data = { ...defaultPPMData, ...ppmData };
 
   const inputCls = darkMode
-    ? 'bg-neutral-700 text-white border-neutral-600 placeholder-neutral-500 focus:ring-neutral-400'
-    : 'bg-gray-50 text-gray-900 border-gray-200 placeholder-gray-400 focus:ring-neutral-500';
-  const labelCls = darkMode ? 'text-neutral-400' : 'text-gray-500';
+    ? 'bg-md-surface-container-high text-white border-white/10 placeholder-neutral-500 focus:ring-neutral-400'
+    : 'bg-white text-md-light-on-surface border-md-light-outline-variant/30 placeholder-gray-400 focus:ring-neutral-500';
+  const labelCls = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
 
   const updateField = useCallback((section: keyof PPMData, field: string, value: any) => {
     if (section === 'synopsis') {
@@ -165,27 +165,27 @@ export default function PPMSection({
   };
 
   return (
-    <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? 'bg-neutral-900' : 'bg-gray-50'}`}>
+    <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? 'bg-md-surface-container-low' : 'bg-white'}`}>
       <div className="max-w-3xl mx-auto space-y-4">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-orange-400' : 'text-orange-600'}`}>
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-md-tertiary-container' : 'text-md-tertiary-container'}`}>
                 PPM
               </span>
             </div>
-            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-md-light-on-surface'}`}>
               사전 제작 미팅 자료
             </h2>
-            <p className={`text-sm mt-1 ${darkMode ? 'text-neutral-400' : 'text-gray-500'}`}>
+            <p className={`text-sm mt-1 ${darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`}>
               톤앤매너, 비주얼 가이드, 시놉시스 등 PPM 발표 자료를 구성하세요
             </p>
           </div>
         </div>
 
         {/* 1. 프로젝트 개요 */}
-        <CollapsibleSection title="프로젝트 개요" icon={<FileText size={16} className={darkMode ? 'text-neutral-300' : 'text-gray-600'} />} darkMode={darkMode}>
+        <CollapsibleSection title="프로젝트 개요" icon={<FileText size={16} className={darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />} darkMode={darkMode}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>프로젝트명</label>
@@ -216,7 +216,7 @@ export default function PPMSection({
         </CollapsibleSection>
 
         {/* 2. 크리에이티브 방향 */}
-        <CollapsibleSection title="크리에이티브 방향" icon={<Palette size={16} className={darkMode ? 'text-neutral-300' : 'text-gray-600'} />} darkMode={darkMode}>
+        <CollapsibleSection title="크리에이티브 방향" icon={<Palette size={16} className={darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />} darkMode={darkMode}>
           <div className="space-y-5">
             {/* 톤앤매너 */}
             <div>
@@ -231,7 +231,7 @@ export default function PPMSection({
               <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>키워드</label>
               <div className="flex flex-wrap gap-2 mb-2">
                 {(data.creative?.keywords || []).map((kw, i) => (
-                  <span key={i} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${darkMode ? 'bg-neutral-700 text-neutral-200' : 'bg-gray-100 text-gray-700'}`}>
+                  <span key={i} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium ${darkMode ? 'bg-md-surface-container-high text-neutral-200' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant'}`}>
                     {kw}
                     <button onClick={() => removeKeyword(i)} className="hover:text-red-400 transition"><X size={12} /></button>
                   </span>
@@ -241,7 +241,7 @@ export default function PPMSection({
                 <input type="text" value={newKeyword} onChange={(e) => setNewKeyword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
                   placeholder="키워드 입력 후 Enter" className={`flex-1 px-4 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
-                <button onClick={addKeyword} className={`px-3 py-2 rounded-xl text-xs font-medium transition ${darkMode ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>
+                <button onClick={addKeyword} className={`px-3 py-2 rounded-xl text-xs font-medium transition ${darkMode ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-md-on-surface-variant' : 'bg-md-light-surface-container-highest hover:bg-gray-300 text-md-light-on-surface-variant'}`}>
                   <Plus size={14} />
                 </button>
               </div>
@@ -265,7 +265,7 @@ export default function PPMSection({
         </CollapsibleSection>
 
         {/* 3. 비주얼 가이드 */}
-        <CollapsibleSection title="비주얼 가이드" icon={<Eye size={16} className={darkMode ? 'text-neutral-300' : 'text-gray-600'} />} darkMode={darkMode}
+        <CollapsibleSection title="비주얼 가이드" icon={<Eye size={16} className={darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />} darkMode={darkMode}
           badge={`컬러 ${(data.visual?.key_colors || []).length}개`}>
           <div className="space-y-5">
             {/* 키 컬러 팔레트 */}
@@ -284,7 +284,7 @@ export default function PPMSection({
                   </div>
                 ))}
                 <button onClick={addColor}
-                  className={`w-12 h-12 rounded-xl border-2 border-dashed flex items-center justify-center transition ${darkMode ? 'border-neutral-600 hover:border-neutral-500 text-neutral-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
+                  className={`w-12 h-12 rounded-xl border-2 border-dashed flex items-center justify-center transition ${darkMode ? 'border-white/10 hover:border-neutral-500 text-md-outline' : 'border-gray-300 hover:border-gray-400 text-md-light-outline-variant'}`}>
                   <Plus size={16} />
                 </button>
               </div>
@@ -303,7 +303,7 @@ export default function PPMSection({
                     </button>
                   </div>
                 ))}
-                <label className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition ${darkMode ? 'border-neutral-600 hover:border-neutral-500 text-neutral-500' : 'border-gray-300 hover:border-gray-400 text-gray-400'}`}>
+                <label className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition ${darkMode ? 'border-white/10 hover:border-neutral-500 text-md-outline' : 'border-gray-300 hover:border-gray-400 text-md-light-outline-variant'}`}>
                   <Image size={20} />
                   <span className="text-[10px] mt-1">업로드</span>
                   <input type="file" accept="image/*" multiple onChange={handleMoodboardUpload} className="hidden" />
@@ -316,7 +316,7 @@ export default function PPMSection({
               <label className={`block text-xs font-semibold mb-2 ${labelCls}`}>레퍼런스 영상</label>
               <div className="space-y-2 mb-2">
                 {(data.visual?.reference_links || []).map((link, i) => (
-                  <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-gray-100 text-gray-600'}`}>
+                  <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-md-surface-container-high text-md-on-surface-variant' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant'}`}>
                     <LinkIcon size={13} className="flex-shrink-0" />
                     <a href={link} target="_blank" rel="noopener noreferrer" className="truncate hover:underline flex-1">{link}</a>
                     <button onClick={() => removeLink(i)} className="hover:text-red-400 flex-shrink-0"><X size={14} /></button>
@@ -327,7 +327,7 @@ export default function PPMSection({
                 <input type="text" value={newLink} onChange={(e) => setNewLink(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLink())}
                   placeholder="유튜브/비메오 URL 입력 후 Enter" className={`flex-1 px-4 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 transition ${inputCls}`} />
-                <button onClick={addLink} className={`px-3 py-2 rounded-xl text-xs font-medium transition ${darkMode ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>
+                <button onClick={addLink} className={`px-3 py-2 rounded-xl text-xs font-medium transition ${darkMode ? 'bg-md-surface-container-high hover:bg-md-surface-bright text-md-on-surface-variant' : 'bg-md-light-surface-container-highest hover:bg-gray-300 text-md-light-on-surface-variant'}`}>
                   <Plus size={14} />
                 </button>
               </div>
@@ -336,7 +336,7 @@ export default function PPMSection({
         </CollapsibleSection>
 
         {/* 4. 시놉시스 */}
-        <CollapsibleSection title="시놉시스" icon={<BookOpen size={16} className={darkMode ? 'text-neutral-300' : 'text-gray-600'} />} darkMode={darkMode}>
+        <CollapsibleSection title="시놉시스" icon={<BookOpen size={16} className={darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />} darkMode={darkMode}>
           <div>
             <textarea value={data.synopsis || ''} onChange={(e) => onUpdate({ ...data, synopsis: e.target.value })}
               rows={8} placeholder="영상의 전체 스토리를 서술형으로 작성하세요.&#10;&#10;예:&#10;새벽 5시, 아직 어두운 도시의 전경으로 시작한다. 고요한 거리 위로 한 줄기 빛이 비치며, 카메라는 천천히 한 카페의 문을 향해 다가간다..."
@@ -348,7 +348,7 @@ export default function PPMSection({
         </CollapsibleSection>
 
         {/* 5. 타겟 오디언스 */}
-        <CollapsibleSection title="타겟 오디언스" icon={<Users size={16} className={darkMode ? 'text-neutral-300' : 'text-gray-600'} />} darkMode={darkMode}>
+        <CollapsibleSection title="타겟 오디언스" icon={<Users size={16} className={darkMode ? 'text-md-on-surface-variant' : 'text-md-light-on-surface-variant'} />} darkMode={darkMode}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>타겟층</label>

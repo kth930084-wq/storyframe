@@ -114,25 +114,25 @@ function CapturedFramesBar({
   if (frames.length === 0) return null;
 
   return (
-    <div className="bg-gray-900/95 border-b border-orange-800/40 px-4 py-2.5 flex-shrink-0">
+    <div className="bg-md-surface-container-low/95 border-b border-orange-800/40 px-4 py-2.5 flex-shrink-0">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-orange-400 text-xs font-bold">📸 캡처 보관함</span>
           <span className="text-orange-300/60 text-[10px]">{frames.length}컷</span>
           <button
             onClick={() => onFramesChange([])}
-            className="text-gray-500 hover:text-red-400 text-[10px] ml-1 transition-colors"
+            className="text-md-light-on-surface-variant hover:text-red-400 text-[10px] ml-1 transition-colors"
           >
             전체삭제
           </button>
         </div>
-        <div className="w-px h-6 bg-gray-700 flex-shrink-0" />
+        <div className="w-px h-6 bg-md-surface-container-high flex-shrink-0" />
         <div ref={scrollRef} className="flex-1 overflow-x-auto no-scrollbar">
           <div className="flex gap-2">
             {frames.map((frame, i) => (
               <div
                 key={i}
-                className="group relative flex-shrink-0 cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all"
+                className="group relative flex-shrink-0 cursor-pointer rounded-lg overflow-hidden bg-md-surface-container hover:ring-2 hover:ring-orange-500 transition-all"
                 style={{ width: 120 }}
               >
                 <img
@@ -165,7 +165,7 @@ function CapturedFramesBar({
             ))}
           </div>
         </div>
-        <span className="text-gray-500 text-[9px] flex-shrink-0 hidden md:block">클릭 → 현재 씬에 적용</span>
+        <span className="text-md-light-on-surface-variant text-[9px] flex-shrink-0 hidden md:block">클릭 → 현재 씬에 적용</span>
       </div>
     </div>
   );
@@ -225,10 +225,10 @@ function VideoCaptureModal({
   return (
     <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900/80 border-b border-gray-700 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-md-surface-container-low/80 border-b border-white/5 flex-shrink-0">
         <div className="flex items-center gap-3">
           <h3 className="text-white text-sm font-bold">{item.brand}</h3>
-          <span className="text-gray-400 text-xs">{item.duration} · {item.title}</span>
+          <span className="text-md-light-outline-variant text-xs">{item.duration} · {item.title}</span>
           {captureCount > 0 && (
             <span className="bg-orange-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
               {captureCount}컷 캡처됨
@@ -267,8 +267,8 @@ function VideoCaptureModal({
           {videoError && (
             <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
               <span className="text-red-400 text-lg mb-2">영상을 재생할 수 없습니다</span>
-              <span className="text-gray-500 text-xs">이 영상 파일에 접근할 수 없어요</span>
-              <button onClick={onClose} className="mt-3 px-4 py-2 bg-gray-700 text-white rounded-lg text-sm hover:bg-gray-600">
+              <span className="text-md-light-on-surface-variant text-xs">이 영상 파일에 접근할 수 없어요</span>
+              <button onClick={onClose} className="mt-3 px-4 py-2 bg-md-surface-container-high text-white rounded-lg text-sm hover:bg-md-surface-bright">
                 돌아가기
               </button>
             </div>
@@ -284,13 +284,13 @@ function VideoCaptureModal({
         <div className="flex items-center gap-2 mt-3 max-w-4xl w-full">
           <button
             onClick={() => { const v = videoRef.current; if (v) v.currentTime = Math.max(0, v.currentTime - 5); }}
-            className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 text-xs"
+            className="px-3 py-2.5 bg-md-surface-container text-md-on-surface-variant rounded-xl hover:bg-md-surface-container-high text-xs"
           >
             ⏪ 5초
           </button>
           <button
             onClick={() => { const v = videoRef.current; if (v) v.currentTime = Math.max(0, v.currentTime - 1/30); }}
-            className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 text-xs"
+            className="px-3 py-2.5 bg-md-surface-container text-md-on-surface-variant rounded-xl hover:bg-md-surface-container-high text-xs"
           >
             ◀ 1프레임
           </button>
@@ -302,20 +302,20 @@ function VideoCaptureModal({
           </button>
           <button
             onClick={() => { const v = videoRef.current; if (v) v.currentTime = v.currentTime + 1/30; }}
-            className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 text-xs"
+            className="px-3 py-2.5 bg-md-surface-container text-md-on-surface-variant rounded-xl hover:bg-md-surface-container-high text-xs"
           >
             1프레임 ▶
           </button>
           <button
             onClick={() => { const v = videoRef.current; if (v) v.currentTime = v.currentTime + 5; }}
-            className="px-3 py-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 text-xs"
+            className="px-3 py-2.5 bg-md-surface-container text-md-on-surface-variant rounded-xl hover:bg-md-surface-container-high text-xs"
           >
             5초 ⏩
           </button>
         </div>
 
         {/* CORS Note */}
-        <p className="text-gray-600 text-[9px] mt-2 max-w-4xl text-center">
+        <p className="text-md-light-on-surface-variant text-[9px] mt-2 max-w-4xl text-center">
           💡 일부 영상은 보안 정책(CORS)으로 캡처가 안 될 수 있어요. 그럴 때는 스크린샷(Cmd+Shift+4)으로 캡처해주세요.
         </p>
       </div>
@@ -371,10 +371,10 @@ function PortfolioTab({
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Sidebar - Filters */}
-      <div className="hidden md:flex w-56 lg:w-64 bg-gray-900 border-r border-gray-700 overflow-y-auto p-3 flex-shrink-0 flex-col gap-4">
+      <div className="hidden md:flex w-56 lg:w-64 bg-md-surface-container-low border-r border-white/5 overflow-y-auto p-3 flex-shrink-0 flex-col gap-4">
         {/* Site Category */}
         <div>
-          <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-2">카테고리</h3>
+          <h3 className="text-md-light-outline-variant text-[10px] font-bold uppercase tracking-wider mb-2">카테고리</h3>
           <div className="flex flex-col gap-1">
             {SITE_CATEGORIES.map(cat => {
               const count = cat.value === 'ALL' ? PORTFOLIO_ITEMS.length : filterByCategory(PORTFOLIO_ITEMS, cat.value).length;
@@ -383,7 +383,7 @@ function PortfolioTab({
                   key={cat.value}
                   onClick={() => { setSiteCategory(cat.value); setVisibleCount(30); }}
                   className={`px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors flex items-center gap-2 ${
-                    siteCategory === cat.value ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                    siteCategory === cat.value ? 'bg-orange-600 text-white' : 'bg-md-surface-container text-md-on-surface-variant hover:bg-md-surface-container-high'
                   }`}
                 >
                   <span>{cat.icon}</span>
@@ -397,14 +397,14 @@ function PortfolioTab({
 
         {/* Product Type */}
         <div>
-          <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-2">제품 타입</h3>
+          <h3 className="text-md-light-outline-variant text-[10px] font-bold uppercase tracking-wider mb-2">제품 타입</h3>
           <div className="flex flex-wrap gap-1">
             {PRODUCT_TYPES.map(pt => (
               <button
                 key={pt.value}
                 onClick={() => { setProductTypeFilter(productTypeFilter === pt.value ? '' : pt.value); setVisibleCount(30); }}
                 className={`px-2 py-1 rounded text-[10px] transition-colors ${
-                  productTypeFilter === pt.value ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  productTypeFilter === pt.value ? 'bg-orange-600 text-white' : 'bg-md-surface-container text-md-light-outline-variant hover:bg-md-surface-container-high'
                 }`}
               >
                 {pt.icon} {pt.label}
@@ -415,11 +415,11 @@ function PortfolioTab({
 
         {/* Brand Filter */}
         <div>
-          <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-2">브랜드</h3>
+          <h3 className="text-md-light-outline-variant text-[10px] font-bold uppercase tracking-wider mb-2">브랜드</h3>
           <select
             value={brandFilter}
             onChange={e => { setBrandFilter(e.target.value); setVisibleCount(30); }}
-            className="w-full bg-gray-800 text-gray-300 text-xs rounded-lg px-2 py-1.5 border border-gray-700 focus:outline-none focus:border-orange-500"
+            className="w-full bg-md-surface-container text-md-on-surface-variant text-xs rounded-lg px-2 py-1.5 border border-white/5 focus:outline-none focus:border-orange-500"
           >
             <option value="">전체 브랜드</option>
             {PORTFOLIO_BRANDS.map(b => (
@@ -436,7 +436,7 @@ function PortfolioTab({
             onChange={e => setShowWideOnly(e.target.checked)}
             className="accent-orange-500"
           />
-          <span className="text-gray-300 text-xs">16:9 가로 영상만</span>
+          <span className="text-md-on-surface-variant text-xs">16:9 가로 영상만</span>
         </label>
 
         {hasFilters && (
@@ -456,7 +456,7 @@ function PortfolioTab({
                 key={cat.value}
                 onClick={() => { setSiteCategory(cat.value); setVisibleCount(30); }}
                 className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap flex-shrink-0 ${
-                  siteCategory === cat.value ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400'
+                  siteCategory === cat.value ? 'bg-orange-600 text-white' : 'bg-md-surface-container text-md-light-outline-variant'
                 }`}
               >
                 {cat.icon} {cat.label}
@@ -469,7 +469,7 @@ function PortfolioTab({
                 key={pt.value}
                 onClick={() => setProductTypeFilter(productTypeFilter === pt.value ? '' : pt.value)}
                 className={`px-2 py-1 rounded text-[10px] whitespace-nowrap flex-shrink-0 ${
-                  productTypeFilter === pt.value ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-500'
+                  productTypeFilter === pt.value ? 'bg-orange-600 text-white' : 'bg-md-surface-container text-md-light-on-surface-variant'
                 }`}
               >
                 {pt.label}
@@ -479,7 +479,7 @@ function PortfolioTab({
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <span className="text-gray-400 text-xs">{filteredItems.length}개 영상</span>
+          <span className="text-md-light-outline-variant text-xs">{filteredItems.length}개 영상</span>
           {hasFilters && <button onClick={clearFilters} className="md:hidden text-orange-400 text-xs">필터 초기화</button>}
         </div>
 
@@ -491,7 +491,7 @@ function PortfolioTab({
             return (
               <div
                 key={item.id}
-                className="group relative cursor-pointer rounded-xl overflow-hidden bg-gray-800 hover:ring-2 hover:ring-orange-500 transition-all"
+                className="group relative cursor-pointer rounded-xl overflow-hidden bg-md-surface-container hover:ring-2 hover:ring-orange-500 transition-all"
                 onClick={() => setCaptureItem(item)}
               >
                 <div className="aspect-video relative bg-gradient-to-br from-gray-700 to-gray-800 overflow-hidden">
@@ -504,7 +504,7 @@ function PortfolioTab({
                       onError={() => handleThumbError(item.id)}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-md-light-on-surface-variant">
                       <span className="text-2xl mb-1">🎬</span>
                       <span className="text-[9px]">{item.brand}</span>
                     </div>
@@ -522,9 +522,9 @@ function PortfolioTab({
                 <div className="p-1.5 md:p-2">
                   <div className="text-white text-[11px] md:text-xs font-medium truncate">{item.brand}</div>
                   <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-[8px] md:text-[9px] bg-gray-700 text-gray-400 px-1 md:px-1.5 py-0.5 rounded">{catInfo?.label}</span>
+                    <span className="text-[8px] md:text-[9px] bg-md-surface-container-high text-md-light-outline-variant px-1 md:px-1.5 py-0.5 rounded">{catInfo?.label}</span>
                     {item.productType && (
-                      <span className="text-[8px] md:text-[9px] bg-gray-700 text-gray-400 px-1 md:px-1.5 py-0.5 rounded truncate">
+                      <span className="text-[8px] md:text-[9px] bg-md-surface-container-high text-md-light-outline-variant px-1 md:px-1.5 py-0.5 rounded truncate">
                         {PRODUCT_TYPES.find(pt => item.productType.includes(pt.value))?.label || item.productType}
                       </span>
                     )}
@@ -539,7 +539,7 @@ function PortfolioTab({
           <div className="text-center mt-6">
             <button
               onClick={() => setVisibleCount(prev => prev + 30)}
-              className="px-6 py-2.5 bg-gray-800 text-gray-300 rounded-xl hover:bg-gray-700 text-sm"
+              className="px-6 py-2.5 bg-md-surface-container text-md-on-surface-variant rounded-xl hover:bg-md-surface-container-high text-sm"
             >
               더 보기 ({filteredItems.length - visibleCount}개 남음)
             </button>
@@ -666,15 +666,15 @@ export default function ReferenceLibrary({
   return (
     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-gray-700 bg-gray-900 flex-shrink-0">
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-white/5 bg-md-surface-container-low flex-shrink-0">
         <div className="flex items-center gap-2 md:gap-4">
           <h2 className="text-white text-base md:text-xl font-bold whitespace-nowrap">레퍼런스 라이브러리</h2>
           {/* Tab Switcher */}
-          <div className="flex bg-gray-800 rounded-lg p-0.5">
+          <div className="flex bg-md-surface-container rounded-lg p-0.5">
             <button
               onClick={() => setActiveTab('templates')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'templates' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+                activeTab === 'templates' ? 'bg-blue-600 text-white' : 'text-md-light-outline-variant hover:text-white'
               }`}
             >
               스토리보드 템플릿
@@ -682,7 +682,7 @@ export default function ReferenceLibrary({
             <button
               onClick={() => setActiveTab('portfolio')}
               className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeTab === 'portfolio' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'
+                activeTab === 'portfolio' ? 'bg-orange-600 text-white' : 'text-md-light-outline-variant hover:text-white'
               }`}
             >
               PEWPEW 영상 캡처
@@ -697,7 +697,7 @@ export default function ReferenceLibrary({
                 placeholder="검색..."
                 value={searchTerm}
                 onChange={e => { setSearchTerm(e.target.value); setVisibleCount(48); }}
-                className="bg-gray-800 text-white px-3 py-1.5 rounded-lg text-sm border border-gray-600 focus:outline-none focus:border-blue-500 w-32 md:w-48"
+                className="bg-md-surface-container text-white px-3 py-1.5 rounded-lg text-sm border border-white/10 focus:outline-none focus:border-blue-500 w-32 md:w-48"
               />
               {Object.keys(selectedFilters).length > 0 && (
                 <button onClick={clearFilters} className="text-sm text-blue-400 hover:text-blue-300 hidden md:block">
@@ -707,7 +707,7 @@ export default function ReferenceLibrary({
             </>
           )}
           {onClose && (
-            <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-medium hover:bg-gray-600 transition-colors">
+            <button onClick={onClose} className="flex items-center gap-1.5 px-3 py-1.5 bg-md-surface-container-high text-white rounded-lg text-xs font-medium hover:bg-md-surface-bright transition-colors">
               ← 편집기로 돌아가기
             </button>
           )}
@@ -739,10 +739,10 @@ export default function ReferenceLibrary({
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar Filters - Hidden on mobile */}
-          <div className="hidden md:block w-64 bg-gray-900 border-r border-gray-700 overflow-y-auto p-4 flex-shrink-0">
+          <div className="hidden md:block w-64 bg-md-surface-container-low border-r border-white/5 overflow-y-auto p-4 flex-shrink-0">
             {data && (['shotSize', 'angle', 'character', 'action'] as const).map(category => (
               <div key={category} className="mb-5">
-                <h3 className="text-gray-300 text-sm font-semibold mb-2">
+                <h3 className="text-md-on-surface-variant text-sm font-semibold mb-2">
                   {FILTER_LABELS[category]}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
@@ -753,7 +753,7 @@ export default function ReferenceLibrary({
                         key={value}
                         onClick={() => handleFilterChange(category, value)}
                         className={`px-2.5 py-1 rounded text-xs transition-colors ${
-                          isActive ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                          isActive ? 'bg-blue-600 text-white' : 'bg-md-surface-container text-md-on-surface-variant hover:bg-md-surface-container-high'
                         }`}
                       >
                         {getLabelForValue(category, value)}
@@ -765,8 +765,8 @@ export default function ReferenceLibrary({
             ))}
 
             {Object.keys(selectedFilters).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-700">
-                <h3 className="text-gray-300 text-sm font-semibold mb-2">적용된 필터</h3>
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <h3 className="text-md-on-surface-variant text-sm font-semibold mb-2">적용된 필터</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(selectedFilters).map(([cat, val]) => (
                     <span key={cat} className="inline-flex items-center gap-1 bg-blue-900/50 text-blue-300 px-2 py-1 rounded text-xs">
@@ -782,7 +782,7 @@ export default function ReferenceLibrary({
           {/* Mobile Filter Bar */}
           <div className="md:hidden">
             {data && (
-              <div className="flex overflow-x-auto gap-1.5 px-3 py-2 border-b border-gray-700 bg-gray-900/50">
+              <div className="flex overflow-x-auto gap-1.5 px-3 py-2 border-b border-white/5 bg-md-surface-container-low/50">
                 {(['shotSize', 'angle', 'character', 'action'] as const).map(category => (
                   (data.filters[category] || []).slice(0, 4).map(value => {
                     const isActive = selectedFilters[category] === value;
@@ -791,7 +791,7 @@ export default function ReferenceLibrary({
                         key={`${category}-${value}`}
                         onClick={() => handleFilterChange(category, value)}
                         className={`px-2.5 py-1 rounded text-[10px] whitespace-nowrap transition-colors flex-shrink-0 ${
-                          isActive ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                          isActive ? 'bg-blue-600 text-white' : 'bg-md-surface-container text-md-light-outline-variant'
                         }`}
                       >
                         {getLabelForValue(category, value)}
@@ -806,19 +806,19 @@ export default function ReferenceLibrary({
           {/* Image Grid */}
           <div className="flex-1 overflow-y-auto p-3 md:p-4">
             {filteredTemplates.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-md-light-on-surface-variant">
                 조건에 맞는 레퍼런스가 없습니다
               </div>
             ) : (
               <>
-                <div className="text-gray-500 text-xs mb-3 md:hidden">
+                <div className="text-md-light-on-surface-variant text-xs mb-3 md:hidden">
                   {filteredTemplates.length}개 결과
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 md:gap-3">
                   {filteredTemplates.slice(0, visibleCount).map(template => (
                     <div
                       key={template.id}
-                      className="group relative cursor-pointer rounded-lg overflow-hidden bg-gray-800 hover:ring-2 hover:ring-blue-500 transition-all"
+                      className="group relative cursor-pointer rounded-lg overflow-hidden bg-md-surface-container hover:ring-2 hover:ring-blue-500 transition-all"
                       onClick={() => setSelectedImage(template)}
                     >
                       <div className="aspect-video relative">
@@ -836,10 +836,10 @@ export default function ReferenceLibrary({
                         </div>
                       </div>
                       <div className="p-1.5">
-                        <div className="text-gray-400 text-[10px] truncate">
+                        <div className="text-md-light-outline-variant text-[10px] truncate">
                           {template.shotSize} · {getLabelForValue('angle', template.angle)}
                         </div>
-                        <div className="text-gray-500 text-[10px] truncate">
+                        <div className="text-md-light-on-surface-variant text-[10px] truncate">
                           {getLabelForValue('character', template.character)} · {getLabelForValue('action', template.action)}
                         </div>
                       </div>
@@ -866,7 +866,7 @@ export default function ReferenceLibrary({
           onClick={() => setSelectedImage(null)}
         >
           <div
-            className="bg-gray-900 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+            className="bg-md-surface-container-low rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="relative">
@@ -877,12 +877,12 @@ export default function ReferenceLibrary({
                 <div className="text-white text-sm font-medium mb-1">
                   #{selectedImage.id} — {SHOT_SIZE_LABELS[selectedImage.shotSize] || selectedImage.shotSize}
                 </div>
-                <div className="text-gray-400 text-xs flex flex-wrap gap-1.5">
-                  <span className="bg-gray-800 px-2 py-0.5 rounded">{getLabelForValue('angle', selectedImage.angle)}</span>
-                  <span className="bg-gray-800 px-2 py-0.5 rounded">{getLabelForValue('character', selectedImage.character)}</span>
-                  <span className="bg-gray-800 px-2 py-0.5 rounded">{getLabelForValue('action', selectedImage.action)}</span>
-                  {selectedImage.lighting && <span className="bg-gray-800 px-2 py-0.5 rounded">{selectedImage.lighting}</span>}
-                  {selectedImage.movement && <span className="bg-gray-800 px-2 py-0.5 rounded">{selectedImage.movement}</span>}
+                <div className="text-md-light-outline-variant text-xs flex flex-wrap gap-1.5">
+                  <span className="bg-md-surface-container px-2 py-0.5 rounded">{getLabelForValue('angle', selectedImage.angle)}</span>
+                  <span className="bg-md-surface-container px-2 py-0.5 rounded">{getLabelForValue('character', selectedImage.character)}</span>
+                  <span className="bg-md-surface-container px-2 py-0.5 rounded">{getLabelForValue('action', selectedImage.action)}</span>
+                  {selectedImage.lighting && <span className="bg-md-surface-container px-2 py-0.5 rounded">{selectedImage.lighting}</span>}
+                  {selectedImage.movement && <span className="bg-md-surface-container px-2 py-0.5 rounded">{selectedImage.movement}</span>}
                 </div>
               </div>
               <div className="flex gap-2 w-full md:w-auto">
@@ -896,7 +896,7 @@ export default function ReferenceLibrary({
                 )}
                 <button
                   onClick={() => setSelectedImage(null)}
-                  className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 text-sm"
+                  className="px-4 py-2 bg-md-surface-container-high text-white rounded-lg hover:bg-md-surface-bright text-sm"
                 >
                   닫기
                 </button>

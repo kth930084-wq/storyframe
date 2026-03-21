@@ -71,12 +71,12 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
     onExport(enabledPageIds);
   };
 
-  const bg = darkMode ? 'bg-neutral-900' : 'bg-white';
-  const border = darkMode ? 'border-neutral-700' : 'border-neutral-200';
-  const text = darkMode ? 'text-neutral-100' : 'text-neutral-900';
-  const subText = darkMode ? 'text-neutral-400' : 'text-neutral-500';
-  const cardBg = darkMode ? 'bg-neutral-800' : 'bg-neutral-50';
-  const hoverBg = darkMode ? 'hover:bg-neutral-750' : 'hover:bg-neutral-100';
+  const bg = darkMode ? 'bg-md-surface-container-low' : 'bg-white';
+  const border = darkMode ? 'border-white/5' : 'border-md-light-outline-variant/20';
+  const text = darkMode ? 'text-white' : 'text-md-light-on-surface';
+  const subText = darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant';
+  const cardBg = darkMode ? 'bg-md-surface-container' : 'bg-md-light-surface-container-high';
+  const hoverBg = darkMode ? 'hover:bg-md-surface-container-high' : 'hover:bg-md-light-surface-container-highest';
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -84,7 +84,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
         {/* Header */}
         <div className={`flex items-center justify-between px-6 py-4 border-b ${border}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-neutral-800 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-md-surface-container rounded-xl flex items-center justify-center">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -92,7 +92,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
               <p className={`text-xs ${subText}`}>포함할 페이지를 선택하고 순서를 조정하세요</p>
             </div>
           </div>
-          <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-100'} transition`}>
+          <button onClick={onClose} className={`p-2 rounded-lg ${darkMode ? 'hover:bg-md-surface-container' : 'hover:bg-md-light-surface-container-high'} transition`}>
             <X className={`w-5 h-5 ${subText}`} />
           </button>
         </div>
@@ -105,13 +105,13 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
           <div className="flex gap-2">
             <button
               onClick={() => toggleAll(true)}
-              className={`text-xs px-2.5 py-1 rounded-lg transition ${darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+              className={`text-xs px-2.5 py-1 rounded-lg transition ${darkMode ? 'bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest'}`}
             >
               전체 선택
             </button>
             <button
               onClick={() => toggleAll(false)}
-              className={`text-xs px-2.5 py-1 rounded-lg transition ${darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+              className={`text-xs px-2.5 py-1 rounded-lg transition ${darkMode ? 'bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest'}`}
             >
               전체 해제
             </button>
@@ -125,22 +125,22 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
               key={page.id}
               className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                 page.enabled
-                  ? darkMode ? 'border-neutral-600 bg-neutral-800' : 'border-neutral-300 bg-white'
-                  : darkMode ? 'border-neutral-800 bg-neutral-900 opacity-50' : 'border-neutral-100 bg-neutral-50 opacity-50'
+                  ? darkMode ? 'border-white/10 bg-md-surface-container' : 'border-md-light-outline-variant/30 bg-white'
+                  : darkMode ? 'border-white/5 bg-md-surface-container-low opacity-50' : 'border-md-light-outline-variant/20 bg-md-light-surface-container-high opacity-50'
               }`}
             >
               {/* Reorder Buttons */}
               <div className="flex flex-col gap-0.5">
                 <button
                   onClick={() => moveUp(index)}
-                  className={`p-0.5 rounded ${index === 0 ? 'opacity-20 cursor-default' : `${darkMode ? 'hover:bg-neutral-700' : 'hover:bg-neutral-200'}`}`}
+                  className={`p-0.5 rounded ${index === 0 ? 'opacity-20 cursor-default' : `${darkMode ? 'hover:bg-md-surface-container-high' : 'hover:bg-md-light-surface-container-highest'}`}`}
                   disabled={index === 0}
                 >
                   <ChevronUp className={`w-3.5 h-3.5 ${subText}`} />
                 </button>
                 <button
                   onClick={() => moveDown(index)}
-                  className={`p-0.5 rounded ${index === pages.length - 1 ? 'opacity-20 cursor-default' : `${darkMode ? 'hover:bg-neutral-700' : 'hover:bg-neutral-200'}`}`}
+                  className={`p-0.5 rounded ${index === pages.length - 1 ? 'opacity-20 cursor-default' : `${darkMode ? 'hover:bg-md-surface-container-high' : 'hover:bg-md-light-surface-container-highest'}`}`}
                   disabled={index === pages.length - 1}
                 >
                   <ChevronDown className={`w-3.5 h-3.5 ${subText}`} />
@@ -153,7 +153,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
                 className={`flex-shrink-0 w-10 h-6 rounded-full transition-colors relative ${
                   page.enabled
                     ? 'bg-blue-600'
-                    : darkMode ? 'bg-neutral-700' : 'bg-neutral-300'
+                    : darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-highest'
                 }`}
               >
                 <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
@@ -169,7 +169,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
 
               {/* Page Count Badge */}
               <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-                darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'
+                darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant'
               }`}>
                 {page.id === 'scene-details' ? `${sceneCount}p` : '1p'}
               </span>
@@ -182,7 +182,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
           <button
             onClick={onClose}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              darkMode ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+              darkMode ? 'bg-md-surface-container text-md-on-surface-variant hover:bg-md-surface-container-high' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest'
             }`}
           >
             취소
@@ -192,8 +192,8 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
             disabled={enabledCount === 0}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition ${
               enabledCount > 0
-                ? 'bg-neutral-800 text-white hover:bg-neutral-900'
-                : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                ? 'bg-md-surface-container text-white hover:bg-md-surface-container-low'
+                : 'bg-md-light-surface-container-highest text-md-light-on-surface-variant cursor-not-allowed'
             }`}
           >
             <Download className="w-4 h-4" />

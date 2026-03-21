@@ -220,19 +220,19 @@ export default function SharePage() {
     switch (type) {
       case 'approve':
         return (
-          <span className="inline-block px-2 py-1 bg-green-900 text-green-200 text-xs rounded">
+          <span className="inline-block px-2 py-1 bg-green-50 text-success text-xs rounded">
             ✓ 승인
           </span>
         );
       case 'comment':
         return (
-          <span className="inline-block px-2 py-1 bg-blue-900 text-blue-200 text-xs rounded">
+          <span className="inline-block px-2 py-1 bg-blue-50 text-info text-xs rounded">
             💬 코멘트
           </span>
         );
       case 'request_edit':
         return (
-          <span className="inline-block px-2 py-1 bg-yellow-900 text-yellow-200 text-xs rounded">
+          <span className="inline-block px-2 py-1 bg-yellow-50 text-warning text-xs rounded">
             ✏️ 수정요청
           </span>
         );
@@ -244,10 +244,10 @@ export default function SharePage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-md-light-on-surface flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-gray-700 border-t-white rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-400">로딩 중...</p>
+          <div className="inline-block w-8 h-8 border-4 border-md-light-outline-variant/30 border-t-white rounded-full animate-spin mb-4"></div>
+          <p className="text-md-light-on-surface-variant">로딩 중...</p>
         </div>
       </div>
     );
@@ -256,11 +256,11 @@ export default function SharePage() {
   // Not found state
   if (notFound) {
     return (
-      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-md-light-on-surface flex items-center justify-center">
         <div className="text-center">
-          <Film className="w-16 h-16 mx-auto mb-4 text-gray-600" />
+          <Film className="w-16 h-16 mx-auto mb-4 text-md-light-on-surface-variant" />
           <h1 className="text-2xl font-bold mb-2">이 링크는 더 이상 유효하지 않습니다</h1>
-          <p className="text-gray-400">공유된 스토리보드를 찾을 수 없습니다.</p>
+          <p className="text-md-light-on-surface-variant">공유된 스토리보드를 찾을 수 없습니다.</p>
         </div>
       </div>
     );
@@ -272,12 +272,12 @@ export default function SharePage() {
   const totalEdits = scenesWithFeedback.reduce((sum, s) => sum + s.editsCount, 0);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-white text-md-light-on-surface">
       {/* Name Modal */}
       {nameModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-lg p-6 w-full max-w-sm mx-4 border border-gray-800">
-            <h2 className="text-xl font-bold mb-4">피드백을 남길 이름을 입력해주세요</h2>
+          <div className="bg-md-light-surface-container-low rounded-lg p-6 w-full max-w-sm mx-4 border border-md-light-outline-variant/20">
+            <h2 className="text-xl font-bold font-headline mb-4">피드백을 남길 이름을 입력해주세요</h2>
             <input
               type="text"
               placeholder="이름 (필수)"
@@ -288,12 +288,12 @@ export default function SharePage() {
                   handleNameModalSubmit();
                 }
               }}
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 mb-4"
+              className="w-full px-4 py-2 bg-md-light-surface-container border border-md-light-outline-variant/30 rounded text-md-light-on-surface placeholder-md-light-on-surface-variant focus:outline-none focus:border-blue-500 mb-4"
               autoFocus
             />
             <button
               onClick={handleNameModalSubmit}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-md-light-on-surface font-semibold py-2 px-4 rounded transition-colors"
             >
               확인
             </button>
@@ -302,40 +302,40 @@ export default function SharePage() {
       )}
 
       {/* Header */}
-      <header className="border-b border-gray-800 bg-gray-900">
+      <header className="border-b border-md-light-outline-variant/20 bg-md-light-surface-container-low">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3 mb-4">
             <Film className="w-8 h-8 text-blue-500" />
-            <h1 className="text-2xl font-bold">PEWPEW 스토리보드</h1>
+            <h1 className="text-2xl font-bold font-headline">PEWPEW 스토리보드</h1>
           </div>
           {project && (
             <div>
-              <h2 className="text-2xl font-bold mb-2">{project.title || 'Untitled Project'}</h2>
-              {project.brand && <p className="text-gray-400 mb-1">브랜드: {project.brand}</p>}
-              {project.description && <p className="text-gray-300">{project.description}</p>}
+              <h2 className="text-2xl font-bold font-headline mb-2">{project.title || 'Untitled Project'}</h2>
+              {project.brand && <p className="text-md-light-on-surface-variant mb-1">브랜드: {project.brand}</p>}
+              {project.description && <p className="text-md-light-on-surface-variant">{project.description}</p>}
             </div>
           )}
         </div>
       </header>
 
       {/* Feedback Stats */}
-      <div className="bg-gray-900 border-b border-gray-800">
+      <div className="bg-md-light-surface-container-low border-b border-md-light-outline-variant/20">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-wrap gap-6">
             <div>
-              <div className="text-sm text-gray-400">승인</div>
+              <div className="text-sm text-md-light-on-surface-variant">승인</div>
               <div className="text-2xl font-bold text-green-400">{totalApprovals}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-400">코멘트</div>
+              <div className="text-sm text-md-light-on-surface-variant">코멘트</div>
               <div className="text-2xl font-bold text-blue-400">{totalComments}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-400">수정요청</div>
+              <div className="text-sm text-md-light-on-surface-variant">수정요청</div>
               <div className="text-2xl font-bold text-yellow-400">{totalEdits}</div>
             </div>
             <div>
-              <div className="text-sm text-gray-400">활성 피드백 제공자</div>
+              <div className="text-sm text-md-light-on-surface-variant">활성 피드백 제공자</div>
               <div className="text-2xl font-bold text-purple-400">{userName}</div>
             </div>
           </div>
@@ -348,10 +348,10 @@ export default function SharePage() {
           {scenesWithFeedback.map(({ scene, feedbacks, approvalsCount, commentsCount, editsCount }) => (
             <div
               key={scene.id}
-              className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-gray-700 transition-colors"
+              className="bg-md-light-surface-container-low border border-md-light-outline-variant/20 rounded-lg overflow-hidden hover:border-md-light-outline-variant/30 transition-colors"
             >
               {/* Scene Image */}
-              <div className="aspect-video bg-gray-800 flex items-center justify-center border-b border-gray-800 relative overflow-hidden">
+              <div className="aspect-video bg-md-light-surface-container flex items-center justify-center border-b border-md-light-outline-variant/20 relative overflow-hidden">
                 {scene.imageUrl || scene.thumbnail ? (
                   <img
                     src={scene.imageUrl || scene.thumbnail}
@@ -360,8 +360,8 @@ export default function SharePage() {
                   />
                 ) : (
                   <div className="text-center">
-                    <Film className="w-12 h-12 text-gray-700 mx-auto mb-2" />
-                    <p className="text-gray-600 text-sm">이미지 없음</p>
+                    <Film className="w-12 h-12 text-md-light-on-surface-variant mx-auto mb-2" />
+                    <p className="text-md-light-on-surface-variant text-sm">이미지 없음</p>
                   </div>
                 )}
                 <div className="absolute top-2 right-2 bg-black bg-opacity-70 px-3 py-1 rounded text-sm font-bold">
@@ -370,29 +370,29 @@ export default function SharePage() {
               </div>
 
               {/* Scene Info */}
-              <div className="p-4 border-b border-gray-800">
+              <div className="p-4 border-b border-md-light-outline-variant/20">
                 {scene.description && (
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">상황</p>
-                    <p className="text-sm text-gray-300">{scene.description}</p>
+                    <p className="text-xs text-md-light-on-surface-variant uppercase tracking-wide mb-1">상황</p>
+                    <p className="text-sm text-md-light-on-surface-variant">{scene.description}</p>
                   </div>
                 )}
 
                 {scene.dialogue && (
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">대사</p>
-                    <p className="text-sm text-gray-300 italic">"{scene.dialogue}"</p>
+                    <p className="text-xs text-md-light-on-surface-variant uppercase tracking-wide mb-1">대사</p>
+                    <p className="text-sm text-md-light-on-surface-variant italic">"{scene.dialogue}"</p>
                   </div>
                 )}
 
                 {scene.shotInfo && (
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">샷 정보</p>
+                    <p className="text-xs text-md-light-on-surface-variant uppercase tracking-wide mb-1">샷 정보</p>
                     <div className="flex flex-wrap gap-2">
                       {scene.shotInfo.split(',').map((info, idx) => (
                         <span
                           key={idx}
-                          className="inline-block px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded"
+                          className="inline-block px-2 py-1 bg-md-light-surface-container text-md-light-on-surface-variant text-xs rounded"
                         >
                           {info.trim()}
                         </span>
@@ -403,18 +403,18 @@ export default function SharePage() {
               </div>
 
               {/* Feedback Stats for Scene */}
-              <div className="px-4 py-3 bg-gray-800 border-b border-gray-700 flex gap-3 text-xs">
+              <div className="px-4 py-3 bg-md-light-surface-container border-b border-md-light-outline-variant/30 flex gap-3 text-xs">
                 <span className="text-green-400">승인 {approvalsCount}</span>
                 <span className="text-blue-400">코멘트 {commentsCount}</span>
                 <span className="text-yellow-400">수정 {editsCount}</span>
               </div>
 
               {/* Action Buttons */}
-              <div className="p-4 border-b border-gray-800 grid grid-cols-3 gap-2">
+              <div className="p-4 border-b border-md-light-outline-variant/20 grid grid-cols-3 gap-2">
                 <button
                   onClick={() => handleQuickApprove(scene.id)}
                   disabled={submittingFeedback === scene.id}
-                  className="py-2 px-3 bg-green-900 hover:bg-green-800 disabled:bg-gray-700 text-green-200 text-sm font-medium rounded transition-colors"
+                  className="py-2 px-3 bg-green-50 hover:bg-green-100 disabled:bg-md-light-surface-container-high text-success text-sm font-medium rounded transition-colors"
                 >
                   {submittingFeedback === scene.id ? '저장...' : '👍 승인'}
                 </button>
@@ -424,7 +424,7 @@ export default function SharePage() {
                     setActiveCommentScene(activeCommentScene === scene.id ? null : scene.id);
                     setCommentText('');
                   }}
-                  className="py-2 px-3 bg-blue-900 hover:bg-blue-800 text-blue-200 text-sm font-medium rounded transition-colors"
+                  className="py-2 px-3 bg-blue-50 hover:bg-blue-100 text-info text-sm font-medium rounded transition-colors"
                 >
                   💬 코멘트
                 </button>
@@ -434,7 +434,7 @@ export default function SharePage() {
                     setActiveCommentScene(activeCommentScene === `edit_${scene.id}` ? null : `edit_${scene.id}`);
                     setCommentText('');
                   }}
-                  className="py-2 px-3 bg-yellow-900 hover:bg-yellow-800 text-yellow-200 text-sm font-medium rounded transition-colors"
+                  className="py-2 px-3 bg-yellow-50 hover:bg-yellow-100 text-warning text-sm font-medium rounded transition-colors"
                 >
                   ✏️ 수정요청
                 </button>
@@ -442,18 +442,18 @@ export default function SharePage() {
 
               {/* Comment Input */}
               {activeCommentScene === scene.id && (
-                <div className="px-4 py-3 bg-gray-800 border-b border-gray-700">
+                <div className="px-4 py-3 bg-md-light-surface-container border-b border-md-light-outline-variant/30">
                   <textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="코멘트를 입력하세요..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 mb-2"
+                    className="w-full px-3 py-2 bg-md-light-surface-container-high border border-gray-600 rounded text-md-light-on-surface text-sm placeholder-md-light-on-surface-variant focus:outline-none focus:border-blue-500 mb-2"
                     rows={3}
                   />
                   <button
                     onClick={() => handleCommentSubmit(scene.id)}
                     disabled={submittingFeedback === scene.id || !commentText.trim()}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white text-sm font-medium rounded transition-colors"
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-md-light-surface-container-high text-md-light-on-surface text-sm font-medium rounded transition-colors"
                   >
                     {submittingFeedback === scene.id ? '저장...' : '코멘트 제출'}
                   </button>
@@ -461,12 +461,12 @@ export default function SharePage() {
               )}
 
               {activeCommentScene === `edit_${scene.id}` && (
-                <div className="px-4 py-3 bg-gray-800 border-b border-gray-700">
+                <div className="px-4 py-3 bg-md-light-surface-container border-b border-md-light-outline-variant/30">
                   <textarea
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="수정 요청 내용을 입력하세요..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm placeholder-gray-500 focus:outline-none focus:border-yellow-500 mb-2"
+                    className="w-full px-3 py-2 bg-md-light-surface-container-high border border-gray-600 rounded text-md-light-on-surface text-sm placeholder-md-light-on-surface-variant focus:outline-none focus:border-yellow-500 mb-2"
                     rows={3}
                   />
                   <button
@@ -488,7 +488,7 @@ export default function SharePage() {
                       }
                     }}
                     disabled={submittingFeedback === scene.id || !commentText.trim()}
-                    className="w-full py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-700 text-white text-sm font-medium rounded transition-colors"
+                    className="w-full py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-md-light-surface-container-high text-md-light-on-surface text-sm font-medium rounded transition-colors"
                   >
                     {submittingFeedback === scene.id ? '저장...' : '수정요청 제출'}
                   </button>
@@ -498,21 +498,21 @@ export default function SharePage() {
               {/* Feedbacks List */}
               {feedbacks.length > 0 && (
                 <div className="p-4">
-                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">피드백</p>
+                  <p className="text-xs text-md-light-on-surface-variant uppercase tracking-wide mb-3">피드백</p>
                   <div className="space-y-3">
                     {feedbacks.map((feedback) => (
-                      <div key={feedback.id} className="bg-gray-800 rounded p-3 border border-gray-700">
+                      <div key={feedback.id} className="bg-md-light-surface-container rounded p-3 border border-md-light-outline-variant/30">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
                             {getFeedbackTypeBadge(feedback.type)}
-                            <span className="text-xs text-gray-400">{feedback.author}</span>
+                            <span className="text-xs text-md-light-on-surface-variant">{feedback.author}</span>
                           </div>
-                          <span className="text-xs text-gray-600 whitespace-nowrap">
+                          <span className="text-xs text-md-light-on-surface-variant whitespace-nowrap">
                             {formatDate(feedback.createdAt)}
                           </span>
                         </div>
                         {feedback.content && (
-                          <p className="text-sm text-gray-300 mt-2">{feedback.content}</p>
+                          <p className="text-sm text-md-light-on-surface-variant mt-2">{feedback.content}</p>
                         )}
                       </div>
                     ))}
@@ -525,14 +525,14 @@ export default function SharePage() {
 
         {(!scenesWithFeedback || scenesWithFeedback.length === 0) && (
           <div className="text-center py-12">
-            <p className="text-gray-400">시작할 신(Scene)이 없습니다.</p>
+            <p className="text-md-light-on-surface-variant">시작할 신(Scene)이 없습니다.</p>
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 bg-gray-900 mt-12">
-        <div className="max-w-6xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
+      <footer className="border-t border-md-light-outline-variant/20 bg-md-light-surface-container-low mt-12">
+        <div className="max-w-6xl mx-auto px-4 py-6 text-center text-md-light-on-surface-variant text-sm">
           <p>PEWPEW 스토리보드 | 클라이언트 피드백</p>
         </div>
       </footer>
