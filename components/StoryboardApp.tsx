@@ -228,11 +228,11 @@ const createSampleProject = () => ({
 
 const Badge = ({ children, variant = "default", className = "" }: any) => {
   const variants: any = {
-    default: "bg-md-light-surface-container-high text-md-light-on-surface-variant",
-    blue: "bg-neutral-100 text-neutral-800",
-    green: "bg-neutral-100 text-md-outline-variant",
-    purple: "bg-neutral-100 text-md-outline-variant",
-    orange: "bg-neutral-100 text-md-outline-variant",
+    default: "bg-white/[0.06] text-md-on-surface-variant",
+    blue: "bg-white/[0.06] text-white",
+    green: "bg-white/[0.06] text-md-on-surface-variant",
+    purple: "bg-white/[0.06] text-md-on-surface-variant",
+    orange: "bg-white/[0.06] text-md-on-surface-variant",
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}>
@@ -417,7 +417,7 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         <Camera className="w-3.5 h-3.5" /> 카메라 앵글
       </label>
       <div className="grid grid-cols-3 gap-2">
@@ -425,10 +425,10 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
           <button key={a.value} onClick={() => onChange(a.value)}
             className={`relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center group hover:shadow-md ${
               value === a.value
-                ? "border-neutral-400 bg-neutral-100 text-neutral-800 shadow-sm"
-                : "border-md-light-outline-variant/20 bg-white text-md-light-on-surface-variant hover:border-md-light-outline-variant/30 hover:bg-white"
+                ? "border-white/20 bg-white/[0.08] text-white"
+                : "border-white/5 bg-white/[0.02] text-md-on-surface-variant hover:border-white/10 hover:bg-white/[0.05]"
             }`}>
-            <div className={`transition-transform group-hover:scale-110 ${value === a.value ? "text-md-outline-variant" : "text-md-light-outline-variant"}`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === a.value ? "text-md-on-surface-variant" : "text-md-outline/50"}`}>
               <AngleIcon type={a.value} size={36} />
             </div>
             <span className="text-[10px] font-bold leading-tight">{a.value}</span>
@@ -441,8 +441,8 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
-          className="relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 border-md-light-outline-variant/20 bg-white text-md-light-on-surface-variant hover:border-md-light-outline-variant/30 hover:bg-white transition-all text-center group hover:shadow-md">
-          <div className="transition-transform group-hover:scale-110 text-md-light-outline-variant">✏️</div>
+          className="relative flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 border-white/5 bg-white/[0.02] text-md-on-surface-variant hover:border-white/10 hover:bg-white/[0.05] transition-all text-center group hover:shadow-md">
+          <div className="transition-transform group-hover:scale-110 text-md-outline/50">✏️</div>
           <span className="text-[10px] font-bold leading-tight">직접 입력</span>
         </button>
       </div>
@@ -454,7 +454,7 @@ const VisualAngleSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
           />
         </div>
       )}
@@ -468,7 +468,7 @@ const VisualShotSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         <Maximize className="w-3.5 h-3.5" /> 샷 사이즈
       </label>
       <div className="space-y-1.5">
@@ -476,26 +476,26 @@ const VisualShotSelector = ({ value, onChange }: any) => {
           <button key={s.value} onClick={() => onChange(s.value)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
               value === s.value
-                ? "border-neutral-400 bg-neutral-100 shadow-sm"
-                : "border-md-light-outline-variant/20 bg-white hover:border-md-light-outline-variant/30"
+                ? "border-white/20 bg-white/[0.08]"
+                : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
             }`}>
-            <div className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${value === s.value ? "text-md-outline-variant" : "text-md-light-outline-variant"}`}>
+            <div className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${value === s.value ? "text-md-on-surface-variant" : "text-md-outline/50"}`}>
               <ShotSizePreview type={s.value} />
             </div>
             <div className="flex-1 text-left">
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-semibold ${value === s.value ? "text-neutral-800" : "text-md-light-on-surface-variant"}`}>{s.value}</span>
+                <span className={`text-xs font-semibold ${value === s.value ? "text-white" : "text-md-on-surface-variant"}`}>{s.value}</span>
               </div>
-              <span className="text-[10px] text-md-light-outline-variant leading-tight">{s.desc}</span>
+              <span className="text-[10px] text-md-outline/50 leading-tight">{s.desc}</span>
             </div>
-            {value === s.value && <Check className="w-4 h-4 text-neutral-600 flex-shrink-0" />}
+            {value === s.value && <Check className="w-4 h-4 text-md-on-surface-variant flex-shrink-0" />}
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-md-light-outline-variant/20 bg-white hover:border-md-light-outline-variant/30 transition-all group hover:shadow-md">
-          <div className="w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-md-light-outline-variant">✏️</div>
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all group hover:shadow-md">
+          <div className="w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-md-outline/50">✏️</div>
           <div className="flex-1 text-left">
-            <span className="text-xs font-semibold text-md-light-on-surface-variant">직접 입력</span>
+            <span className="text-xs font-semibold text-md-on-surface-variant">직접 입력</span>
           </div>
         </button>
         {showCustomInput && (
@@ -506,7 +506,7 @@ const VisualShotSelector = ({ value, onChange }: any) => {
               value={customValue}
               onChange={(e) => setCustomValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-              className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+              className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
             />
           </div>
         )}
@@ -521,7 +521,7 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         <Move className="w-3.5 h-3.5" /> 카메라 무브먼트
       </label>
       <div className="grid grid-cols-3 gap-1.5">
@@ -529,10 +529,10 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
           <button key={m.value} onClick={() => onChange(m.value)}
             className={`relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 transition-all group hover:shadow-md ${
               value === m.value
-                ? "border-neutral-400 bg-neutral-100 text-neutral-800 shadow-sm"
-                : "border-md-light-outline-variant/20 bg-white text-md-light-on-surface-variant hover:border-md-light-outline-variant/30"
+                ? "border-white/20 bg-white/[0.08] text-white"
+                : "border-white/5 bg-white/[0.02] text-md-on-surface-variant hover:border-white/10"
             }`}>
-            <div className={`transition-transform group-hover:scale-110 ${value === m.value ? "text-md-outline-variant" : "text-md-light-outline-variant"}`}>
+            <div className={`transition-transform group-hover:scale-110 ${value === m.value ? "text-md-on-surface-variant" : "text-md-outline/50"}`}>
               <MovementIcon type={m.value} size={28} />
             </div>
             <span className="text-[9px] font-bold leading-tight">{m.value}</span>
@@ -545,8 +545,8 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
-          className="relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 border-md-light-outline-variant/20 bg-white text-md-light-on-surface-variant hover:border-md-light-outline-variant/30 transition-all group hover:shadow-md">
-          <div className="transition-transform group-hover:scale-110 text-md-light-outline-variant">✏️</div>
+          className="relative flex flex-col items-center gap-0.5 p-2 rounded-lg border-2 border-white/5 bg-white/[0.02] text-md-on-surface-variant hover:border-white/10 transition-all group hover:shadow-md">
+          <div className="transition-transform group-hover:scale-110 text-md-outline/50">✏️</div>
           <span className="text-[9px] font-bold leading-tight">직접</span>
           <span className="text-[9px] font-bold leading-tight">입력</span>
         </button>
@@ -559,7 +559,7 @@ const VisualMovementSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
           />
         </div>
       )}
@@ -573,7 +573,7 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         <Sun className="w-3.5 h-3.5" /> 조명
       </label>
       <div className="grid grid-cols-2 gap-2">
@@ -581,22 +581,22 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
           <button key={l.value} onClick={() => onChange(l.value)}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 transition-all group hover:shadow-md ${
               value === l.value
-                ? "border-neutral-400 bg-neutral-100 shadow-sm"
-                : "border-md-light-outline-variant/20 bg-white hover:border-md-light-outline-variant/30"
+                ? "border-white/20 bg-white/[0.08]"
+                : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
             }`}>
             <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">{l.icon}</span>
             <div className="text-left flex-1 min-w-0">
-              <span className={`text-[10px] font-bold block leading-tight ${value === l.value ? "text-neutral-800" : "text-md-light-on-surface-variant"}`}>{l.value}</span>
-              <span className="text-[8px] text-md-light-outline-variant block leading-tight truncate">{l.desc}</span>
+              <span className={`text-[10px] font-bold block leading-tight ${value === l.value ? "text-white" : "text-md-on-surface-variant"}`}>{l.value}</span>
+              <span className="text-[8px] text-md-outline/50 block leading-tight truncate">{l.desc}</span>
             </div>
-            {value === l.value && <Check className="w-3.5 h-3.5 text-neutral-600 flex-shrink-0" />}
+            {value === l.value && <Check className="w-3.5 h-3.5 text-md-on-surface-variant flex-shrink-0" />}
           </button>
         ))}
         <button onClick={() => setShowCustomInput(!showCustomInput)}
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 border-md-light-outline-variant/20 bg-white hover:border-md-light-outline-variant/30 transition-all group hover:shadow-md">
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all group hover:shadow-md">
           <span className="text-lg flex-shrink-0 group-hover:scale-110 transition-transform">✏️</span>
           <div className="text-left flex-1 min-w-0">
-            <span className="text-[10px] font-bold block leading-tight text-md-light-on-surface-variant">직접 입력</span>
+            <span className="text-[10px] font-bold block leading-tight text-md-on-surface-variant">직접 입력</span>
           </div>
         </button>
       </div>
@@ -608,7 +608,7 @@ const VisualLightingSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
           />
         </div>
       )}
@@ -758,7 +758,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
               <div className="w-px h-5 bg-white/30 mx-1" />
               <button onClick={handleReset} className="px-2 py-1 text-white hover:bg-white/20 rounded-lg transition text-xs" title="초기화"><RotateCcw className="w-3.5 h-3.5" /></button>
               <div className="w-px h-5 bg-white/30 mx-1" />
-              <button onClick={() => setIsEditing(false)} className="px-3 py-1 bg-white text-neutral-900 rounded-lg text-xs font-semibold hover:bg-neutral-200 transition">완료</button>
+              <button onClick={() => setIsEditing(false)} className="px-3 py-1 bg-white text-white rounded-lg text-xs font-semibold hover:bg-white/[0.08] transition">완료</button>
             </div>
           )}
 
@@ -772,10 +772,12 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           )}
         </div>
       ) : (
-        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white border-2 border-dashed border-md-light-outline-variant/30 rounded-2xl flex flex-col items-center justify-center hover:border-neutral-400 hover:bg-neutral-100/30 transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
-          <div className="w-14 h-14 bg-md-light-surface-container-high rounded-xl flex items-center justify-center mb-3"><Image className="w-7 h-7 text-md-light-outline-variant" /></div>
-          <p className="text-sm font-medium text-md-light-on-surface-variant">이미지를 드래그하거나 클릭하여 업로드</p>
-          <p className="text-xs text-md-light-outline-variant mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
+        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
+          <div className="w-14 h-14 bg-white/[0.04] rounded-xl flex items-center justify-center mb-3">
+            <span className="material-symbols-outlined text-[28px] text-white/20">add_photo_alternate</span>
+          </div>
+          <p className="text-sm font-medium text-md-on-surface-variant">이미지를 드래그하거나 클릭하여 업로드</p>
+          <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
         </button>
       )}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: any) => handleFile(e.target.files?.[0])} />
@@ -789,13 +791,13 @@ const VisualLensSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         🎥 렌즈 설정
       </label>
       <select
         value={value || ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 border-2 border-md-light-outline-variant/20 bg-white rounded-xl text-sm font-medium text-md-light-on-surface-variant focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent hover:border-md-light-outline-variant/30 transition-all">
+        className="w-full px-3 py-2.5 border-2 border-white/10 bg-white/[0.03] rounded-xl text-sm font-medium text-white focus:outline-none focus:border-white/20 transition-all">
         <option value="">렌즈를 선택하세요</option>
         {LENS_OPTIONS.map((l: any) => (
           <option key={l.value} value={l.value}>{l.value} ({l.focal})</option>
@@ -803,7 +805,7 @@ const VisualLensSelector = ({ value, onChange }: any) => {
       </select>
       <button
         onClick={() => setShowCustomInput(!showCustomInput)}
-        className="w-full mt-2 px-3 py-2 text-sm font-medium text-md-light-on-surface-variant border-2 border-md-light-outline-variant/20 bg-white rounded-lg hover:border-md-light-outline-variant/30 hover:bg-white transition-all">
+        className="w-full mt-2 px-3 py-2 text-sm font-medium text-md-on-surface-variant border-2 border-white/10 bg-white/[0.03] rounded-lg hover:border-white/20 hover:bg-white/[0.06] transition-all">
         ✏️ 직접 입력
       </button>
       {showCustomInput && (
@@ -814,7 +816,7 @@ const VisualLensSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
           />
         </div>
       )}
@@ -828,20 +830,20 @@ const VisualFramerateSelector = ({ value, onChange }: any) => {
 
   return (
     <div>
-      <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
+      <label className="block text-xs font-semibold text-md-on-surface-variant/60 mb-2.5 flex items-center gap-1.5">
         ⚡ 프레임레이트
       </label>
       <select
         value={value || '24fps'}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 border-2 border-md-light-outline-variant/20 bg-white rounded-xl text-sm font-medium text-md-light-on-surface-variant focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent hover:border-md-light-outline-variant/30 transition-all">
+        className="w-full px-3 py-2.5 border-2 border-white/10 bg-white/[0.03] rounded-xl text-sm font-medium text-white focus:outline-none focus:border-white/20 transition-all">
         {FRAMERATE_OPTIONS.map((f: any) => (
           <option key={f.value} value={f.value}>{f.value}</option>
         ))}
       </select>
       <button
         onClick={() => setShowCustomInput(!showCustomInput)}
-        className="w-full mt-2 px-3 py-2 text-sm font-medium text-md-light-on-surface-variant border-2 border-md-light-outline-variant/20 bg-white rounded-lg hover:border-md-light-outline-variant/30 hover:bg-white transition-all">
+        className="w-full mt-2 px-3 py-2 text-sm font-medium text-md-on-surface-variant border-2 border-white/10 bg-white/[0.03] rounded-lg hover:border-white/20 hover:bg-white/[0.06] transition-all">
         ✏️ 직접 입력
       </button>
       {showCustomInput && (
@@ -852,7 +854,7 @@ const VisualFramerateSelector = ({ value, onChange }: any) => {
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && customValue.trim()) { onChange(customValue.trim()); setShowCustomInput(false); setCustomValue(''); }}}
-            className="w-full px-3 py-2 border border-md-light-outline-variant/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500"
+            className="w-full px-3 py-2 border border-white/10 rounded-lg text-sm text-white bg-white/[0.03] focus:outline-none focus:border-white/20"
           />
         </div>
       )}
@@ -906,16 +908,16 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
   };
 
   if (!scene) return (
-    <div className="flex-1 flex items-center justify-center text-md-light-outline-variant"><div className="text-center"><Film className="w-12 h-12 mx-auto mb-3 opacity-50" /><p className="font-medium">편집할 씬을 선택하세요</p></div></div>
+    <div className="flex-1 flex items-center justify-center bg-md-surface-container-low"><div className="text-center"><span className="material-symbols-outlined text-[48px] text-md-outline/30 mb-3 block">movie_edit</span><p className="text-sm font-medium text-md-on-surface-variant">편집할 씬을 선택하세요</p></div></div>
   );
 
   // Handle blank pages
   if (scene.blank_page_type) {
     return (
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        <div className="p-6 border-b border-md-light-outline-variant/30">
-          <h2 className="text-lg font-semibold text-md-light-on-surface mb-2">{scene.title}</h2>
-          <p className="text-sm text-md-light-on-surface-variant">빈 페이지 - {scene.blank_page_type}</p>
+      <div className="flex-1 overflow-y-auto flex flex-col bg-md-surface-container-low">
+        <div className="p-6 border-b border-white/5">
+          <h2 className="text-lg font-semibold text-white mb-2">{scene.title}</h2>
+          <p className="text-sm text-md-on-surface-variant">빈 페이지 - {scene.blank_page_type}</p>
         </div>
         <div className="flex-1 p-6">
           <BlankPageContent
@@ -929,69 +931,107 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 p-6">
-        <div className="lg:col-span-3 space-y-5">
+    <div className="flex-1 overflow-y-auto bg-md-surface-container-low">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 p-5">
+        {/* 좌측: 이미지 + 텍스트 필드 */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* 이미지 업로드 */}
           <div className="relative">
             <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} aspectRatio={aspectRatio} />
             <button
               onClick={() => onOpenReferenceLibrary?.()}
-              className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 rounded-xl hover:from-blue-100 hover:to-indigo-100 transition-all text-sm font-medium"
+              className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/10 text-md-on-surface-variant rounded-xl hover:bg-white/[0.08] transition-all text-sm font-medium"
             >
-              <Image className="w-4 h-4" />
+              <span className="material-symbols-outlined text-[16px]">photo_library</span>
               레퍼런스 라이브러리
             </button>
           </div>
-          <div><input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-xl font-bold text-md-light-on-surface border-0 border-b-2 border-transparent focus:border-neutral-400 focus:outline-none pb-1 bg-transparent placeholder-gray-300" /></div>
-          <div>
+
+          {/* 씬 제목 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-2 block flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">title</span> 씬 제목
+            </label>
+            <input type="text" value={scene.title || ""} onChange={(e: any) => onUpdate({ ...scene, title: e.target.value })} placeholder="씬 제목" className="w-full text-lg font-bold text-white border-0 border-b border-white/10 focus:border-white/30 focus:outline-none pb-2 bg-transparent placeholder-white/20 font-headline" />
+          </div>
+
+          {/* 씬 설명 */}
+          <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-md-light-on-surface-variant uppercase tracking-wider">씬 설명</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[12px]">description</span> 씬 설명
+              </label>
               <div className="flex gap-1.5">
                 {scene.description && (
-                  <button onClick={() => onUpdate({ ...scene, description: '' })} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"><X className="w-3 h-3" />지우기</button>
+                  <button onClick={() => onUpdate({ ...scene, description: '' })} className="flex items-center gap-1 px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[10px] font-medium hover:bg-red-500/20 transition-colors">
+                    <X className="w-3 h-3" />지우기
+                  </button>
                 )}
-                <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 text-neutral-600 rounded-lg text-xs font-medium hover:bg-neutral-200 transition-colors disabled:opacity-50"><Sparkles className="w-3.5 h-3.5" />{isGenerating ? "생성 중..." : "자동 생성"}</button>
+                <button onClick={handleGenerate} disabled={isGenerating} className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] text-md-on-surface-variant rounded-lg text-[10px] font-medium hover:bg-white/[0.1] transition-colors disabled:opacity-50">
+                  <span className="material-symbols-outlined text-[12px]">auto_awesome</span>
+                  {isGenerating ? "생성 중..." : "자동 생성"}
+                </button>
               </div>
             </div>
-            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-4 py-3 border border-md-light-outline-variant/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-md-light-on-surface bg-white" />
+            <textarea value={scene.description || ""} onChange={(e: any) => onUpdate({ ...scene, description: e.target.value })} rows={4} placeholder="이 씬에서 무슨 일이 일어나는지 설명하세요..." className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-lg focus:outline-none focus:border-white/20 resize-none text-sm leading-relaxed text-white/90 placeholder-white/15" />
           </div>
-          <div>
-            <label className="text-xs font-medium text-md-light-on-surface-variant uppercase tracking-wider mb-2 block">대사 / 나레이션</label>
-            <textarea value={scene.dialogue || ""} onChange={(e: any) => onUpdate({ ...scene, dialogue: e.target.value })} rows={2} placeholder="이 씬의 대사나 나레이션을 입력하세요..." className="w-full px-4 py-3 border border-md-light-outline-variant/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-md-light-on-surface bg-white" />
+
+          {/* 대사 / 나레이션 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-2 block flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">record_voice_over</span> 대사 / 나레이션
+            </label>
+            <textarea value={scene.dialogue || ""} onChange={(e: any) => onUpdate({ ...scene, dialogue: e.target.value })} rows={2} placeholder="이 씬의 대사나 나레이션을 입력하세요..." className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-lg focus:outline-none focus:border-white/20 resize-none text-sm leading-relaxed text-white/90 placeholder-white/15" />
           </div>
-          <div>
-            <label className="text-xs font-medium text-md-light-on-surface-variant uppercase tracking-wider mb-2 block">자막</label>
-            <textarea value={scene.subtitle || ""} onChange={(e: any) => onUpdate({ ...scene, subtitle: e.target.value })} rows={2} placeholder="이 씬의 자막을 입력하세요..." className="w-full px-4 py-3 border border-md-light-outline-variant/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm leading-relaxed text-md-light-on-surface bg-white" />
+
+          {/* 자막 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-2 block flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">subtitles</span> 자막
+            </label>
+            <textarea value={scene.subtitle || ""} onChange={(e: any) => onUpdate({ ...scene, subtitle: e.target.value })} rows={2} placeholder="이 씬의 자막을 입력하세요..." className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-lg focus:outline-none focus:border-white/20 resize-none text-sm leading-relaxed text-white/90 placeholder-white/15" />
           </div>
-          <div>
-            <label className="text-xs font-medium text-md-light-on-surface-variant uppercase tracking-wider mb-2 block">사운드 / BGM</label>
-            <input type="text" value={scene.sound || ""} onChange={(e: any) => onUpdate({ ...scene, sound: e.target.value })} placeholder="배경음악, 효과음 등..." className="w-full px-4 py-3 border border-md-light-outline-variant/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent text-sm text-md-light-on-surface bg-white" />
+
+          {/* 사운드 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-2 block flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">music_note</span> 사운드 / BGM
+            </label>
+            <input type="text" value={scene.sound || ""} onChange={(e: any) => onUpdate({ ...scene, sound: e.target.value })} placeholder="배경음악, 효과음 등..." className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-lg focus:outline-none focus:border-white/20 text-sm text-white/90 placeholder-white/15" />
           </div>
-          <div>
+
+          {/* 감독 메모 */}
+          <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-md-light-on-surface-variant uppercase tracking-wider">감독 메모</label>
-              <div className="flex gap-1.5 flex-wrap justify-end">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[12px]">sticky_note_2</span> 감독 메모
+              </label>
+              <div className="flex gap-1 flex-wrap justify-end">
                 {memoTemplates.map((template: any) => (
                   <button
                     key={template}
                     onClick={() => handleApplyMemoTemplate(template)}
-                    className="px-2 py-1 text-xs bg-neutral-200 text-md-outline-variant rounded hover:bg-neutral-300 transition-colors"
+                    className="px-2 py-0.5 text-[10px] bg-white/[0.06] text-md-on-surface-variant rounded-md hover:bg-white/[0.1] transition-colors"
                   >
                     + {template}
                   </button>
                 ))}
               </div>
             </div>
-            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-4 py-3 border border-md-light-outline-variant/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent resize-none text-sm bg-white text-md-light-on-surface border-neutral-200" />
+            <textarea value={scene.notes || ""} onChange={(e: any) => onUpdate({ ...scene, notes: e.target.value })} rows={3} placeholder="촬영 메모, 리마인더 추가..." className="w-full px-3 py-2.5 bg-white/[0.03] border border-white/5 rounded-lg focus:outline-none focus:border-white/20 resize-none text-sm text-white/90 placeholder-white/15" />
           </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-5 overflow-y-auto">
-          <div className="bg-white rounded-xl p-4">
-            <label className="text-xs font-semibold text-md-light-on-surface-variant mb-2 block flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 씬 길이</label>
+        {/* 우측: 카메라 설정 패널 */}
+        <div className="lg:col-span-2 space-y-4 overflow-y-auto">
+          {/* 씬 길이 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-3 block flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">timer</span> 씬 길이
+            </label>
             <div className="flex items-center gap-3">
-              <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-neutral-600 h-2" />
-              <div className="bg-md-surface-container text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center">{scene.duration || 3}초</div>
+              <input type="range" min="1" max="60" value={scene.duration || 3} onChange={(e: any) => onUpdate({ ...scene, duration: parseInt(e.target.value) })} className="flex-1 accent-white h-1.5 bg-white/10 rounded-full" />
+              <div className="bg-white/[0.08] text-white text-sm font-bold px-3 py-1.5 rounded-lg min-w-[52px] text-center border border-white/10">{scene.duration || 3}초</div>
             </div>
           </div>
 
@@ -1002,50 +1042,57 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
           <VisualLensSelector value={scene.lens} onChange={(v: any) => onUpdate({ ...scene, lens: v })} />
           <VisualFramerateSelector value={scene.framerate} onChange={(v: any) => onUpdate({ ...scene, framerate: v })} />
 
-          <div>
-            <label className="block text-xs font-semibold text-md-light-on-surface-variant mb-2.5 flex items-center gap-1.5">
-              ➡️ 씬 전환효과
+          {/* 전환효과 */}
+          <div className="glass-panel rounded-xl p-4">
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 mb-3 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[12px]">transition_fade</span> 씬 전환효과
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {TRANSITIONS.map((t: any) => (
                 <button key={t.value} onClick={() => onUpdate({ ...scene, transition: t.value })}
-                  className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border-2 transition-all text-center group ${
+                  className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border transition-all text-center group ${
                     (scene.transition || "컷") === t.value
-                      ? "border-neutral-400 bg-neutral-100 shadow-sm"
-                      : "border-md-light-outline-variant/20 bg-white hover:border-md-light-outline-variant/30"
+                      ? "border-white/20 bg-white/[0.08]"
+                      : "border-white/5 bg-white/[0.02] hover:bg-white/[0.05]"
                   }`}>
-                  <span className="text-lg flex-shrink-0">{t.icon}</span>
+                  <span className="text-base flex-shrink-0">{t.icon}</span>
                   <div className="text-left flex-1 min-w-0">
-                    <span className={`text-[9px] font-bold block leading-tight ${(scene.transition || "컷") === t.value ? "text-neutral-800" : "text-md-light-on-surface-variant"}`}>{t.value}</span>
-                    <span className="text-[7px] text-md-light-outline-variant block leading-tight">{t.desc}</span>
+                    <span className={`text-[9px] font-bold block leading-tight ${(scene.transition || "컷") === t.value ? "text-white" : "text-md-on-surface-variant"}`}>{t.value}</span>
+                    <span className="text-[7px] text-md-outline/50 block leading-tight">{t.desc}</span>
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl p-4 border border-neutral-300">
+          {/* 완성도 */}
+          <div className="glass-panel rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-sm text-neutral-900 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> 완성도</h3>
+              <h3 className="font-semibold text-[11px] text-white flex items-center gap-2">
+                <span className="material-symbols-outlined text-[14px]">task_alt</span> 완성도
+              </h3>
               <div className="w-11 h-11">
                 <SceneProgressRing completion={completion} />
               </div>
             </div>
-            <p className="text-xs text-neutral-800">
+            <p className="text-[10px] text-md-on-surface-variant">
               {completion < 50 && "더 많은 정보를 추가해주세요"}
               {completion >= 50 && completion < 100 && "거의 완성되었습니다"}
               {completion === 100 && "모든 필드가 작성되었습니다"}
             </p>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
-            <h3 className="font-semibold text-sm flex items-center gap-2 mb-3"><Eye className="w-4 h-4" /> 씬 요약</h3>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between"><span className="text-md-light-outline-variant">길이</span><span className="font-medium">{scene.duration}초</span></div>
-              <div className="flex justify-between"><span className="text-md-light-outline-variant">앵글</span><span className="font-medium">{scene.camera_angle}</span></div>
-              <div className="flex justify-between"><span className="text-md-light-outline-variant">샷</span><span className="font-medium">{scene.shot_size}</span></div>
-              <div className="flex justify-between"><span className="text-md-light-outline-variant">무브먼트</span><span className="font-medium">{scene.camera_movement}</span></div>
-              <div className="flex justify-between"><span className="text-md-light-outline-variant">조명</span><span className="font-medium">{scene.lighting}</span></div>
+          {/* 씬 요약 */}
+          <div className="glass-panel rounded-xl p-4">
+            <h3 className="font-semibold text-[11px] text-white flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-[14px]">summarize</span> 씬 요약
+            </h3>
+            <div className="space-y-2 text-[11px]">
+              <div className="flex justify-between"><span className="text-md-on-surface-variant/60">길이</span><span className="font-medium text-white">{scene.duration}초</span></div>
+              <div className="flex justify-between"><span className="text-md-on-surface-variant/60">앵글</span><span className="font-medium text-white">{scene.camera_angle}</span></div>
+              <div className="flex justify-between"><span className="text-md-on-surface-variant/60">샷</span><span className="font-medium text-white">{scene.shot_size}</span></div>
+              <div className="flex justify-between"><span className="text-md-on-surface-variant/60">무브먼트</span><span className="font-medium text-white">{scene.camera_movement}</span></div>
+              <div className="flex justify-between"><span className="text-md-on-surface-variant/60">조명</span><span className="font-medium text-white">{scene.lighting}</span></div>
             </div>
           </div>
         </div>
@@ -1055,19 +1102,19 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
 };
 
 const StoryboardGrid = ({ scenes, onSelectScene }: any) => (
-  <div className="p-6">
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+  <div className="p-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {scenes.map((scene: Scene) => (
-        <button key={scene.id} onClick={() => onSelectScene(scene.id)} className="bg-white rounded-xl border border-md-light-outline-variant/20 overflow-hidden hover:shadow-xl hover:border-neutral-300 transition-all group text-left">
+        <button key={scene.id} onClick={() => onSelectScene(scene.id)} className="glass-panel rounded-xl overflow-hidden hover:bg-white/[0.06] transition-all group text-left">
           <div className="relative" style={{ aspectRatio: "16/9" }}>
-            {scene.image ? <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center"><Film className="w-8 h-8 text-gray-300" /></div>}
-            <div className="absolute top-2 left-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-md">#{scene.scene_number}</span></div>
-            <div className="absolute bottom-2 right-2"><span className="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-md">{scene.duration}초</span></div>
+            {scene.image ? <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/[0.03] flex items-center justify-center"><span className="material-symbols-outlined text-[32px] text-white/10">movie</span></div>}
+            <div className="absolute top-2 left-2"><span className="bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-md">S{String(scene.scene_number).padStart(2, '0')}</span></div>
+            <div className="absolute bottom-2 right-2"><span className="bg-black/60 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-md">{scene.duration}초</span></div>
           </div>
-          <div className="p-4">
-            <h4 className="font-semibold text-sm text-md-light-on-surface group-hover:text-md-outline-variant transition-colors">{scene.title || `씬 ${scene.scene_number}`}</h4>
-            <p className="text-xs text-md-light-on-surface-variant mt-1 line-clamp-2">{scene.description || "설명 없음"}</p>
-            <div className="flex items-center gap-2 mt-3 flex-wrap"><Badge>{scene.shot_size}</Badge><Badge>{scene.camera_angle}</Badge></div>
+          <div className="p-3">
+            <h4 className="font-semibold text-[12px] text-white group-hover:text-white/90 transition-colors">{scene.title || `씬 ${scene.scene_number}`}</h4>
+            <p className="text-[10px] text-md-on-surface-variant mt-1 line-clamp-2">{scene.description || "설명 없음"}</p>
+            <div className="flex items-center gap-1.5 mt-2 flex-wrap"><Badge>{scene.shot_size}</Badge><Badge>{scene.camera_angle}</Badge></div>
           </div>
         </button>
       ))}
@@ -1078,9 +1125,9 @@ const StoryboardGrid = ({ scenes, onSelectScene }: any) => (
 const TimelineView = ({ scenes, activeSceneId, onSelectScene }: any) => {
   const totalDuration = scenes.reduce((sum: number, s: Scene) => sum + (s.duration || 0), 0);
   return (
-    <div className="p-6">
-      <div className="bg-white rounded-xl border border-md-light-outline-variant/20 p-6">
-        <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-md-light-on-surface">타임라인</h3><div className="flex items-center gap-2 text-sm text-md-light-on-surface-variant"><Clock className="w-4 h-4" /> 전체: <span className="font-bold text-md-light-on-surface">{formatDuration(totalDuration)}</span></div></div>
+    <div className="p-5">
+      <div className="glass-panel rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4"><h3 className="font-semibold text-white">타임라인</h3><div className="flex items-center gap-2 text-sm text-md-on-surface-variant"><Clock className="w-4 h-4" /> 전체: <span className="font-bold text-white">{formatDuration(totalDuration)}</span></div></div>
         <div className="flex gap-1 mb-6 rounded-lg overflow-hidden">
           {scenes.map((scene: Scene, i: number) => {
             const width = totalDuration > 0 ? (scene.duration / totalDuration) * 100 : 100 / scenes.length;
@@ -1094,15 +1141,15 @@ const TimelineView = ({ scenes, activeSceneId, onSelectScene }: any) => {
             const transition = TRANSITIONS.find((t: any) => t.value === (scene.transition || "컷"));
             return (
               <div key={scene.id}>
-                <button onClick={() => onSelectScene(scene.id)} className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-all ${activeSceneId === scene.id ? "bg-neutral-100 border border-neutral-300" : "hover:bg-white"}`}>
-                  <span className="text-xs font-mono text-md-light-outline-variant w-16">{formatDuration(accum)}</span>
-                  <div className="w-8 h-8 bg-md-light-surface-container-high rounded-lg flex items-center justify-center text-xs font-bold text-md-light-on-surface-variant">{scene.scene_number}</div>
-                  <div className="flex-1"><h4 className="text-sm font-medium text-md-light-on-surface">{scene.title || `씬 ${scene.scene_number}`}</h4><p className="text-xs text-md-light-outline-variant">{scene.shot_size} · {scene.camera_movement}</p></div>
-                  <span className="text-sm font-medium text-md-light-on-surface-variant">{scene.duration}초</span>
+                <button onClick={() => onSelectScene(scene.id)} className={`w-full flex items-center gap-4 p-3 rounded-lg text-left transition-all ${activeSceneId === scene.id ? "bg-white/[0.06] border border-white/10" : "hover:bg-white/[0.03]"}`}>
+                  <span className="text-xs font-mono text-md-outline/40 w-16">{formatDuration(accum)}</span>
+                  <div className="w-8 h-8 bg-white/[0.06] rounded-lg flex items-center justify-center text-xs font-bold text-md-on-surface-variant">{scene.scene_number}</div>
+                  <div className="flex-1"><h4 className="text-sm font-medium text-white">{scene.title || `씬 ${scene.scene_number}`}</h4><p className="text-xs text-md-outline/50">{scene.shot_size} · {scene.camera_movement}</p></div>
+                  <span className="text-sm font-medium text-md-on-surface-variant">{scene.duration}초</span>
                 </button>
                 {i < scenes.length - 1 && transition && (
-                  <div className="ml-20 text-xs text-md-light-on-surface-variant py-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-md-light-surface-container-high rounded">
+                  <div className="ml-20 text-xs text-md-on-surface-variant py-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/[0.06] rounded">
                       {transition.icon} {transition.value}
                     </span>
                   </div>
@@ -1208,23 +1255,23 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
   const cardCls = darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20";
   const inputCls = darkMode
     ? "bg-md-surface-container-high text-white border-white/10 placeholder-neutral-500 focus:ring-neutral-400"
-    : "bg-white text-md-light-on-surface border-md-light-outline-variant/30 placeholder-gray-400 focus:ring-neutral-500";
-  const labelCls = darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant";
+    : "bg-white text-white border-md-light-outline-variant/30 placeholder-gray-400 focus:ring-neutral-500";
+  const labelCls = darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant";
 
   return (
     <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-md-surface-container-low" : "bg-white"}`}>
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>프로젝트 정보</h2>
-            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>스토리보드 표지에 들어갈 기본 정보</p>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-white"}`}>프로젝트 정보</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>스토리보드 표지에 들어갈 기본 정보</p>
           </div>
-          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}>1페이지</div>
+          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-white/[0.06] text-md-on-surface-variant"}`}>1페이지</div>
         </div>
 
         {/* 프로젝트 기본 정보 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Film className="w-4 h-4" /> 프로젝트 기본</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Film className="w-4 h-4" /> 프로젝트 기본</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="프로젝트명" field="__title" placeholder="프로젝트 이름" value={project.title} onChange={(_f, v) => onUpdate({ title: v })} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="브랜드 / 클라이언트명" field="brand_name" placeholder="예: 삼성전자" value={info.brand_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1239,7 +1286,7 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
             </div>
             <div>
               <label className={`block text-xs font-semibold mb-1.5 ${labelCls}`}>비율 / 해상도</label>
-              <div className={`px-4 py-2.5 rounded-xl text-sm border ${darkMode ? "bg-md-surface-container-high border-white/10 text-md-on-surface-variant" : "bg-white border-md-light-outline-variant/30 text-md-light-on-surface-variant"}`}>
+              <div className={`px-4 py-2.5 rounded-xl text-sm border ${darkMode ? "bg-md-surface-container-high border-white/10 text-md-on-surface-variant" : "bg-white border-md-light-outline-variant/30 text-md-on-surface-variant"}`}>
                 {project.aspect_ratio || '16:9'} · {project.resolution || '1920x1080'}
               </div>
             </div>
@@ -1248,7 +1295,7 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
 
         {/* 제작사 / 감독 정보 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Users className="w-4 h-4" /> 제작진 정보</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Users className="w-4 h-4" /> 제작진 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="담당자 (PM)" field="manager_name" placeholder="이름" value={info.manager_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="담당자 연락처" field="manager_phone" placeholder="010-0000-0000" value={info.manager_phone} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1264,7 +1311,7 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
 
         {/* 프로젝트 설명 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Edit3 className="w-4 h-4" /> 프로젝트 설명</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Edit3 className="w-4 h-4" /> 프로젝트 설명</h3>
           <InfoTextarea label="" value={project.description} placeholder="이 프로젝트에 대한 간단한 설명, 컨셉, 목표 등을 적어주세요..." rows={4} onChange={(v) => onUpdate({ description: v })} inputCls={inputCls} labelCls={labelCls} />
         </div>
 
@@ -1272,12 +1319,12 @@ const ProjectInfoView = ({ project, onUpdate, darkMode }: { project: Project; on
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${project.ppm_enabled ? 'bg-orange-500/10' : darkMode ? 'bg-md-surface-container-high' : 'bg-md-light-surface-container-high'}`}>
-                <Palette className={`w-4 h-4 ${project.ppm_enabled ? 'text-orange-500' : darkMode ? 'text-md-outline' : 'text-md-light-on-surface-variant'}`} />
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${project.ppm_enabled ? 'bg-orange-500/10' : darkMode ? 'bg-md-surface-container-high' : 'bg-white/[0.06]'}`}>
+                <Palette className={`w-4 h-4 ${project.ppm_enabled ? 'text-orange-500' : darkMode ? 'text-md-outline' : 'text-md-on-surface-variant'}`} />
               </div>
               <div>
-                <h3 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>PPM 모드</h3>
-                <p className={`text-xs mt-0.5 ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>톤앤매너, 키컬러, 시놉시스 등 사전 제작 미팅 자료</p>
+                <h3 className={`font-semibold text-sm ${darkMode ? "text-white" : "text-white"}`}>PPM 모드</h3>
+                <p className={`text-xs mt-0.5 ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>톤앤매너, 키컬러, 시놉시스 등 사전 제작 미팅 자료</p>
               </div>
             </div>
             <button
@@ -1307,23 +1354,23 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
   const cardCls = darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20";
   const inputCls = darkMode
     ? "bg-md-surface-container-high text-white border-white/10 placeholder-neutral-500 focus:ring-neutral-400"
-    : "bg-white text-md-light-on-surface border-md-light-outline-variant/30 placeholder-gray-400 focus:ring-neutral-500";
-  const labelCls = darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant";
+    : "bg-white text-white border-md-light-outline-variant/30 placeholder-gray-400 focus:ring-neutral-500";
+  const labelCls = darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant";
 
   return (
     <div className={`flex-1 overflow-y-auto p-6 ${darkMode ? "bg-md-surface-container-low" : "bg-white"}`}>
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>촬영 정보</h2>
-            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>촬영 장소, 스튜디오, 주차 등 현장 정보</p>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-white"}`}>촬영 정보</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>촬영 장소, 스튜디오, 주차 등 현장 정보</p>
           </div>
-          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}>2페이지</div>
+          <div className={`px-3 py-1.5 rounded-lg text-xs font-medium ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-white/[0.06] text-md-on-surface-variant"}`}>2페이지</div>
         </div>
 
         {/* 촬영 일정 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Clock className="w-4 h-4" /> 촬영 일정</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Clock className="w-4 h-4" /> 촬영 일정</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="촬영일" field="shoot_date" placeholder="2026-03-15" value={info.shoot_date} type="date" onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="촬영 일수" field="shoot_days" placeholder="예: 2일" value={info.shoot_days} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1335,7 +1382,7 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
 
         {/* 촬영 장소 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Target className="w-4 h-4" /> 촬영 장소</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Target className="w-4 h-4" /> 촬영 장소</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="촬영 장소명" field="location_name" placeholder="예: 한남동 루프탑" value={info.location_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="촬영 장소 주소" field="location_address" placeholder="서울시 용산구 한남동 123-45" value={info.location_address} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1344,7 +1391,7 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
 
         {/* 스튜디오 정보 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><Camera className="w-4 h-4" /> 스튜디오 정보</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><Camera className="w-4 h-4" /> 스튜디오 정보</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="스튜디오 이름" field="studio_name" placeholder="예: PEWPEW Studio A" value={info.studio_name} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="스튜디오 주소" field="studio_address" placeholder="서울시 강남구..." value={info.studio_address} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1355,7 +1402,7 @@ const ShootingInfoView = ({ project, onUpdate, darkMode }: { project: Project; o
 
         {/* 안전/기타 정보 */}
         <div className={`rounded-2xl border p-6 ${cardCls}`}>
-          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-md-light-on-surface"}`}><HelpCircle className="w-4 h-4" /> 안전 / 기타</h3>
+          <h3 className={`font-semibold mb-4 flex items-center gap-2 ${darkMode ? "text-white" : "text-white"}`}><HelpCircle className="w-4 h-4" /> 안전 / 기타</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoField label="가까운 병원" field="nearest_hospital" placeholder="병원명 및 주소" value={info.nearest_hospital} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
             <InfoField label="날씨 메모" field="weather_note" placeholder="예: 맑음, 30°C 예상" value={info.weather_note} onChange={updateInfo} inputCls={inputCls} labelCls={labelCls} />
@@ -1461,28 +1508,28 @@ const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUp
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   };
 
-  const thCls = darkMode ? "bg-md-surface-container-high text-neutral-200" : "bg-md-light-surface-container-high text-md-light-on-surface-variant";
+  const thCls = darkMode ? "bg-md-surface-container-high text-neutral-200" : "bg-white/[0.06] text-md-on-surface-variant";
   const tdCls = darkMode ? "bg-md-surface-container border-white/5" : "bg-white border-md-light-outline-variant/20";
   const inputCls = darkMode
     ? "bg-transparent text-white placeholder-neutral-500 focus:bg-md-surface-container-high"
-    : "bg-transparent text-md-light-on-surface placeholder-gray-400 focus:bg-white";
+    : "bg-transparent text-white placeholder-gray-400 focus:bg-white";
   const selectCls = darkMode
     ? "bg-md-surface-container-high text-white border-white/10"
-    : "bg-white text-md-light-on-surface border-md-light-outline-variant/30";
+    : "bg-white text-white border-md-light-outline-variant/30";
 
   return (
     <div className={`flex-1 overflow-auto p-6 ${darkMode ? "bg-md-surface-container-low" : "bg-white"}`}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>촬영 타임테이블</h2>
-            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>
+            <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-white"}`}>촬영 타임테이블</h2>
+            <p className={`text-sm mt-1 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>
               촬영 일정을 표 형식으로 직접 편집하세요 · {timetable.length}개 항목
             </p>
           </div>
           <div className="flex gap-2">
             <button onClick={generateFromScenes}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-neutral-200 hover:bg-md-surface-bright" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:bg-md-light-outline-variant"}`}>
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-neutral-200 hover:bg-md-surface-bright" : "bg-white/[0.06]est text-md-on-surface-variant hover:bg-md-light-outline-variant"}`}>
               <Sparkles size={14} /> 씬에서 자동 생성
             </button>
             <button onClick={addEntry}
@@ -1494,14 +1541,14 @@ const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUp
 
         {timetable.length === 0 ? (
           <div className={`text-center py-16 rounded-2xl border-2 border-dashed ${darkMode ? "border-white/5" : "border-md-light-outline-variant/30"}`}>
-            <Clock size={40} className={`mx-auto mb-3 ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
-            <p className={`font-medium mb-2 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>아직 타임테이블이 없어요</p>
-            <p className={`text-sm mb-5 ${darkMode ? "text-neutral-600" : "text-md-light-outline-variant"}`}>씬에서 자동으로 생성하거나 직접 추가하세요</p>
+            <Clock size={40} className={`mx-auto mb-3 ${darkMode ? "text-md-on-surface-variant" : "text-gray-300"}`} />
+            <p className={`font-medium mb-2 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>아직 타임테이블이 없어요</p>
+            <p className={`text-sm mb-5 ${darkMode ? "text-md-on-surface-variant" : "text-md-outline/50"}`}>씬에서 자동으로 생성하거나 직접 추가하세요</p>
             <div className="flex gap-3 justify-center">
               <button onClick={generateFromScenes} className="px-5 py-2.5 bg-md-surface-container text-white rounded-xl text-sm font-medium hover:bg-md-surface-container-low transition">
                 씬에서 자동 생성
               </button>
-              <button onClick={addEntry} className={`px-5 py-2.5 rounded-xl text-sm font-medium transition ${darkMode ? "bg-md-surface-container-high text-neutral-200 hover:bg-md-surface-bright" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:bg-md-light-outline-variant"}`}>
+              <button onClick={addEntry} className={`px-5 py-2.5 rounded-xl text-sm font-medium transition ${darkMode ? "bg-md-surface-container-high text-neutral-200 hover:bg-md-surface-bright" : "bg-white/[0.06]est text-md-on-surface-variant hover:bg-md-light-outline-variant"}`}>
                 빈 항목 추가
               </button>
             </div>
@@ -1526,7 +1573,7 @@ const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUp
               <tbody>
                 {timetable.map((entry, index) => (
                   <tr key={entry.id} className={`border-t transition hover:${darkMode ? "bg-neutral-750" : "bg-blue-50/30"}`} style={{ borderColor: darkMode ? '#404040' : '#f3f4f6' }}>
-                    <td className={`px-2 py-2 text-center font-bold text-xs ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>{index + 1}</td>
+                    <td className={`px-2 py-2 text-center font-bold text-xs ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>{index + 1}</td>
                     <td className="px-1 py-1">
                       <input type="time" value={entry.time_start} onChange={(e) => updateEntry(entry.id, 'time_start', e.target.value)}
                         className={`w-full px-2 py-1.5 rounded-lg text-xs focus:outline-none transition ${inputCls}`} />
@@ -1573,15 +1620,15 @@ const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUp
                     <td className="px-1 py-1">
                       <div className="flex items-center justify-center gap-0.5">
                         <button onClick={() => moveEntry(index, -1)} disabled={index === 0}
-                          className={`p-1 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-outline-variant" : "hover:bg-md-light-surface-container-highest text-md-light-outline-variant disabled:text-gray-200"}`}>
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-on-surface-variant" : "hover:bg-white/[0.06]est text-md-outline/50 disabled:text-gray-200"}`}>
                           <ArrowUp size={12} />
                         </button>
                         <button onClick={() => moveEntry(index, 1)} disabled={index === timetable.length - 1}
-                          className={`p-1 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-outline-variant" : "hover:bg-md-light-surface-container-highest text-md-light-outline-variant disabled:text-gray-200"}`}>
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-md-surface-bright text-md-outline disabled:text-md-on-surface-variant" : "hover:bg-white/[0.06]est text-md-outline/50 disabled:text-gray-200"}`}>
                           <ArrowDown size={12} />
                         </button>
                         <button onClick={() => deleteEntry(entry.id)}
-                          className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/30 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-light-outline-variant hover:text-red-500"}`}>
+                          className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/30 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-outline/50 hover:text-red-500"}`}>
                           <Trash2 size={12} />
                         </button>
                       </div>
@@ -1596,7 +1643,7 @@ const TimetableView = ({ project, onUpdate, darkMode }: { project: Project; onUp
         {timetable.length > 0 && (
           <div className="flex justify-center mt-4">
             <button onClick={addEntry}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}>
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-white/[0.06] text-md-on-surface-variant hover:bg-white/[0.06]est"}`}>
               <Plus size={14} /> 항목 추가
             </button>
           </div>
@@ -1629,25 +1676,25 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className={`rounded-2xl max-w-lg w-full p-6 max-h-[85vh] overflow-y-auto ${darkMode ? "bg-md-surface-container" : "bg-white"}`} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className={`text-xl font-bold ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>새 프로젝트</h2>
-          <button onClick={onClose} className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-md-surface-container-high text-md-outline" : "hover:bg-md-light-surface-container-high text-md-light-outline-variant"}`}><X size={18} /></button>
+          <h2 className={`text-xl font-bold ${darkMode ? "text-white" : "text-white"}`}>새 프로젝트</h2>
+          <button onClick={onClose} className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-md-surface-container-high text-md-outline" : "hover:bg-white/[0.06] text-md-outline/50"}`}><X size={18} /></button>
         </div>
 
         {/* Step 1: 프로젝트 이름 */}
         <div className="mb-5">
-          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>프로젝트 이름</label>
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>프로젝트 이름</label>
           <input
             type="text"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
             placeholder="예: 신제품 홍보 영상"
-            className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white placeholder-neutral-500 border border-white/10" : "bg-white text-md-light-on-surface placeholder-gray-400 border border-md-light-outline-variant/30"}`}
+            className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white placeholder-neutral-500 border border-white/10" : "bg-white text-white placeholder-gray-400 border border-md-light-outline-variant/30"}`}
           />
         </div>
 
         {/* Step 2: 영상 비율 선택 */}
         <div className="mb-5">
-          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>영상 비율</label>
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>영상 비율</label>
           <div className="grid grid-cols-3 gap-2">
             {ASPECT_RATIOS.map((ratio) => (
               <button
@@ -1668,8 +1715,8 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
                   style={{ width: '36px', aspectRatio: ratioToAspect(ratio.value) }}>
                   <span className="text-[8px]">{ratio.icon}</span>
                 </div>
-                <span className={`text-[10px] font-bold ${selectedRatio === ratio.value ? (darkMode ? "text-white" : "text-md-light-on-surface") : (darkMode ? "text-md-outline" : "text-md-light-on-surface-variant")}`}>{ratio.value}</span>
-                <span className={`text-[8px] ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>{ratio.desc}</span>
+                <span className={`text-[10px] font-bold ${selectedRatio === ratio.value ? (darkMode ? "text-white" : "text-white") : (darkMode ? "text-md-outline" : "text-md-on-surface-variant")}`}>{ratio.value}</span>
+                <span className={`text-[8px] ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>{ratio.desc}</span>
               </button>
             ))}
           </div>
@@ -1677,11 +1724,11 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
 
         {/* Step 3: 해상도 */}
         <div className="mb-5">
-          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>영상 해상도</label>
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>영상 해상도</label>
           <select
             value={selectedResolution}
             onChange={(e) => setSelectedResolution(e.target.value)}
-            className={`w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white border border-white/10" : "bg-white text-md-light-on-surface border border-md-light-outline-variant/30"}`}
+            className={`w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white border border-white/10" : "bg-white text-white border border-md-light-outline-variant/30"}`}
           >
             {VIDEO_RESOLUTIONS.map((res) => (
               <option key={res.value} value={res.value}>{res.label}</option>
@@ -1693,21 +1740,21 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
               value={customResolution}
               onChange={(e) => setCustomResolution(e.target.value)}
               placeholder="예: 2560x1440"
-              className={`w-full mt-2 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white placeholder-neutral-500 border border-white/10" : "bg-white text-md-light-on-surface placeholder-gray-400 border border-md-light-outline-variant/30"}`}
+              className={`w-full mt-2 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500 transition ${darkMode ? "bg-md-surface-container-high text-white placeholder-neutral-500 border border-white/10" : "bg-white text-white placeholder-gray-400 border border-md-light-outline-variant/30"}`}
             />
           )}
         </div>
 
         {/* Step 4: 템플릿 선택 */}
         <div className="mb-5">
-          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>템플릿 (선택사항)</label>
+          <label className={`block text-xs font-semibold mb-2 ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>템플릿 (선택사항)</label>
           <div className="space-y-2">
             <button
               onClick={() => setSelectedTemplate(null)}
               className={`w-full px-4 py-3 rounded-xl transition text-left text-sm font-medium border-2 ${
                 selectedTemplate === null
-                  ? darkMode ? "border-white bg-md-surface-container-high text-white" : "border-neutral-800 bg-neutral-50 text-md-light-on-surface"
-                  : darkMode ? "border-white/10 bg-neutral-750 text-md-on-surface-variant hover:border-md-outline" : "border-md-light-outline-variant/20 bg-white text-md-light-on-surface-variant hover:border-gray-300"
+                  ? darkMode ? "border-white bg-md-surface-container-high text-white" : "border-neutral-800 bg-neutral-50 text-white"
+                  : darkMode ? "border-white/10 bg-neutral-750 text-md-on-surface-variant hover:border-md-outline" : "border-md-light-outline-variant/20 bg-white text-md-on-surface-variant hover:border-gray-300"
               }`}
             >
               빈 프로젝트로 시작
@@ -1722,8 +1769,8 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
                     : darkMode ? "border-white/10 bg-neutral-750 hover:border-md-outline" : "border-md-light-outline-variant/20 bg-white hover:border-gray-300"
                 }`}
               >
-                <div className={`font-medium text-sm ${selectedTemplate === template.id ? (darkMode ? "text-white" : "text-md-light-on-surface") : (darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant")}`}>{template.icon} {template.name}</div>
-                <div className={`text-xs mt-1 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>{template.description}</div>
+                <div className={`font-medium text-sm ${selectedTemplate === template.id ? (darkMode ? "text-white" : "text-white") : (darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant")}`}>{template.icon} {template.name}</div>
+                <div className={`text-xs mt-1 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>{template.description}</div>
               </button>
             ))}
           </div>
@@ -1739,7 +1786,7 @@ const NewProjectModal = ({ darkMode, onClose, onCreate }: { darkMode: boolean; o
           </button>
           <button
             onClick={onClose}
-            className={`px-4 py-3 rounded-xl transition text-sm ${darkMode ? "border border-white/10 text-md-on-surface-variant hover:bg-md-surface-container-high" : "border border-md-light-outline-variant/30 text-md-light-on-surface-variant hover:bg-white"}`}
+            className={`px-4 py-3 rounded-xl transition text-sm ${darkMode ? "border border-white/10 text-md-on-surface-variant hover:bg-md-surface-container-high" : "border border-md-light-outline-variant/30 text-md-on-surface-variant hover:bg-white"}`}
           >
             취소
           </button>
@@ -1757,7 +1804,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const [showNewProject, setShowNewProject] = useState(false);
   const [viewMode, setViewMode] = useState('editor');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [history, setHistory] = useState<Project[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [isSaving, setIsSaving] = useState(false);
@@ -2570,7 +2617,7 @@ ${htmlPages.join('\n')}
               <span className="material-symbols-outlined text-[20px] text-md-outline" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>movie_filter</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant">씬 목록</span>
             </div>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full ${darkMode ? "bg-white/5 text-md-outline" : "bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full ${darkMode ? "bg-white/5 text-md-outline" : "bg-white/[0.06] text-md-on-surface-variant"}`}>
               {activeProject.scenes.length}
             </span>
           </div>
@@ -2590,16 +2637,16 @@ ${htmlPages.join('\n')}
                   className={`group flex items-center gap-2 px-3 py-2 mx-2 rounded-lg cursor-pointer transition-all ${
                     activeSceneId === scene.id
                       ? `${darkMode ? "bg-white/[0.08] border border-white/10" : "bg-blue-50 border border-blue-200"}`
-                      : `border border-transparent ${darkMode ? "hover:bg-white/[0.04]" : "hover:bg-md-light-surface-container-high"}`
+                      : `border border-transparent ${darkMode ? "hover:bg-white/[0.04]" : "hover:bg-white/[0.06]"}`
                   }`}
                 >
                   {/* 드래그 인디케이터 */}
-                  <div className={`flex-shrink-0 opacity-0 group-hover:opacity-50 transition cursor-grab ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>
+                  <div className={`flex-shrink-0 opacity-0 group-hover:opacity-50 transition cursor-grab ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>
                     <span className="material-symbols-outlined text-[16px]">drag_indicator</span>
                   </div>
 
                   {/* 썸네일 */}
-                  <div className={`flex-shrink-0 w-16 h-10 rounded overflow-hidden ${darkMode ? "bg-md-surface-container-high" : "bg-md-light-surface-container-high"}`}>
+                  <div className={`flex-shrink-0 w-16 h-10 rounded overflow-hidden ${darkMode ? "bg-md-surface-container-high" : "bg-white/[0.06]"}`}>
                     {scene.image ? (
                       <img src={scene.image} alt={scene.title} className="w-full h-full object-cover" />
                     ) : (
@@ -2612,16 +2659,16 @@ ${htmlPages.join('\n')}
                   {/* 씬 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] font-bold ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-blue-700") : (darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant")}`}>
+                      <span className={`text-[10px] font-bold ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-blue-700") : (darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant")}`}>
                         S{String(index + 1).padStart(2, '0')}
                       </span>
-                      <span className={`text-[11px] font-medium truncate ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-md-light-on-surface") : (darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface")}`}>
+                      <span className={`text-[11px] font-medium truncate ${activeSceneId === scene.id ? (darkMode ? "text-white" : "text-white") : (darkMode ? "text-md-on-surface-variant" : "text-white")}`}>
                         {scene.title}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[9px] font-mono ${darkMode ? "text-md-outline/60" : "text-md-light-outline-variant"}`}>{timecode}</span>
-                      <span className={`text-[9px] ${darkMode ? "text-md-outline/40" : "text-md-light-outline-variant/60"}`}>{scene.duration}s</span>
+                      <span className={`text-[9px] font-mono ${darkMode ? "text-md-outline/60" : "text-md-outline/50"}`}>{timecode}</span>
+                      <span className={`text-[9px] ${darkMode ? "text-md-outline/40" : "text-md-outline/50/60"}`}>{scene.duration}s</span>
                       {scene.shooting_completed && (
                         <span className="material-symbols-outlined text-[10px] text-green-500" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                       )}
@@ -2631,11 +2678,11 @@ ${htmlPages.join('\n')}
                   {/* 액션 버튼 (호버 시 표시) */}
                   <div className="flex-shrink-0 flex gap-0.5 opacity-0 group-hover:opacity-100 transition">
                     <button onClick={(e) => { e.stopPropagation(); handleDuplicateScene(scene.id); }}
-                      className={`p-1 rounded transition ${darkMode ? "hover:bg-white/10 text-md-outline" : "hover:bg-md-light-outline-variant text-md-light-outline-variant"}`} title="씬 복제">
+                      className={`p-1 rounded transition ${darkMode ? "hover:bg-white/10 text-md-outline" : "hover:bg-md-light-outline-variant text-md-outline/50"}`} title="씬 복제">
                       <Copy size={10} />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); if (confirm('이 씬을 삭제할까요?')) handleDeleteScene(scene.id); }}
-                      className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/40 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-light-outline-variant hover:text-red-500"}`} title="씬 삭제">
+                      className={`p-1 rounded transition ${darkMode ? "hover:bg-red-900/40 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-outline/50 hover:text-red-500"}`} title="씬 삭제">
                       <Trash2 size={10} />
                     </button>
                   </div>
@@ -2648,7 +2695,7 @@ ${htmlPages.join('\n')}
           <div className={`px-3 py-3 border-t ${darkMode ? "border-white/5" : "border-md-light-outline-variant/20"}`}>
             <button
               onClick={() => { setActiveProjectId(null); setActiveSceneId(null); setCurrentPage('dashboard'); }}
-              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant hover:bg-md-light-outline-variant"}`}
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-white/[0.06]est text-md-on-surface-variant hover:bg-md-light-outline-variant"}`}
             >
               <span className="material-symbols-outlined text-[14px]">arrow_back</span>
               프로젝트 목록
@@ -2668,7 +2715,7 @@ ${htmlPages.join('\n')}
               {activeProject && (
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className={`p-1.5 rounded-lg transition flex-shrink-0 ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
+                  className={`p-1.5 rounded-lg transition flex-shrink-0 ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-white/[0.06] text-md-on-surface-variant"}`}
                 >
                   <span className="material-symbols-outlined text-[20px]">{sidebarOpen ? 'menu_open' : 'menu'}</span>
                 </button>
@@ -2676,7 +2723,7 @@ ${htmlPages.join('\n')}
               {/* 프로젝트 제목 */}
               {activeProject && (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className={`text-sm font-semibold truncate ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>
+                  <span className={`text-sm font-semibold truncate ${darkMode ? "text-white" : "text-white"}`}>
                     {activeProject.title}
                   </span>
                   {lastSaved && <span className="text-[10px] text-md-outline/60 flex-shrink-0">저장됨</span>}
@@ -2691,7 +2738,7 @@ ${htmlPages.join('\n')}
                   <span className="text-xl font-bold tracking-tighter text-white uppercase font-headline">PEWPEW 스토리보드</span>
                 </Link>
                 <Link href="/"
-                  className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}>
+                  className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${darkMode ? "bg-white/[0.04] text-md-on-surface-variant hover:bg-white/[0.08]" : "bg-white/[0.06] text-md-on-surface-variant hover:bg-white/[0.06]est"}`}>
                   <ArrowLeft size={13} /> 메인페이지
                 </Link>
               </div>
@@ -2704,7 +2751,7 @@ ${htmlPages.join('\n')}
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowPDFExportModal(true)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-md-light-surface-container-high text-md-light-on-surface hover:bg-md-light-surface-container-highest"}`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-white/[0.06] text-white hover:bg-white/[0.06]est"}`}
                   title="PDF 내보내기"
                 >
                   <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
@@ -2712,7 +2759,7 @@ ${htmlPages.join('\n')}
                 </button>
                 <button
                   onClick={() => handleExportJSON()}
-                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
                   title="JSON 내보내기"
                 >
                   <span className="material-symbols-outlined text-[14px]">data_object</span>
@@ -2720,7 +2767,7 @@ ${htmlPages.join('\n')}
                 </button>
                 <button
                   onClick={() => setShowNLEExport(true)}
-                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
                   title="NLE 내보내기"
                 >
                   <span className="material-symbols-outlined text-[14px]">movie_edit</span>
@@ -2733,7 +2780,7 @@ ${htmlPages.join('\n')}
                   className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${
                     shareToken
                       ? "bg-green-600/20 text-green-400 hover:bg-green-600/30"
-                      : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high")
+                      : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]")
                   }`}
                   title={shareToken ? "공유 중" : "공유"}
                 >
@@ -2754,7 +2801,7 @@ ${htmlPages.join('\n')}
             <div className={`w-px h-4 ${darkMode ? "bg-white/10" : "bg-md-light-outline-variant/30"}`} />
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-md-light-surface-container-high text-md-light-on-surface-variant"}`}
+              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-on-surface-variant" : "hover:bg-white/[0.06] text-md-on-surface-variant"}`}
               title={darkMode ? "라이트 모드" : "다크 모드"}
             >
               <span className="material-symbols-outlined text-[18px]">{darkMode ? 'light_mode' : 'dark_mode'}</span>
@@ -2762,7 +2809,7 @@ ${htmlPages.join('\n')}
             {user?.email && isAdmin(user.email) && (
               <Link
                 href="/admin"
-                className={`hidden md:flex items-center px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`hidden md:flex items-center px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[14px] mr-1">admin_panel_settings</span>
                 관리자
@@ -2770,7 +2817,7 @@ ${htmlPages.join('\n')}
             )}
             <button
               onClick={onLogout}
-              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-outline hover:text-red-400" : "hover:bg-md-light-surface-container-high text-md-light-outline-variant hover:text-red-500"}`}
+              className={`p-1.5 rounded-lg transition ${darkMode ? "hover:bg-white/[0.06] text-md-outline hover:text-red-400" : "hover:bg-white/[0.06] text-md-outline/50 hover:text-red-500"}`}
               title="로그아웃"
             >
               <span className="material-symbols-outlined text-[18px]">logout</span>
@@ -2801,7 +2848,7 @@ ${htmlPages.join('\n')}
                   className={`relative px-3 md:px-4 py-2.5 transition text-[11px] md:text-[12px] font-medium tracking-wider whitespace-nowrap flex-shrink-0 flex items-center gap-1.5 ${
                     viewMode === id
                       ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-white'
-                      : `${darkMode ? "text-md-on-surface-variant/60 hover:text-white/70" : "text-md-light-on-surface-variant hover:text-md-light-on-surface"}`
+                      : `${darkMode ? "text-md-on-surface-variant/60 hover:text-white/70" : "text-md-on-surface-variant hover:text-white"}`
                   }`}
                 >
                   <span className="material-symbols-outlined text-[15px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20" }}>{icon}</span>
@@ -2822,10 +2869,10 @@ ${htmlPages.join('\n')}
                 {/* 헤더 영역 */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                   <div>
-                    <h1 className={`text-xl md:text-2xl font-bold tracking-tight ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>
+                    <h1 className={`text-xl md:text-2xl font-bold tracking-tight ${darkMode ? "text-white" : "text-white"}`}>
                       {user?.displayName ? `${user.displayName}님의 프로젝트` : '내 프로젝트'}
                     </h1>
-                    <p className={`text-xs mt-1 ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>
+                    <p className={`text-xs mt-1 ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>
                       {projects.length > 0 ? `${projects.length}개의 프로젝트 · 총 ${projects.reduce((sum, p) => sum + p.scenes.length, 0)}개 씬` : '새 프로젝트를 만들어 시작하세요'}
                     </p>
                   </div>
@@ -2839,7 +2886,7 @@ ${htmlPages.join('\n')}
                 {(announcements.filter(a => a.active !== false).length > 0 || isAdmin(user?.email)) && (
                   <div className={`rounded-xl border px-4 py-3 ${darkMode ? "bg-md-surface-container/60 border-white/5/50" : "bg-white border-md-light-outline-variant/20"}`}>
                     <div className="flex items-center gap-3">
-                      <Bell size={14} className={darkMode ? "text-md-outline" : "text-md-light-outline-variant"} />
+                      <Bell size={14} className={darkMode ? "text-md-outline" : "text-md-outline/50"} />
                       <div className="flex-1 min-w-0">
                         {announcements.filter(a => a.active !== false).length > 0 ? (
                           <div className="space-y-1">
@@ -2848,23 +2895,23 @@ ${htmlPages.join('\n')}
                                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0 ${
                                   a.type === 'important' ? (darkMode ? 'bg-red-900/50 text-red-400' : 'bg-red-50 text-red-500') :
                                   a.type === 'update' ? (darkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-50 text-blue-500') :
-                                  (darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant')
+                                  (darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-white/[0.06] text-md-on-surface-variant')
                                 }`}>
                                   {a.type === 'important' ? '!' : a.type === 'update' ? 'UP' : 'i'}
                                 </span>
-                                <p className={`text-xs truncate ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>{a.title}</p>
-                                {a.content && <p className={`text-[11px] truncate hidden md:block ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>- {a.content}</p>}
+                                <p className={`text-xs truncate ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>{a.title}</p>
+                                {a.content && <p className={`text-[11px] truncate hidden md:block ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>- {a.content}</p>}
                                 {isAdmin(user?.email) && (
                                   <div className="opacity-0 group-hover:opacity-100 flex gap-1 flex-shrink-0 ml-auto transition">
                                     <button onClick={() => {
                                       setAnnouncementForm({ title: a.title, content: a.content, type: a.type });
                                       setEditingAnnouncement(a);
                                       setShowAnnouncementEditor(true);
-                                    }} className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-md-surface-bright text-md-outline" : "hover:bg-md-light-surface-container-highest text-md-light-outline-variant"}`}>
+                                    }} className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-md-surface-bright text-md-outline" : "hover:bg-white/[0.06]est text-md-outline/50"}`}>
                                       수정
                                     </button>
                                     <button onClick={() => a.id && handleDeleteAnnouncement(a.id)}
-                                      className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-red-900/30 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-light-outline-variant hover:text-red-500"}`}>
+                                      className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? "hover:bg-red-900/30 text-md-outline hover:text-red-400" : "hover:bg-red-50 text-md-outline/50 hover:text-red-500"}`}>
                                       삭제
                                     </button>
                                   </div>
@@ -2873,7 +2920,7 @@ ${htmlPages.join('\n')}
                             ))}
                           </div>
                         ) : (
-                          <p className={`text-xs ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>공지사항 없음</p>
+                          <p className={`text-xs ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>공지사항 없음</p>
                         )}
                       </div>
                       {isAdmin(user?.email) && (
@@ -2882,7 +2929,7 @@ ${htmlPages.join('\n')}
                           setEditingAnnouncement(null);
                           setShowAnnouncementEditor(true);
                         }}
-                          className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-md-light-surface-container-high text-md-light-on-surface-variant hover:bg-md-light-surface-container-highest"}`}>
+                          className={`text-[11px] px-2.5 py-1 rounded-lg font-medium transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant hover:bg-md-surface-bright" : "bg-white/[0.06] text-md-on-surface-variant hover:bg-white/[0.06]est"}`}>
                           + 작성
                         </button>
                       )}
@@ -2894,22 +2941,22 @@ ${htmlPages.join('\n')}
                         <input type="text" value={announcementForm.title}
                           onChange={(e) => setAnnouncementForm(prev => ({ ...prev, title: e.target.value }))}
                           placeholder="공지 제목"
-                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none ${darkMode ? "bg-md-surface-bright text-white border-md-outline placeholder-neutral-400" : "bg-white text-md-light-on-surface border-gray-300 placeholder-gray-400"}`} />
+                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none ${darkMode ? "bg-md-surface-bright text-white border-md-outline placeholder-neutral-400" : "bg-white text-white border-gray-300 placeholder-gray-400"}`} />
                         <textarea value={announcementForm.content}
                           onChange={(e) => setAnnouncementForm(prev => ({ ...prev, content: e.target.value }))}
                           rows={2} placeholder="내용 (선택)"
-                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none resize-none ${darkMode ? "bg-md-surface-bright text-white border-md-outline placeholder-neutral-400" : "bg-white text-md-light-on-surface border-gray-300 placeholder-gray-400"}`} />
+                          className={`w-full px-3 py-2 rounded-lg text-sm border focus:outline-none resize-none ${darkMode ? "bg-md-surface-bright text-white border-md-outline placeholder-neutral-400" : "bg-white text-white border-gray-300 placeholder-gray-400"}`} />
                         <div className="flex items-center gap-2">
                           <select value={announcementForm.type}
                             onChange={(e) => setAnnouncementForm(prev => ({ ...prev, type: e.target.value as any }))}
-                            className={`px-3 py-1.5 rounded-lg text-xs border ${darkMode ? "bg-md-surface-bright text-white border-md-outline" : "bg-white text-md-light-on-surface-variant border-gray-300"}`}>
+                            className={`px-3 py-1.5 rounded-lg text-xs border ${darkMode ? "bg-md-surface-bright text-white border-md-outline" : "bg-white text-md-on-surface-variant border-gray-300"}`}>
                             <option value="info">일반</option>
                             <option value="update">업데이트</option>
                             <option value="important">중요</option>
                           </select>
                           <div className="flex-1" />
                           <button onClick={() => { setShowAnnouncementEditor(false); setEditingAnnouncement(null); }}
-                            className={`px-3 py-1.5 text-xs rounded-lg ${darkMode ? "text-md-outline hover:text-neutral-200" : "text-md-light-on-surface-variant hover:text-md-light-on-surface-variant"}`}>
+                            className={`px-3 py-1.5 text-xs rounded-lg ${darkMode ? "text-md-outline hover:text-neutral-200" : "text-md-on-surface-variant hover:text-md-on-surface-variant"}`}>
                             취소
                           </button>
                           <button onClick={handleSaveAnnouncement}
@@ -2925,11 +2972,11 @@ ${htmlPages.join('\n')}
                 {/* 프로젝트 목록 */}
                 {projects.length === 0 ? (
                   <div className={`text-center py-20 rounded-2xl border-2 border-dashed ${darkMode ? "border-white/5" : "border-md-light-outline-variant/30"}`}>
-                    <div className={`w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center ${darkMode ? "bg-md-surface-container" : "bg-md-light-surface-container-high"}`}>
-                      <Film size={28} className={darkMode ? "text-neutral-600" : "text-gray-300"} />
+                    <div className={`w-16 h-16 mx-auto mb-5 rounded-2xl flex items-center justify-center ${darkMode ? "bg-md-surface-container" : "bg-white/[0.06]"}`}>
+                      <Film size={28} className={darkMode ? "text-md-on-surface-variant" : "text-gray-300"} />
                     </div>
-                    <p className={`mb-1 font-semibold text-sm ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>아직 프로젝트가 없어요</p>
-                    <p className={`text-xs mb-6 ${darkMode ? "text-neutral-600" : "text-md-light-outline-variant"}`}>영상 스토리보드를 만들어보세요</p>
+                    <p className={`mb-1 font-semibold text-sm ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>아직 프로젝트가 없어요</p>
+                    <p className={`text-xs mb-6 ${darkMode ? "text-md-on-surface-variant" : "text-md-outline/50"}`}>영상 스토리보드를 만들어보세요</p>
                     <div className="flex justify-center gap-3">
                       <button onClick={() => setShowNewProject(true)}
                         className="px-6 py-2.5 bg-md-surface-container text-white rounded-xl hover:bg-md-surface-container-low transition text-sm font-medium">
@@ -2938,15 +2985,15 @@ ${htmlPages.join('\n')}
                     </div>
 
                     {/* 간단한 3단계 안내 */}
-                    <div className={`mt-10 mx-auto max-w-lg grid grid-cols-3 gap-4 ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>
+                    <div className={`mt-10 mx-auto max-w-lg grid grid-cols-3 gap-4 ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>
                       {[
                         { num: '1', label: '프로젝트 생성', sub: '이름, 비율, 해상도 설정' },
                         { num: '2', label: '씬 편집', sub: '이미지, 앵글, 대사 입력' },
                         { num: '3', label: 'PDF 출력', sub: '스토리보드 완성 후 공유' },
                       ].map(s => (
                         <div key={s.num} className="text-center">
-                          <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-md-light-surface-container-highest text-md-light-on-surface-variant"}`}>{s.num}</div>
-                          <p className={`text-xs font-medium ${darkMode ? "text-md-on-surface-variant" : "text-md-light-on-surface-variant"}`}>{s.label}</p>
+                          <div className={`w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center text-xs font-bold ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant" : "bg-white/[0.06]est text-md-on-surface-variant"}`}>{s.num}</div>
+                          <p className={`text-xs font-medium ${darkMode ? "text-md-on-surface-variant" : "text-md-on-surface-variant"}`}>{s.label}</p>
                           <p className="text-[10px] mt-0.5">{s.sub}</p>
                         </div>
                       ))}
@@ -2973,7 +3020,7 @@ ${htmlPages.join('\n')}
                               <img src={firstSceneWithImage.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             ) : (
                               <div className={`w-full h-full flex items-center justify-center ${darkMode ? "bg-gradient-to-br from-neutral-700 to-neutral-800" : "bg-gradient-to-br from-gray-100 to-gray-200"}`}>
-                                <Film size={32} className={darkMode ? "text-neutral-600" : "text-gray-300"} />
+                                <Film size={32} className={darkMode ? "text-md-on-surface-variant" : "text-gray-300"} />
                               </div>
                             )}
                             {/* 오버레이 배지 */}
@@ -2997,16 +3044,16 @@ ${htmlPages.join('\n')}
                           </div>
 
                           <div className="p-3.5">
-                            <h3 className={`font-bold text-sm mb-1 truncate ${darkMode ? "text-white" : "text-md-light-on-surface"}`}>{project.title}</h3>
+                            <h3 className={`font-bold text-sm mb-1 truncate ${darkMode ? "text-white" : "text-white"}`}>{project.title}</h3>
 
                             {/* 진행률 바 */}
                             {project.scenes.length > 0 && (
                               <div className="mb-3">
                                 <div className="flex items-center justify-between mb-1">
-                                  <span className={`text-[10px] ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>촬영 진행률</span>
-                                  <span className={`text-[10px] font-medium ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>{completedScenes}/{project.scenes.length}</span>
+                                  <span className={`text-[10px] ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>촬영 진행률</span>
+                                  <span className={`text-[10px] font-medium ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>{completedScenes}/{project.scenes.length}</span>
                                 </div>
-                                <div className={`h-1 rounded-full overflow-hidden ${darkMode ? "bg-md-surface-container-high" : "bg-md-light-surface-container-high"}`}>
+                                <div className={`h-1 rounded-full overflow-hidden ${darkMode ? "bg-md-surface-container-high" : "bg-white/[0.06]"}`}>
                                   <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${(completedScenes / project.scenes.length) * 100}%` }} />
                                 </div>
                               </div>
@@ -3014,11 +3061,11 @@ ${htmlPages.join('\n')}
 
                             <div className="flex gap-1.5">
                               <button onClick={(e) => { e.stopPropagation(); handleDuplicateProject(project.id); }}
-                                className={`flex-1 px-2 py-1.5 text-[11px] rounded-lg transition flex items-center justify-center gap-1 ${darkMode ? "bg-md-surface-container-high text-md-outline hover:bg-md-surface-bright hover:text-neutral-200" : "bg-white text-md-light-on-surface-variant hover:bg-md-light-surface-container-high hover:text-md-light-on-surface-variant"}`}>
+                                className={`flex-1 px-2 py-1.5 text-[11px] rounded-lg transition flex items-center justify-center gap-1 ${darkMode ? "bg-md-surface-container-high text-md-outline hover:bg-md-surface-bright hover:text-neutral-200" : "bg-white text-md-on-surface-variant hover:bg-white/[0.06] hover:text-md-on-surface-variant"}`}>
                                 <Copy size={11} /> 복제
                               </button>
                               <button onClick={(e) => { e.stopPropagation(); if(confirm('프로젝트를 삭제할까요?')) handleDeleteProject(project.id); }}
-                                className={`px-2 py-1.5 text-[11px] rounded-lg transition ${darkMode ? "bg-md-surface-container-high text-md-outline hover:text-red-400 hover:bg-md-surface-bright" : "bg-white text-md-light-outline-variant hover:text-red-500 hover:bg-red-50"}`}>
+                                className={`px-2 py-1.5 text-[11px] rounded-lg transition ${darkMode ? "bg-md-surface-container-high text-md-outline hover:text-red-400 hover:bg-md-surface-bright" : "bg-white text-md-outline/50 hover:text-red-500 hover:bg-red-50"}`}>
                                 <Trash2 size={11} />
                               </button>
                             </div>
@@ -3032,10 +3079,10 @@ ${htmlPages.join('\n')}
                       onClick={() => setShowNewProject(true)}
                       className={`rounded-xl border-2 border-dashed flex flex-col items-center justify-center min-h-[200px] transition group ${darkMode ? "border-white/5 hover:border-md-outline hover:bg-md-surface-container/50" : "border-md-light-outline-variant/30 hover:border-gray-400 hover:bg-white"}`}
                     >
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition ${darkMode ? "bg-md-surface-container group-hover:bg-md-surface-container-high" : "bg-md-light-surface-container-high group-hover:bg-md-light-surface-container-highest"}`}>
-                        <Plus size={20} className={darkMode ? "text-md-outline" : "text-md-light-outline-variant"} />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 transition ${darkMode ? "bg-md-surface-container group-hover:bg-md-surface-container-high" : "bg-white/[0.06] group-hover:bg-white/[0.06]est"}`}>
+                        <Plus size={20} className={darkMode ? "text-md-outline" : "text-md-outline/50"} />
                       </div>
-                      <span className={`text-sm font-medium ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>새 프로젝트</span>
+                      <span className={`text-sm font-medium ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>새 프로젝트</span>
                     </button>
                   </div>
                 )}
@@ -3048,10 +3095,10 @@ ${htmlPages.join('\n')}
                       className={`w-full px-4 py-3 flex items-center justify-between text-left ${darkMode ? "hover:bg-md-surface-container" : "hover:bg-white"} transition`}
                     >
                       <div className="flex items-center gap-2">
-                        <HelpCircle size={14} className={darkMode ? "text-md-outline" : "text-md-light-outline-variant"} />
-                        <span className={`text-xs font-medium ${darkMode ? "text-md-outline" : "text-md-light-on-surface-variant"}`}>사용 가이드</span>
+                        <HelpCircle size={14} className={darkMode ? "text-md-outline" : "text-md-outline/50"} />
+                        <span className={`text-xs font-medium ${darkMode ? "text-md-outline" : "text-md-on-surface-variant"}`}>사용 가이드</span>
                       </div>
-                      <ChevronDown size={14} className={`transition-transform ${showGuide ? "rotate-180" : ""} ${darkMode ? "text-neutral-600" : "text-gray-300"}`} />
+                      <ChevronDown size={14} className={`transition-transform ${showGuide ? "rotate-180" : ""} ${darkMode ? "text-md-on-surface-variant" : "text-gray-300"}`} />
                     </button>
                     {showGuide && (
                       <div className={`px-4 pb-4 ${darkMode ? "border-t border-white/5/50" : "border-t border-md-light-outline-variant/20"}`}>
@@ -3065,10 +3112,10 @@ ${htmlPages.join('\n')}
                             { title: 'AI 씬 추천', desc: '영상 유형별 자동 씬 구성', icon: <Sparkles size={14} /> },
                           ].map(item => (
                             <div key={item.title} className={`flex items-start gap-3 p-3 rounded-lg ${darkMode ? "bg-md-surface-container-high/30" : "bg-white"}`}>
-                              <div className={`mt-0.5 ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>{item.icon}</div>
+                              <div className={`mt-0.5 ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>{item.icon}</div>
                               <div>
                                 <p className={`text-xs font-semibold ${darkMode ? "text-neutral-200" : "text-gray-800"}`}>{item.title}</p>
-                                <p className={`text-[11px] mt-0.5 ${darkMode ? "text-md-outline" : "text-md-light-outline-variant"}`}>{item.desc}</p>
+                                <p className={`text-[11px] mt-0.5 ${darkMode ? "text-md-outline" : "text-md-outline/50"}`}>{item.desc}</p>
                               </div>
                             </div>
                           ))}
@@ -3101,7 +3148,7 @@ ${htmlPages.join('\n')}
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <span className="text-orange-400 text-xs font-bold">📸 캡처 보관함</span>
                           <span className="text-orange-300/60 text-[10px]">{capturedFrames.length}컷</span>
-                          <button onClick={() => setCapturedFrames([])} className="text-md-light-on-surface-variant hover:text-red-400 text-[10px] ml-1">전체삭제</button>
+                          <button onClick={() => setCapturedFrames([])} className="text-md-on-surface-variant hover:text-red-400 text-[10px] ml-1">전체삭제</button>
                         </div>
                         <div className="w-px h-5 bg-gray-700 flex-shrink-0" />
                         <div className="flex-1 overflow-x-auto no-scrollbar">
@@ -3137,7 +3184,7 @@ ${htmlPages.join('\n')}
                             ))}
                           </div>
                         </div>
-                        <span className="text-md-light-on-surface-variant text-[9px] flex-shrink-0 hidden md:block">클릭 → 현재 씬에 적용</span>
+                        <span className="text-md-on-surface-variant text-[9px] flex-shrink-0 hidden md:block">클릭 → 현재 씬에 적용</span>
                       </div>
                     </div>
                   )}
@@ -3178,7 +3225,7 @@ ${htmlPages.join('\n')}
                           if (idx > 0) setActiveSceneId(scenes[idx - 1].id);
                         }}
                         disabled={activeProject.scenes.findIndex(s => s.id === activeSceneId) <= 0}
-                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant disabled:opacity-30" : "bg-md-light-surface-container-high text-md-light-on-surface-variant disabled:opacity-30"}`}
+                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant disabled:opacity-30" : "bg-white/[0.06] text-md-on-surface-variant disabled:opacity-30"}`}
                       >
                         <ChevronLeft size={16} />
                       </button>
@@ -3190,7 +3237,7 @@ ${htmlPages.join('\n')}
                             className={`px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap flex-shrink-0 transition ${
                               scene.id === activeSceneId
                                 ? 'bg-md-surface-container text-white'
-                                : darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-md-light-surface-container-high text-md-light-on-surface-variant'
+                                : darkMode ? 'bg-md-surface-container-high text-md-outline' : 'bg-white/[0.06] text-md-on-surface-variant'
                             }`}
                           >
                             {idx + 1}
@@ -3204,7 +3251,7 @@ ${htmlPages.join('\n')}
                           if (idx < scenes.length - 1) setActiveSceneId(scenes[idx + 1].id);
                         }}
                         disabled={activeProject.scenes.findIndex(s => s.id === activeSceneId) >= activeProject.scenes.length - 1}
-                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant disabled:opacity-30" : "bg-md-light-surface-container-high text-md-light-on-surface-variant disabled:opacity-30"}`}
+                        className={`p-2 rounded-lg transition flex-shrink-0 ${darkMode ? "bg-md-surface-container-high text-md-on-surface-variant disabled:opacity-30" : "bg-white/[0.06] text-md-on-surface-variant disabled:opacity-30"}`}
                       >
                         <ChevronRight size={16} />
                       </button>
@@ -3251,14 +3298,14 @@ ${htmlPages.join('\n')}
             <div className="flex items-center gap-1">
               <button
                 onClick={handleAddScene}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-md-light-surface-container-high text-md-light-on-surface hover:bg-md-light-surface-container-highest"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-white/[0.06] text-white hover:bg-white/[0.06]est"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">add</span>
                 씬 추가
               </button>
               <button
                 onClick={() => setShowBlankPageEditor(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">note_add</span>
                 빈 페이지
@@ -3269,7 +3316,7 @@ ${htmlPages.join('\n')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${
                   slideViewMode
                     ? (darkMode ? "bg-white/[0.12] text-white" : "bg-blue-100 text-blue-700")
-                    : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high")
+                    : (darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]")
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">view_carousel</span>
@@ -3277,14 +3324,14 @@ ${htmlPages.join('\n')}
               </button>
               <button
                 onClick={() => setViewMode('search')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">search</span>
                 씬 검색
               </button>
               <button
                 onClick={() => setViewMode('versions')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">history</span>
                 버전 관리
@@ -3293,21 +3340,21 @@ ${htmlPages.join('\n')}
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowBatchUpload(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">upload</span>
                 일괄 업로드
               </button>
               <button
                 onClick={() => setShowBrandSettings(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition text-[11px] font-medium ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
               >
                 <span className="material-symbols-outlined text-[16px]">palette</span>
                 브랜드
               </button>
               <button
                 onClick={() => setShowKeyboardShortcuts(true)}
-                className={`p-1.5 rounded-lg transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-light-on-surface-variant hover:bg-md-light-surface-container-high"}`}
+                className={`p-1.5 rounded-lg transition ${darkMode ? "text-md-on-surface-variant hover:bg-white/[0.06]" : "text-md-on-surface-variant hover:bg-white/[0.06]"}`}
                 title="단축키"
               >
                 <span className="material-symbols-outlined text-[16px]">keyboard</span>
