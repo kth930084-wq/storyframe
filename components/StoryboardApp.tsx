@@ -1,5 +1,39 @@
 'use client';
 
+// IndexedDB 헬퍼 (localStorage 5MB 한계 대신 수백 MB 저장 가능)
+const DB_NAME = 'storyboard-db';
+const DB_STORE = 'projects';
+const DB_KEY = 'storyboard-projects';
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(DB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSave(data: any): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(data, DB_KEY);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+async function idbLoad(): Promise<any> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(DB_KEY);
+    req.onsuccess = () => { db.close(); resolve(req.result ?? null); };
+    req.onerror = () => { db.close(); reject(req.error); };
+  });
+}
+
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Camera, Plus, Trash2, GripVertical, ChevronDown, ChevronRight, Grid, Monitor,
@@ -2047,21 +2081,44 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   const activeScene = activeProject?.scenes?.find(s => s.id === activeSceneId);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('storyboard-projects');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setProjects(parsed);
-        if (parsed.length > 0) {
-          setActiveProjectId(parsed[0].id);
-          if (parsed[0].scenes.length > 0) {
-            setActiveSceneId(parsed[0].scenes[0].id);
+    (async () => {
+      try {
+        // 1. IndexedDB에서 로드 시도
+        let data = await idbLoad();
+
+        // 2. IndexedDB에 없으면 localStorage에서 마이그레이션
+        if (!data) {
+          const saved = localStorage.getItem('storyboard-projects');
+          if (saved) {
+            data = JSON.parse(saved);
+            await idbSave(data);
+            localStorage.removeItem('storyboard-projects'); // 마이그레이션 완료, localStorage 정리
           }
         }
+
+        if (data && Array.isArray(data) && data.length > 0) {
+          setProjects(data);
+          setActiveProjectId(data[0].id);
+          if (data[0].scenes?.length > 0) {
+            setActiveSceneId(data[0].scenes[0].id);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load projects:', e);
+        // fallback: localStorage
+        try {
+          const saved = localStorage.getItem('storyboard-projects');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setProjects(parsed);
+            if (parsed.length > 0) {
+              setActiveProjectId(parsed[0].id);
+              if (parsed[0].scenes?.length > 0) setActiveSceneId(parsed[0].scenes[0].id);
+            }
+          }
+        } catch (_) {}
       }
-    } catch (e) {
-      console.error('Failed to load projects:', e);
-    }
+    })();
   }, []);
 
   // 공지사항 Firestore에서 불러오기
@@ -2101,21 +2158,14 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     const saveTimer = setTimeout(() => {
       if (projects.length > 0) {
         setIsSaving(true);
-        try {
-          const data = JSON.stringify(projects);
-          localStorage.setItem('storyboard-projects', data);
-          setTimeout(() => {
-            setIsSaving(false);
-            setLastSaved(true);
-            setTimeout(() => setLastSaved(false), 3000);
-          }, 500);
-        } catch (e: any) {
+        idbSave(projects).then(() => {
           setIsSaving(false);
-          if (e?.name === 'QuotaExceededError' || e?.code === 22) {
-            alert('저장 공간이 부족합니다. 사용하지 않는 이미지나 씬을 삭제해 주세요.');
-          }
+          setLastSaved(true);
+          setTimeout(() => setLastSaved(false), 3000);
+        }).catch((e) => {
+          setIsSaving(false);
           console.error('저장 실패:', e);
-        }
+        });
       }
     }, 1000);
     return () => clearTimeout(saveTimer);
@@ -3069,8 +3119,9 @@ ${htmlPages.join('\n')}
                   <button
                     onClick={() => {
                       setIsSaving(true);
-                      localStorage.setItem('storyboard-projects', JSON.stringify(projects));
-                      setTimeout(() => { setIsSaving(false); setLastSaved(true); setTimeout(() => setLastSaved(false), 3000); }, 500);
+                      idbSave(projects).then(() => {
+                        setIsSaving(false); setLastSaved(true); setTimeout(() => setLastSaved(false), 3000);
+                      }).catch(() => setIsSaving(false));
                     }}
                     className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                     title="현재 상태 저장"
