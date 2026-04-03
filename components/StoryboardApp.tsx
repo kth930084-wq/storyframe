@@ -647,17 +647,21 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
 
-  // 씬별 zoom/position - 씬 데이터에서 가져옴
-  const zoom = imageZoom || 1;
-  const position = imagePosition || { x: 0, y: 0 };
-  const setZoom = (val: number | ((prev: number) => number)) => {
-    const newVal = typeof val === 'function' ? val(zoom) : val;
-    onImageTransformChange?.({ zoom: newVal, position });
-  };
-  const setPosition = (val: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => {
-    const newVal = typeof val === 'function' ? val(position) : val;
-    onImageTransformChange?.({ zoom, position: newVal });
-  };
+  // 로컬 상태로 zoom/position 관리 (드래그 성능 + 씬별 분리)
+  const [zoom, setZoom] = useState(imageZoom || 1);
+  const [position, setPosition] = useState(imagePosition || { x: 0, y: 0 });
+
+  // 씬 전환 시 props에서 로컬 상태로 동기화
+  useEffect(() => {
+    setZoom(imageZoom || 1);
+    setPosition(imagePosition || { x: 0, y: 0 });
+    setIsEditing(false);
+  }, [sceneId]);
+
+  // 편집 모드 종료 시 씬 데이터에 저장
+  const commitTransform = useCallback(() => {
+    onImageTransformChange?.({ zoom, position });
+  }, [zoom, position, onImageTransformChange]);
 
   // 비율에 따른 실제 표시 비율 계산
   const getDisplayAspectRatio = () => {
@@ -676,6 +680,8 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       const reader = new FileReader();
       reader.onload = (e: any) => {
         onImageChange(e.target.result);
+        setZoom(1);
+        setPosition({ x: 0, y: 0 });
         onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
       };
       reader.readAsDataURL(file);
@@ -710,7 +716,8 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   }, []);
 
   const handleReset = () => {
-    onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
   };
 
   return (
@@ -719,10 +726,10 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       onDragLeave={() => setDragOver(false)}
       onDrop={(e: any) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
       {image ? (
-        <div className="relative group" ref={containerRef}>
+        <div className="relative group" ref={containerRef} style={{ maxHeight: '55vh' }}>
           <div
-            className="w-full overflow-hidden rounded-2xl relative"
-            style={{ aspectRatio: displayAspectRatio, cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+            className="overflow-hidden rounded-2xl relative mx-auto"
+            style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh', width: 'auto', height: '100%', cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -775,7 +782,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
               <div className="w-px h-5 bg-white/30 mx-1" />
               <button onClick={handleReset} className="px-2 py-1 text-white hover:bg-white/20 rounded-lg transition text-xs" title="초기화"><RotateCcw className="w-3.5 h-3.5" /></button>
               <div className="w-px h-5 bg-white/30 mx-1" />
-              <button onClick={() => setIsEditing(false)} className="px-3 py-1 bg-white text-white rounded-lg text-xs font-semibold hover:bg-white/[0.08] transition">완료</button>
+              <button onClick={() => { commitTransform(); setIsEditing(false); }} className="px-3 py-1 bg-white text-white rounded-lg text-xs font-semibold hover:bg-white/[0.08] transition">완료</button>
             </div>
           )}
 
@@ -789,7 +796,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           )}
         </div>
       ) : (
-        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer" style={{ aspectRatio: displayAspectRatio }}>
+        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer mx-auto" style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh' }}>
           <div className="w-14 h-14 bg-white/[0.04] rounded-xl flex items-center justify-center mb-3">
             <span className="material-symbols-outlined text-[28px] text-white/20">add_photo_alternate</span>
           </div>
@@ -955,6 +962,7 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
           {/* 이미지 업로드 */}
           <div className="relative">
             <ImageUploadArea
+              key={scene.id}
               image={scene.image}
               onImageChange={(img: any) => onUpdate({ ...scene, image: img })}
               aspectRatio={aspectRatio}
