@@ -654,12 +654,6 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const [zoom, setZoom] = useState(imageZoom || 1);
   const [position, setPosition] = useState(imagePosition || { x: 0, y: 0 });
 
-  // 최신 콜백을 ref로 유지 (stale closure 방지)
-  const onImageChangeRef = useRef(onImageChange);
-  const onImageTransformChangeRef = useRef(onImageTransformChange);
-  useEffect(() => { onImageChangeRef.current = onImageChange; }, [onImageChange]);
-  useEffect(() => { onImageTransformChangeRef.current = onImageTransformChange; }, [onImageTransformChange]);
-
   // 씬 전환 시 props에서 로컬 상태로 동기화
   useEffect(() => {
     setZoom(imageZoom || 1);
@@ -669,8 +663,8 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
 
   // 편집 모드 종료 시 씬 데이터에 저장
   const commitTransform = useCallback(() => {
-    onImageTransformChangeRef.current?.({ zoom, position });
-  }, [zoom, position]);
+    onImageTransformChange?.({ zoom, position });
+  }, [zoom, position, onImageTransformChange]);
 
   // 비율에 따른 실제 표시 비율 계산
   const getDisplayAspectRatio = () => {
@@ -684,22 +678,23 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
   const showMasking = maskingPercentage > 0;
 
-  // handleFile을 ref로도 유지 (document 레벨 이벤트에서 접근용)
-  const handleFileRef = useRef<(file: File) => void>();
-  const handleFile = useCallback((file: File) => {
+  // 파일 처리 함수 - ref로 최신 props 콜백을 항상 접근
+  const processFileRef = useRef<(file: File) => void>();
+  processFileRef.current = (file: File) => {
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const result = e.target.result;
-        onImageChangeRef.current?.(result);
-        setZoom(1);
-        setPosition({ x: 0, y: 0 });
-        onImageTransformChangeRef.current?.({ zoom: 1, position: { x: 0, y: 0 } });
+        if (result) {
+          onImageChange?.(result);
+          setZoom(1);
+          setPosition({ x: 0, y: 0 });
+          onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
+        }
       };
       reader.readAsDataURL(file);
     }
-  }, []);
-  useEffect(() => { handleFileRef.current = handleFile; }, [handleFile]);
+  };
 
   // 네이티브 드래그 앤 드롭: dropZone 레벨 + document 레벨 fallback
   useEffect(() => {
@@ -733,7 +728,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       dragCounter = 0;
       setDragOver(false);
       const file = e.dataTransfer?.files?.[0];
-      if (file) handleFileRef.current?.(file);
+      if (file) processFileRef.current?.(file);
     };
 
     el.addEventListener('dragenter', onDragEnter, true);
@@ -769,7 +764,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
         e.stopPropagation();
         setDragOver(false);
         const file = e.dataTransfer?.files?.[0];
-        if (file) handleFileRef.current?.(file);
+        if (file) processFileRef.current?.(file);
       }
     };
 
@@ -905,7 +900,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
         </label>
       )}
-      <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) { handleFile(f); e.target.value = ''; } }} />
+      <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) { processFileRef.current?.(f); e.target.value = ''; } }} />
     </div>
   );
 };
