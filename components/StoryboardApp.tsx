@@ -690,9 +690,9 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
         if (result) {
           console.log('[UPLOAD] Calling onImageChange...');
           onImageChange?.(result);
+          // 줌/위치는 로컬 상태만 리셋 (onImageTransformChange를 별도 호출하면 state 덮어쓰기 발생)
           setZoom(1);
           setPosition({ x: 0, y: 0 });
-          onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
           console.log('[UPLOAD] Done!');
         }
       };
@@ -1073,7 +1073,7 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
             <ImageUploadArea
               key={scene.id}
               image={scene.image}
-              onImageChange={(img: any) => onUpdate({ ...scene, image: img })}
+              onImageChange={(img: any) => onUpdate({ ...scene, image: img, image_zoom: 1, image_position: { x: 0, y: 0 } })}
               aspectRatio={aspectRatio}
               sceneId={scene.id}
               imageZoom={scene.image_zoom}
