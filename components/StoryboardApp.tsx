@@ -721,10 +721,17 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   };
 
   return (
-    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-neutral-400" : ""}`}
-      onDragOver={(e: any) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={(e: any) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
+    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-white/40" : ""}`}
+      onDragOver={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+      onDragEnter={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+      onDragLeave={(e: any) => { e.preventDefault(); e.stopPropagation(); if (e.currentTarget.contains(e.relatedTarget)) return; setDragOver(false); }}
+      onDrop={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
+      {/* 드래그 오버레이 */}
+      {dragOver && (
+        <div className="absolute inset-0 z-50 bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40 rounded-2xl flex items-center justify-center pointer-events-none">
+          <div className="text-white text-sm font-semibold bg-black/60 px-4 py-2 rounded-xl">여기에 이미지를 놓으세요</div>
+        </div>
+      )}
       {image ? (
         <div className="relative group" ref={containerRef} style={{ maxHeight: '55vh' }}>
           <div
@@ -2349,7 +2356,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 
   const handleExportPDF = useCallback((enabledPages?: string[]) => {
     if (!activeProject) return;
-    const allPages = enabledPages || ['cover', 'overview', 'storyboard-grid', 'scene-details', 'timetable', 'budget'];
+    const allPages = enabledPages || ['cover', 'overview', 'storyboard-grid', 'scene-details', 'ppm', 'timetable', 'budget'];
     const isEnabled = (id: string) => allPages.includes(id);
     const p = activeProject;
     const pInfo = p.project_info || {} as any;
@@ -2585,6 +2592,64 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     // Scene Detail Pages
     if (isEnabled('scene-details')) {
       htmlPages.push(scenePages);
+    }
+
+    // PPM Page
+    if (isEnabled('ppm') && p.ppm_enabled && p.ppm_data) {
+      const ppm = p.ppm_data;
+      const ppmOverview = ppm.overview || {};
+      const ppmCreative = ppm.creative || {};
+      const ppmVisual = ppm.visual || {};
+      const ppmTarget = ppm.target || {};
+      const keywordTags = (ppmCreative.keywords || []).map((kw: string) => `<span style="display:inline-block;background:#f0f0f0;border:1px solid #e0e0e0;padding:4px 12px;border-radius:20px;font-size:8pt;font-weight:600;color:#555;margin:2px;">${kw}</span>`).join('');
+      const colorSwatches = (ppmVisual.key_colors || []).map((c: string) => `<div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:6px;background:${c};border:1px solid #e0e0e0;"></div><span style="font-size:8pt;color:#666;font-family:monospace;">${c}</span></div>`).join('');
+      const refLinks = (ppmVisual.reference_links || []).map((link: string) => `<a href="${link}" style="font-size:8pt;color:#2563eb;word-break:break-all;">${link}</a>`).join('<br>');
+
+      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">PPM (사전제작회의)</h2>
+    <div style="font-size:8pt;color:#999;">Pre-Production Meeting</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+      <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">프로젝트 개요</div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${ppmOverview.project_name ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;width:30%;">프로젝트명</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmOverview.project_name}</td></tr>` : ''}
+        ${ppmOverview.client ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">클라이언트</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmOverview.client}</td></tr>` : ''}
+        ${ppmOverview.production_company ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">제작사</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmOverview.production_company}</td></tr>` : ''}
+        ${ppmOverview.date ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">일자</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmOverview.date}</td></tr>` : ''}
+        ${ppmOverview.version ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">버전</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmOverview.version}</td></tr>` : ''}
+      </table>
+    </div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+      <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">타겟 오디언스</div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${ppmTarget.audience ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;width:30%;">대상</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmTarget.audience}</td></tr>` : ''}
+        ${ppmTarget.platform ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">플랫폼</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmTarget.platform}</td></tr>` : ''}
+        ${ppmTarget.media ? `<tr><td style="padding:6px 0;font-size:8pt;color:#999;">매체</td><td style="padding:6px 0;font-size:9pt;font-weight:600;color:#333;">${ppmTarget.media}</td></tr>` : ''}
+      </table>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+      <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">크리에이티브 방향</div>
+      ${ppmCreative.core_message ? `<div style="margin-bottom:12px;"><div style="font-size:7pt;color:#aaa;margin-bottom:4px;">핵심 메시지</div><div style="font-size:10pt;font-weight:700;color:#111;line-height:1.6;">${ppmCreative.core_message}</div></div>` : ''}
+      ${ppmCreative.tone_and_manner ? `<div style="margin-bottom:12px;"><div style="font-size:7pt;color:#aaa;margin-bottom:4px;">톤 & 매너</div><div style="font-size:9pt;color:#444;line-height:1.6;">${ppmCreative.tone_and_manner}</div></div>` : ''}
+      ${ppmCreative.metaphor ? `<div style="margin-bottom:12px;"><div style="font-size:7pt;color:#aaa;margin-bottom:4px;">메타포</div><div style="font-size:9pt;color:#444;line-height:1.6;">${ppmCreative.metaphor}</div></div>` : ''}
+      ${keywordTags ? `<div><div style="font-size:7pt;color:#aaa;margin-bottom:6px;">키워드</div><div style="display:flex;flex-wrap:wrap;gap:4px;">${keywordTags}</div></div>` : ''}
+    </div>
+    <div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+      <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">비주얼 가이드</div>
+      ${colorSwatches ? `<div style="margin-bottom:16px;"><div style="font-size:7pt;color:#aaa;margin-bottom:8px;">키 컬러</div><div style="display:flex;flex-wrap:wrap;gap:12px;">${colorSwatches}</div></div>` : ''}
+      ${refLinks ? `<div><div style="font-size:7pt;color:#aaa;margin-bottom:8px;">레퍼런스 링크</div><div style="line-height:2;">${refLinks}</div></div>` : ''}
+    </div>
+  </div>
+  ${ppm.synopsis ? `<div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+    <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">시놉시스</div>
+    <div style="font-size:10pt;color:#333;line-height:1.8;">${ppm.synopsis}</div>
+  </div>` : ''}
+  ${footer}
+</div>`);
     }
 
     // Timetable
@@ -2855,6 +2920,18 @@ ${htmlPages.join('\n')}
                   </span>
                   {lastSaved && <span className="text-[10px] text-md-outline/60 flex-shrink-0">저장됨</span>}
                   {isSaving && <span className="text-[10px] text-md-outline/60 flex-shrink-0 animate-pulse">저장 중...</span>}
+                  <button
+                    onClick={() => {
+                      setIsSaving(true);
+                      localStorage.setItem('storyboard-projects', JSON.stringify(projects));
+                      setTimeout(() => { setIsSaving(false); setLastSaved(true); setTimeout(() => setLastSaved(false), 3000); }, 500);
+                    }}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium transition ${darkMode ? "bg-white/[0.06] text-white hover:bg-white/[0.1]" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                    title="현재 상태 저장"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">save</span>
+                    <span className="hidden sm:inline">저장</span>
+                  </button>
                 </div>
               )}
 

@@ -29,6 +29,7 @@ export default function PDFExportModal({ project, darkMode, onClose, onExport, b
     { id: 'overview', label: '프로젝트 개요', description: '프로젝트 설정, 타임라인, 씬 요약 테이블', enabled: true },
     { id: 'storyboard-grid', label: '스토리보드 전체보기', description: `${sceneCount}개 씬 카드 그리드 보기`, enabled: true },
     { id: 'scene-details', label: '씬 상세 페이지', description: `각 씬별 이미지, 설명, 기술 정보 (${sceneCount}페이지)`, enabled: true },
+    { id: 'ppm', label: 'PPM (사전제작회의)', description: '크리에이티브 방향, 비주얼 가이드, 시놉시스, 타겟', enabled: !!(project?.ppm_enabled) },
     { id: 'timetable', label: '타임테이블', description: '촬영 스케줄 및 일정표', enabled: !!(project?.timetable && project.timetable.length > 0) },
     { id: 'budget', label: '예산 견적서', description: '항목별 비용 내역 및 총합계', enabled: true },
   ]);
