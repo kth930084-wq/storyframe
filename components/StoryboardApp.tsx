@@ -640,13 +640,15 @@ const calculateMaskingPercentage = (aspectRatio: string): number => {
 };
 
 const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExport = false, sceneId, imageZoom, imagePosition, onImageTransformChange }: any) => {
-  const fileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
+
+  // 고유 file input ID (label htmlFor 연결용)
+  const fileInputId = `file-upload-${sceneId || 'default'}`;
 
   // 로컬 상태로 zoom/position 관리 (드래그 성능 + 씬별 분리)
   const [zoom, setZoom] = useState(imageZoom || 1);
@@ -682,11 +684,14 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
   const showMasking = maskingPercentage > 0;
 
+  // handleFile을 ref로도 유지 (document 레벨 이벤트에서 접근용)
+  const handleFileRef = useRef<(file: File) => void>();
   const handleFile = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        onImageChangeRef.current?.(e.target.result);
+        const result = e.target.result;
+        onImageChangeRef.current?.(result);
         setZoom(1);
         setPosition({ x: 0, y: 0 });
         onImageTransformChangeRef.current?.({ zoom: 1, position: { x: 0, y: 0 } });
@@ -694,8 +699,9 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       reader.readAsDataURL(file);
     }
   }, []);
+  useEffect(() => { handleFileRef.current = handleFile; }, [handleFile]);
 
-  // 네이티브 드래그 앤 드롭 이벤트 리스너 (React 합성 이벤트 대신)
+  // 네이티브 드래그 앤 드롭: dropZone 레벨 + document 레벨 fallback
   useEffect(() => {
     const el = dropZoneRef.current;
     if (!el) return;
@@ -727,21 +733,54 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       dragCounter = 0;
       setDragOver(false);
       const file = e.dataTransfer?.files?.[0];
-      if (file) handleFile(file);
+      if (file) handleFileRef.current?.(file);
     };
 
-    el.addEventListener('dragenter', onDragEnter);
-    el.addEventListener('dragover', onDragOver);
-    el.addEventListener('dragleave', onDragLeave);
-    el.addEventListener('drop', onDrop);
+    el.addEventListener('dragenter', onDragEnter, true);
+    el.addEventListener('dragover', onDragOver, true);
+    el.addEventListener('dragleave', onDragLeave, true);
+    el.addEventListener('drop', onDrop, true);
 
     return () => {
-      el.removeEventListener('dragenter', onDragEnter);
-      el.removeEventListener('dragover', onDragOver);
-      el.removeEventListener('dragleave', onDragLeave);
-      el.removeEventListener('drop', onDrop);
+      el.removeEventListener('dragenter', onDragEnter, true);
+      el.removeEventListener('dragover', onDragOver, true);
+      el.removeEventListener('dragleave', onDragLeave, true);
+      el.removeEventListener('drop', onDrop, true);
     };
-  }, [handleFile]);
+  }, []);
+
+  // Document 레벨 드롭 fallback (dropZone에서 놓치는 경우 대비)
+  useEffect(() => {
+    const el = dropZoneRef.current;
+    if (!el) return;
+
+    const onDocDragOver = (e: DragEvent) => {
+      // 브라우저 기본 동작 방지 (파일을 새 탭에서 열기 방지)
+      e.preventDefault();
+    };
+
+    const onDocDrop = (e: DragEvent) => {
+      // dropZone 위에서 드롭되었는지 확인
+      const rect = el.getBoundingClientRect();
+      const x = e.clientX;
+      const y = e.clientY;
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOver(false);
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleFileRef.current?.(file);
+      }
+    };
+
+    document.addEventListener('dragover', onDocDragOver);
+    document.addEventListener('drop', onDocDrop);
+
+    return () => {
+      document.removeEventListener('dragover', onDocDragOver);
+      document.removeEventListener('drop', onDocDrop);
+    };
+  }, []);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (!isEditing) return;
@@ -773,11 +812,6 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const handleReset = () => {
     setZoom(1);
     setPosition({ x: 0, y: 0 });
-  };
-
-  const triggerFileInput = () => {
-    const el = fileRef.current;
-    if (el) { el.value = ''; el.click(); }
   };
 
   return (
@@ -853,17 +887,14 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           {!isEditing && (
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
               <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Move className="w-4 h-4 inline mr-1" /> 위치/크기</button>
-              <button onClick={triggerFileInput} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
+              <label htmlFor={fileInputId} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm cursor-pointer"><Upload className="w-4 h-4 inline mr-1" /> 교체</label>
               <button onClick={() => { onImageChange(null); handleReset(); }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
             </div>
           )}
         </div>
       ) : (
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={triggerFileInput}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerFileInput(); } }}
+        <label
+          htmlFor={fileInputId}
           className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer mx-auto"
           style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh' }}
         >
@@ -872,9 +903,9 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           </div>
           <p className="text-sm font-medium text-md-on-surface-variant">이미지를 드래그하거나 클릭하여 업로드</p>
           <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
-        </div>
+        </label>
       )}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) { handleFile(f); e.target.value = ''; } }} />
     </div>
   );
 };
