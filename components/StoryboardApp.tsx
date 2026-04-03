@@ -2604,6 +2604,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       const keywordTags = (ppmCreative.keywords || []).map((kw: string) => `<span style="display:inline-block;background:#f0f0f0;border:1px solid #e0e0e0;padding:4px 12px;border-radius:20px;font-size:8pt;font-weight:600;color:#555;margin:2px;">${kw}</span>`).join('');
       const colorSwatches = (ppmVisual.key_colors || []).map((c: string) => `<div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:6px;background:${c};border:1px solid #e0e0e0;"></div><span style="font-size:8pt;color:#666;font-family:monospace;">${c}</span></div>`).join('');
       const refLinks = (ppmVisual.reference_links || []).map((link: string) => `<a href="${link}" style="font-size:8pt;color:#2563eb;word-break:break-all;">${link}</a>`).join('<br>');
+      const moodboardImages = ppmVisual.moodboard_images || [];
 
       htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
@@ -2644,12 +2645,35 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
       ${refLinks ? `<div><div style="font-size:7pt;color:#aaa;margin-bottom:8px;">레퍼런스 링크</div><div style="line-height:2;">${refLinks}</div></div>` : ''}
     </div>
   </div>
-  ${ppm.synopsis ? `<div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;">
+  ${ppm.synopsis ? `<div style="background:#fafafa;border:1px solid #e5e5e5;border-radius:10px;padding:20px;margin-bottom:20px;">
     <div style="font-size:7pt;color:#999;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">시놉시스</div>
     <div style="font-size:10pt;color:#333;line-height:1.8;">${ppm.synopsis}</div>
   </div>` : ''}
   ${footer}
 </div>`);
+
+      // 무드보드 이미지 페이지 (이미지가 있을 때만)
+      if (moodboardImages.length > 0) {
+        const IMAGES_PER_PAGE = 6;
+        for (let imgStart = 0; imgStart < moodboardImages.length; imgStart += IMAGES_PER_PAGE) {
+          const pageImages = moodboardImages.slice(imgStart, imgStart + IMAGES_PER_PAGE);
+          const imageCards = pageImages.map((img: string, idx: number) => `
+            <div style="border-radius:10px;overflow:hidden;border:1px solid #e5e5e5;background:#f5f5f5;">
+              <img src="${img}" style="width:100%;height:100%;object-fit:cover;display:block;" crossorigin="anonymous" />
+            </div>`).join('');
+
+          htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">무드보드</h2>
+    <div style="font-size:8pt;color:#999;">${moodboardImages.length > IMAGES_PER_PAGE ? `${imgStart + 1}-${Math.min(imgStart + IMAGES_PER_PAGE, moodboardImages.length)} / ${moodboardImages.length}장` : `${moodboardImages.length}장`}</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(${pageImages.length <= 2 ? 2 : 3},1fr);gap:16px;height:calc(100% - 100px);">
+    ${imageCards}
+  </div>
+  ${footer}
+</div>`);
+        }
+      }
     }
 
     // Timetable
