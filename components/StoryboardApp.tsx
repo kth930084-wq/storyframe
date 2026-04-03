@@ -797,21 +797,28 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           {!isEditing && (
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
               <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Move className="w-4 h-4 inline mr-1" /> 위치/크기</button>
-              <button onClick={() => (fileRef.current as any)?.click()} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
+              <button onClick={() => { const el = fileRef.current as HTMLInputElement | null; if (el) { el.value = ''; el.click(); } }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
               <button onClick={() => { onImageChange(null); handleReset(); }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
             </div>
           )}
         </div>
       ) : (
-        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer mx-auto" style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh' }}>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => { const el = fileRef.current as HTMLInputElement | null; if (el) { el.value = ''; el.click(); } }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (fileRef.current as any)?.click(); } }}
+          className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer mx-auto"
+          style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh' }}
+        >
           <div className="w-14 h-14 bg-white/[0.04] rounded-xl flex items-center justify-center mb-3">
             <span className="material-symbols-outlined text-[28px] text-white/20">add_photo_alternate</span>
           </div>
           <p className="text-sm font-medium text-md-on-surface-variant">이미지를 드래그하거나 클릭하여 업로드</p>
           <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
-        </button>
+        </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: any) => handleFile(e.target.files?.[0])} />
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: any) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
     </div>
   );
 };
