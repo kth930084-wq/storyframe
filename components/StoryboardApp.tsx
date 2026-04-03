@@ -640,8 +640,9 @@ const calculateMaskingPercentage = (aspectRatio: string): number => {
 };
 
 const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExport = false, sceneId, imageZoom, imagePosition, onImageTransformChange }: any) => {
-  const fileRef = useRef(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -650,6 +651,12 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   // 로컬 상태로 zoom/position 관리 (드래그 성능 + 씬별 분리)
   const [zoom, setZoom] = useState(imageZoom || 1);
   const [position, setPosition] = useState(imagePosition || { x: 0, y: 0 });
+
+  // 최신 콜백을 ref로 유지 (stale closure 방지)
+  const onImageChangeRef = useRef(onImageChange);
+  const onImageTransformChangeRef = useRef(onImageTransformChange);
+  useEffect(() => { onImageChangeRef.current = onImageChange; }, [onImageChange]);
+  useEffect(() => { onImageTransformChangeRef.current = onImageTransformChange; }, [onImageTransformChange]);
 
   // 씬 전환 시 props에서 로컬 상태로 동기화
   useEffect(() => {
@@ -660,8 +667,8 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
 
   // 편집 모드 종료 시 씬 데이터에 저장
   const commitTransform = useCallback(() => {
-    onImageTransformChange?.({ zoom, position });
-  }, [zoom, position, onImageTransformChange]);
+    onImageTransformChangeRef.current?.({ zoom, position });
+  }, [zoom, position]);
 
   // 비율에 따른 실제 표시 비율 계산
   const getDisplayAspectRatio = () => {
@@ -675,18 +682,66 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
   const showMasking = maskingPercentage > 0;
 
-  const handleFile = (file: any) => {
+  const handleFile = useCallback((file: File) => {
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        onImageChange(e.target.result);
+        onImageChangeRef.current?.(e.target.result);
         setZoom(1);
         setPosition({ x: 0, y: 0 });
-        onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
+        onImageTransformChangeRef.current?.({ zoom: 1, position: { x: 0, y: 0 } });
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, []);
+
+  // 네이티브 드래그 앤 드롭 이벤트 리스너 (React 합성 이벤트 대신)
+  useEffect(() => {
+    const el = dropZoneRef.current;
+    if (!el) return;
+
+    let dragCounter = 0;
+
+    const onDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter++;
+      setDragOver(true);
+    };
+    const onDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const onDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        setDragOver(false);
+      }
+    };
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter = 0;
+      setDragOver(false);
+      const file = e.dataTransfer?.files?.[0];
+      if (file) handleFile(file);
+    };
+
+    el.addEventListener('dragenter', onDragEnter);
+    el.addEventListener('dragover', onDragOver);
+    el.addEventListener('dragleave', onDragLeave);
+    el.addEventListener('drop', onDrop);
+
+    return () => {
+      el.removeEventListener('dragenter', onDragEnter);
+      el.removeEventListener('dragover', onDragOver);
+      el.removeEventListener('dragleave', onDragLeave);
+      el.removeEventListener('drop', onDrop);
+    };
+  }, [handleFile]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (!isEditing) return;
@@ -720,12 +775,13 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
     setPosition({ x: 0, y: 0 });
   };
 
+  const triggerFileInput = () => {
+    const el = fileRef.current;
+    if (el) { el.value = ''; el.click(); }
+  };
+
   return (
-    <div className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-white/40" : ""}`}
-      onDragOver={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
-      onDragEnter={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
-      onDragLeave={(e: any) => { e.preventDefault(); e.stopPropagation(); if (e.currentTarget.contains(e.relatedTarget)) return; setDragOver(false); }}
-      onDrop={(e: any) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }}>
+    <div ref={dropZoneRef} className={`relative rounded-2xl overflow-hidden transition-all ${dragOver ? "ring-2 ring-white/40" : ""}`}>
       {/* 드래그 오버레이 */}
       {dragOver && (
         <div className="absolute inset-0 z-50 bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40 rounded-2xl flex items-center justify-center pointer-events-none">
@@ -797,7 +853,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           {!isEditing && (
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center gap-3">
               <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Move className="w-4 h-4 inline mr-1" /> 위치/크기</button>
-              <button onClick={() => { const el = fileRef.current as HTMLInputElement | null; if (el) { el.value = ''; el.click(); } }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
+              <button onClick={triggerFileInput} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Upload className="w-4 h-4 inline mr-1" /> 교체</button>
               <button onClick={() => { onImageChange(null); handleReset(); }} className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-colors text-sm"><Trash2 className="w-4 h-4 inline mr-1" /> 삭제</button>
             </div>
           )}
@@ -806,8 +862,8 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
         <div
           role="button"
           tabIndex={0}
-          onClick={() => { const el = fileRef.current as HTMLInputElement | null; if (el) { el.value = ''; el.click(); } }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); (fileRef.current as any)?.click(); } }}
+          onClick={triggerFileInput}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerFileInput(); } }}
           className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer mx-auto"
           style={{ aspectRatio: displayAspectRatio, maxHeight: '55vh' }}
         >
@@ -818,7 +874,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
         </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: any) => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
     </div>
   );
 };
@@ -1995,12 +2051,21 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
     const saveTimer = setTimeout(() => {
       if (projects.length > 0) {
         setIsSaving(true);
-        localStorage.setItem('storyboard-projects', JSON.stringify(projects));
-        setTimeout(() => {
+        try {
+          const data = JSON.stringify(projects);
+          localStorage.setItem('storyboard-projects', data);
+          setTimeout(() => {
+            setIsSaving(false);
+            setLastSaved(true);
+            setTimeout(() => setLastSaved(false), 3000);
+          }, 500);
+        } catch (e: any) {
           setIsSaving(false);
-          setLastSaved(true);
-          setTimeout(() => setLastSaved(false), 3000);
-        }, 500);
+          if (e?.name === 'QuotaExceededError' || e?.code === 22) {
+            alert('저장 공간이 부족합니다. 사용하지 않는 이미지나 씬을 삭제해 주세요.');
+          }
+          console.error('저장 실패:', e);
+        }
       }
     }, 1000);
     return () => clearTimeout(saveTimer);
