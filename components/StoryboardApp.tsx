@@ -639,15 +639,34 @@ const calculateMaskingPercentage = (aspectRatio: string): number => {
   return Math.max(0, maskingPercentage);
 };
 
-const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExport = false }: any) => {
+const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExport = false, sceneId, imageZoom, imagePosition, onImageTransformChange }: any) => {
   const fileRef = useRef(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
+
+  // 씬별 zoom/position - 씬 데이터에서 가져옴
+  const zoom = imageZoom || 1;
+  const position = imagePosition || { x: 0, y: 0 };
+  const setZoom = (val: number | ((prev: number) => number)) => {
+    const newVal = typeof val === 'function' ? val(zoom) : val;
+    onImageTransformChange?.({ zoom: newVal, position });
+  };
+  const setPosition = (val: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => {
+    const newVal = typeof val === 'function' ? val(position) : val;
+    onImageTransformChange?.({ zoom, position: newVal });
+  };
+
+  // 비율에 따른 실제 표시 비율 계산
+  const getDisplayAspectRatio = () => {
+    if (!aspectRatio) return "16/9";
+    const [w, h] = aspectRatio.split(':').map(Number);
+    if (!w || !h) return "16/9";
+    return `${w}/${h}`;
+  };
+  const displayAspectRatio = getDisplayAspectRatio();
 
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
   const showMasking = maskingPercentage > 0;
@@ -657,8 +676,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       const reader = new FileReader();
       reader.onload = (e: any) => {
         onImageChange(e.target.result);
-        setZoom(1);
-        setPosition({ x: 0, y: 0 });
+        onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
       };
       reader.readAsDataURL(file);
     }
@@ -692,8 +710,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   }, []);
 
   const handleReset = () => {
-    setZoom(1);
-    setPosition({ x: 0, y: 0 });
+    onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
   };
 
   return (
@@ -705,7 +722,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
         <div className="relative group" ref={containerRef}>
           <div
             className="w-full overflow-hidden rounded-2xl relative"
-            style={{ aspectRatio: "16/9", cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+            style={{ aspectRatio: displayAspectRatio, cursor: isEditing ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
             onWheel={handleWheel}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -772,7 +789,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           )}
         </div>
       ) : (
-        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer" style={{ aspectRatio: "16/9" }}>
+        <button onClick={() => (fileRef.current as any)?.click()} className="w-full bg-white/[0.02] border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center hover:border-white/20 hover:bg-white/[0.04] transition-all cursor-pointer" style={{ aspectRatio: displayAspectRatio }}>
           <div className="w-14 h-14 bg-white/[0.04] rounded-xl flex items-center justify-center mb-3">
             <span className="material-symbols-outlined text-[28px] text-white/20">add_photo_alternate</span>
           </div>
@@ -889,7 +906,7 @@ const SceneProgressRing = ({ completion }: any) => {
   );
 };
 
-const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "16:9" }: any) => {
+const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "16:9", onAspectRatioChange, resolution, onResolutionChange }: any) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const memoTemplates = ["인물", "소품", "장소", "의상", "음악/사운드"];
   const completion = useMemo(() => calculateSceneCompletion(scene), [scene]);
@@ -937,14 +954,75 @@ const SceneEditor = ({ scene, onUpdate, onOpenReferenceLibrary, aspectRatio = "1
         <div className="lg:col-span-3 space-y-4">
           {/* 이미지 업로드 */}
           <div className="relative">
-            <ImageUploadArea image={scene.image} onImageChange={(img: any) => onUpdate({ ...scene, image: img })} aspectRatio={aspectRatio} />
-            <button
-              onClick={() => onOpenReferenceLibrary?.()}
-              className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 bg-white/[0.04] border border-white/10 text-md-on-surface-variant rounded-xl hover:bg-white/[0.08] transition-all text-sm font-medium"
-            >
-              <span className="material-symbols-outlined text-[16px]">photo_library</span>
-              레퍼런스 라이브러리
-            </button>
+            <ImageUploadArea
+              image={scene.image}
+              onImageChange={(img: any) => onUpdate({ ...scene, image: img })}
+              aspectRatio={aspectRatio}
+              sceneId={scene.id}
+              imageZoom={scene.image_zoom}
+              imagePosition={scene.image_position}
+              onImageTransformChange={({ zoom, position }: any) => onUpdate({ ...scene, image_zoom: zoom, image_position: position })}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => onOpenReferenceLibrary?.()}
+                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white/[0.04] border border-white/10 text-md-on-surface-variant rounded-xl hover:bg-white/[0.08] transition-all text-[11px] font-medium"
+              >
+                <span className="material-symbols-outlined text-[14px]">photo_library</span>
+                레퍼런스
+              </button>
+            </div>
+            {/* 비율/해상도 변경 컨트롤 */}
+            <div className="glass-panel rounded-xl p-3 mt-2">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-md-on-surface-variant/60 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[12px]">aspect_ratio</span> 화면비율 · 해상도
+                </label>
+              </div>
+              <div className="flex gap-1.5 flex-wrap">
+                {(ASPECT_RATIOS || [
+                  { value: "16:9", label: "16:9" },
+                  { value: "9:16", label: "9:16" },
+                  { value: "1:1", label: "1:1" },
+                  { value: "4:5", label: "4:5" },
+                  { value: "4:3", label: "4:3" },
+                  { value: "21:9", label: "21:9" },
+                ]).map((r: any) => (
+                  <button
+                    key={r.value}
+                    onClick={() => onAspectRatioChange?.(r.value)}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                      aspectRatio === r.value
+                        ? "bg-white/[0.12] text-white border border-white/20"
+                        : "bg-white/[0.03] text-md-on-surface-variant/60 border border-white/5 hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    {r.value || r.label}
+                  </button>
+                ))}
+              </div>
+              {resolution && onResolutionChange && (
+                <div className="flex gap-1.5 flex-wrap mt-2">
+                  {(VIDEO_RESOLUTIONS || [
+                    { value: "1920x1080", label: "FHD" },
+                    { value: "3840x2160", label: "4K" },
+                    { value: "1080x1920", label: "FHD 세로" },
+                  ]).map((res: any) => (
+                    <button
+                      key={res.value}
+                      onClick={() => onResolutionChange?.(res.value)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition ${
+                        resolution === res.value
+                          ? "bg-white/[0.12] text-white border border-white/20"
+                          : "bg-white/[0.03] text-md-on-surface-variant/60 border border-white/5 hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {res.label || res.value}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 씬 제목 */}
@@ -2412,7 +2490,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 </div>`);
     }
 
-    // Overview Page
+    // Overview Page (정보 + 타임라인만, 테이블은 별도 페이지)
     if (isEnabled('overview')) {
       htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
@@ -2435,24 +2513,65 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
   </div>
   <div style="margin-bottom:8px;font-size:9pt;font-weight:700;color:#111;">타임라인</div>
   <div style="display:flex;gap:2px;height:24px;border-radius:6px;overflow:hidden;margin-bottom:12px;">${tlSegs}</div>
-  <div style="display:flex;flex-wrap:wrap;gap:10px 20px;font-size:8pt;color:#666;margin-bottom:20px;">${tlLegend}</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px 20px;font-size:8pt;color:#666;">${tlLegend}</div>
+  ${footer}
+</div>`);
+
+      // 씬 요약 테이블 — 페이지당 최대 15행
+      const ROWS_PER_PAGE = 15;
+      const allScenes = p.scenes;
+      for (let pageStart = 0; pageStart < allScenes.length; pageStart += ROWS_PER_PAGE) {
+        const pageScenes = allScenes.slice(pageStart, pageStart + ROWS_PER_PAGE);
+        const pageRows = pageScenes.map((s: Scene, idx: number) => {
+          const i = pageStart + idx;
+          return `<tr><td style="font-weight:800;color:#111;text-align:center;width:40px;">${i + 1}</td><td>${s.title || '-'}</td><td>${s.duration || 0}초</td><td>${s.camera_angle || '-'}</td><td>${s.shot_size || '-'}</td><td>${s.camera_movement || '-'}</td><td>${s.lighting || '-'}</td></tr>`;
+        }).join('');
+        htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">씬 요약 ${allScenes.length > ROWS_PER_PAGE ? `(${pageStart + 1}-${Math.min(pageStart + ROWS_PER_PAGE, allScenes.length)} / ${allScenes.length})` : ''}</h2>
+  </div>
   <table style="width:100%;border-collapse:collapse;">
     <thead><tr><th style="${thStyle}border-radius:6px 0 0 0;">씬</th><th style="${thStyle}">제목</th><th style="${thStyle}">길이</th><th style="${thStyle}">앵글</th><th style="${thStyle}">샷 사이즈</th><th style="${thStyle}">무브먼트</th><th style="${thStyle}border-radius:0 6px 0 0;">조명</th></tr></thead>
-    <tbody>${summaryRows}</tbody>
+    <tbody>${pageRows}</tbody>
   </table>
   ${footer}
 </div>`);
+      }
     }
 
-    // Storyboard Grid
+    // Storyboard Grid — 페이지당 6개 카드
     if (isEnabled('storyboard-grid')) {
-      htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid #111;">
-    <h2 style="font-size:14pt;font-weight:800;color:#111;">스토리보드 전체보기</h2>
+      const CARDS_PER_PAGE = 6;
+      for (let cardStart = 0; cardStart < p.scenes.length; cardStart += CARDS_PER_PAGE) {
+        const pageCards = p.scenes.slice(cardStart, cardStart + CARDS_PER_PAGE).map((s: Scene, idx: number) => {
+          const i = cardStart + idx;
+          return `
+          <div style="border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;page-break-inside:avoid;">
+            <div style="background:#111;color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:8pt;font-weight:700;background:rgba(255,255,255,0.12);padding:2px 10px;border-radius:12px;">${String(i + 1).padStart(2, '0')}</span><span style="font-size:9pt;font-weight:700;">${s.title || '-'}</span></div>
+              <span style="font-size:8pt;color:#888;">${s.duration || 0}초</span>
+            </div>
+            <div style="width:100%;aspect-ratio:16/9;background:#f5f5f5;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #eee;position:relative;overflow:hidden;">
+              ${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="color:#ccc;font-size:9pt;text-align:center;"><div style="font-size:20pt;margin-bottom:4px;">🎞️</div></div>`}
+              ${maskingPercentage > 0 ? `<div style="position:absolute;top:0;left:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div><div style="position:absolute;top:0;right:0;width:${maskingPercentage}%;height:100%;background:#000;pointer-events:none;"></div>` : ''}
+            </div>
+            <div style="padding:10px 14px;">
+              <div style="font-size:8pt;color:#555;line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.description || ''}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                ${[s.camera_angle, s.shot_size, s.camera_movement].filter(Boolean).map((t: any) => `<span style="background:#f5f5f5;border:1px solid #e5e5e5;padding:2px 6px;border-radius:3px;font-size:7pt;font-weight:600;color:#666;">${t}</span>`).join('')}
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+
+        htmlPages.push(`<div class="page" style="padding:40px 52px 56px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid #111;">
+    <h2 style="font-size:14pt;font-weight:800;color:#111;">스토리보드 전체보기 ${p.scenes.length > CARDS_PER_PAGE ? `(${cardStart + 1}-${Math.min(cardStart + CARDS_PER_PAGE, p.scenes.length)} / ${p.scenes.length})` : ''}</h2>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">${sbCards}</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">${pageCards}</div>
   ${footer}
 </div>`);
+      }
     }
 
     // Scene Detail Pages
@@ -2535,7 +2654,7 @@ export const StoryboardApp: React.FC<StoryboardAppProps> = ({ user, onLogout }) 
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Noto Sans KR',-apple-system,sans-serif;color:#1a1a1a;background:#d4d4d4;line-height:1.5;-webkit-font-smoothing:antialiased;}
 @page{size:A4 landscape;margin:0;}
-.page{width:297mm;min-height:210mm;margin:20px auto;background:white;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.15);page-break-after:always;}
+.page{width:297mm;height:210mm;margin:20px auto;background:white;position:relative;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.15);page-break-after:always;}
 @media print{body{background:white;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}.page{margin:0;box-shadow:none;}.no-print{display:none!important;}}
 </style></head><body>
 ${htmlPages.join('\n')}
@@ -3201,7 +3320,23 @@ ${htmlPages.join('\n')}
                       />
                     </div>
                   )}
-                  <SceneEditor scene={activeScene} onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)} onOpenReferenceLibrary={() => setShowReferenceLibrary(true)} aspectRatio={activeProject.aspect_ratio || "16:9"} />
+                  <SceneEditor
+                    scene={activeScene}
+                    onUpdate={(updates: any) => activeScene && handleUpdateScene(activeScene.id, updates)}
+                    onOpenReferenceLibrary={() => setShowReferenceLibrary(true)}
+                    aspectRatio={activeProject.aspect_ratio || "16:9"}
+                    onAspectRatioChange={(ratio: string) => {
+                      const updated = projects.map(p => p.id === activeProjectId ? { ...p, aspect_ratio: ratio } : p);
+                      setProjects(updated);
+                      addToHistory(updated);
+                    }}
+                    resolution={activeProject.resolution}
+                    onResolutionChange={(res: string) => {
+                      const updated = projects.map(p => p.id === activeProjectId ? { ...p, resolution: res } : p);
+                      setProjects(updated);
+                      addToHistory(updated);
+                    }}
+                  />
                   {activeScene && (
                     <div className={`hidden lg:block w-80 border-l overflow-y-auto flex-shrink-0 ${darkMode ? "border-white/5 bg-md-surface-container" : "border-md-light-outline-variant/30 bg-white"}`}>
                       <SceneCommentPanel scene={activeScene} onUpdate={(updates: any) => handleUpdateScene(activeScene.id, updates)} darkMode={darkMode} userName={user?.displayName || user?.email?.split('@')[0] || '사용자'} />
