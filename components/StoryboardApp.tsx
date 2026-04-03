@@ -681,28 +681,39 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   // 파일 처리: 직접 함수 + ref (드래그앤드롭 이벤트에서 최신 참조용)
   const processFileRef = useRef<(file: File) => void>();
   const processFile = (file: File) => {
-    console.log('[UPLOAD] processFile called:', file.name, file.type, file.size);
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        const result = e.target.result;
-        console.log('[UPLOAD] FileReader onload, result type:', typeof result, 'length:', result?.length);
-        if (result) {
-          console.log('[UPLOAD] Calling onImageChange...');
-          onImageChange?.(result);
-          // 줌/위치는 로컬 상태만 리셋 (onImageTransformChange를 별도 호출하면 state 덮어쓰기 발생)
+        const rawDataUrl = e.target.result;
+        if (!rawDataUrl) return;
+
+        // 이미지 압축: 최대 1200px, JPEG 품질 0.7 (localStorage 용량 절약)
+        const img = document.createElement('img');
+        img.onload = () => {
+          const MAX_SIZE = 1200;
+          let { width, height } = img;
+          if (width > MAX_SIZE || height > MAX_SIZE) {
+            if (width > height) {
+              height = Math.round(height * (MAX_SIZE / width));
+              width = MAX_SIZE;
+            } else {
+              width = Math.round(width * (MAX_SIZE / height));
+              height = MAX_SIZE;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.7);
+          onImageChange?.(compressed);
           setZoom(1);
           setPosition({ x: 0, y: 0 });
-          console.log('[UPLOAD] Done!');
-        }
-      };
-      reader.onerror = (err: any) => {
-        console.error('[UPLOAD] FileReader error:', err);
+        };
+        img.src = rawDataUrl;
       };
       reader.readAsDataURL(file);
-      console.log('[UPLOAD] readAsDataURL called, readyState:', reader.readyState);
-    } else {
-      console.log('[UPLOAD] File rejected:', file?.type);
     }
   };
   processFileRef.current = processFile;
