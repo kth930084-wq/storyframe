@@ -678,23 +678,34 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
   const maskingPercentage = calculateMaskingPercentage(aspectRatio);
   const showMasking = maskingPercentage > 0;
 
-  // 파일 처리 함수 - ref로 최신 props 콜백을 항상 접근
+  // 파일 처리: 직접 함수 + ref (드래그앤드롭 이벤트에서 최신 참조용)
   const processFileRef = useRef<(file: File) => void>();
-  processFileRef.current = (file: File) => {
+  const processFile = (file: File) => {
+    console.log('[UPLOAD] processFile called:', file.name, file.type, file.size);
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
         const result = e.target.result;
+        console.log('[UPLOAD] FileReader onload, result type:', typeof result, 'length:', result?.length);
         if (result) {
+          console.log('[UPLOAD] Calling onImageChange...');
           onImageChange?.(result);
           setZoom(1);
           setPosition({ x: 0, y: 0 });
           onImageTransformChange?.({ zoom: 1, position: { x: 0, y: 0 } });
+          console.log('[UPLOAD] Done!');
         }
       };
+      reader.onerror = (err: any) => {
+        console.error('[UPLOAD] FileReader error:', err);
+      };
       reader.readAsDataURL(file);
+      console.log('[UPLOAD] readAsDataURL called, readyState:', reader.readyState);
+    } else {
+      console.log('[UPLOAD] File rejected:', file?.type);
     }
   };
+  processFileRef.current = processFile;
 
   // 네이티브 드래그 앤 드롭: dropZone 레벨 + document 레벨 fallback
   useEffect(() => {
@@ -728,6 +739,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
       dragCounter = 0;
       setDragOver(false);
       const file = e.dataTransfer?.files?.[0];
+      console.log('[UPLOAD] drop event, file:', file?.name, file?.type);
       if (file) processFileRef.current?.(file);
     };
 
@@ -764,6 +776,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
         e.stopPropagation();
         setDragOver(false);
         const file = e.dataTransfer?.files?.[0];
+        console.log('[UPLOAD] doc drop, file:', file?.name, file?.type);
         if (file) processFileRef.current?.(file);
       }
     };
@@ -900,7 +913,7 @@ const ImageUploadArea = ({ image, onImageChange, aspectRatio = "16:9", isPdfExpo
           <p className="text-[11px] text-md-outline/50 mt-1">스케치, 레퍼런스 이미지 또는 생성 이미지</p>
         </label>
       )}
-      <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) { processFileRef.current?.(f); e.target.value = ''; } }} />
+      <input id={fileInputId} type="file" accept="image/*" className="hidden" onChange={(e: React.ChangeEvent<HTMLInputElement>) => { console.log('[UPLOAD] input onChange fired'); const f = e.target.files?.[0]; if (f) { processFile(f); e.target.value = ''; } else { console.log('[UPLOAD] no file selected'); } }} />
     </div>
   );
 };
